@@ -3,22 +3,31 @@ import { Box, Typography, Container, TextField, IconButton } from '@mui/material
 import { styled } from '@mui/material/styles';
 import { Send } from '@mui/icons-material';
 
-const StyledSection = styled(Box)({
-  padding: '60px 0',
+const StyledSection = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(8, 0),
   backgroundColor: '#ff0000',
   color: 'white',
-  width: '1251px',
-  margin: '0 auto'
-});
+  width: '100%',
+  maxWidth: '1251px',
+  margin: '0 auto',
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(6, 0),
+  }
+}));
 
-const SubscribeForm = styled(Box)({
+const SubscribeForm = styled(Box)(({ theme }) => ({
   display: 'flex',
-  gap: '10px',
+  gap: theme.spacing(1),
   maxWidth: '500px',
   margin: '0 auto',
-});
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column',
+    gap: theme.spacing(2),
+    padding: theme.spacing(0, 2),
+  }
+}));
 
-const StyledTextField = styled(TextField)({
+const StyledTextField = styled(TextField)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
     backgroundColor: 'white',
     '& fieldset': {
@@ -31,16 +40,37 @@ const StyledTextField = styled(TextField)({
       borderColor: 'white',
     },
   },
-});
+  [theme.breakpoints.down('sm')]: {
+    width: '100%',
+  }
+}));
 
 const NewsletterSection = () => {
   return (
     <StyledSection>
-      <Container maxWidth={false} sx={{ maxWidth: '1251px' }}>
-        <Typography variant="body1" sx={{ textAlign: 'center', mb: 1 }}>
+      <Container maxWidth={false} sx={{ 
+        maxWidth: '1251px',
+        px: { xs: 2, sm: 3, md: 4 }
+      }}>
+        <Typography 
+          variant="body1" 
+          sx={{ 
+            textAlign: 'center', 
+            mb: 1,
+            fontSize: { xs: '14px', sm: '15px', md: '16px' },
+            px: { xs: 2, sm: 3, md: 0 }
+          }}
+        >
           Welcome to BoldEats, your ultimate solution to office meal woes, for something healthy, and delicious.
         </Typography>
-        <Typography variant="h4" sx={{ textAlign: 'center', mb: 4 }}>
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            textAlign: 'center', 
+            mb: 4,
+            fontSize: { xs: '24px', sm: '28px', md: '32px' }
+          }}
+        >
           Newsletter
         </Typography>
         <SubscribeForm>
@@ -50,7 +80,16 @@ const NewsletterSection = () => {
             placeholder="Enter your Email"
             size="small"
           />
-          <IconButton sx={{ backgroundColor: 'white', '&:hover': { backgroundColor: '#f5f5f5' } }}>
+          <IconButton 
+            sx={{ 
+              backgroundColor: 'white', 
+              '&:hover': { backgroundColor: '#f5f5f5' },
+              [theme => theme.breakpoints.down('sm')]: {
+                width: '100%',
+                height: '40px'
+              }
+            }}
+          >
             <Send sx={{ color: '#ff0000' }} />
           </IconButton>
         </SubscribeForm>
