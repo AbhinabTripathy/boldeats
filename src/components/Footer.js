@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Container, Grid, Typography, Link, useTheme, useMediaQuery, Modal, IconButton } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { Facebook, Twitter, Instagram, GitHub, Close } from '@mui/icons-material';
+import { Facebook, Twitter, Instagram, LinkedIn, Close } from '@mui/icons-material';
 import footerImage from '../assets/images/footerImage.png';
 import logo from '../assets/images/BoldTribe Logo-2.svg';
 
@@ -380,6 +380,9 @@ Address: DCB 630, DLF CyberCity, Bhubaneswar, Odisha, India-751024`
                 </SocialLink>
                 <SocialLink href="https://www.instagram.com/boldeats.india?igsh=cjhobjAxeDBkdGx5" target="_blank" rel="noopener noreferrer">
                   <Instagram sx={{ fontSize: { xs: 18, sm: 20 } }} /> Instagram
+                </SocialLink>
+                <SocialLink href="https://www.linkedin.com/company/boldeats-india/" target="_blank" rel="noopener noreferrer">
+                  <LinkedIn sx={{ fontSize: { xs: 18, sm: 20 } }} /> LinkedIn
                 </SocialLink>
               </Box>
             </Grid>
