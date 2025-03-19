@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Container } from '@mui/material';
+import { Box, Typography, Button, Container, useTheme } from '@mui/material';
 import { styled, keyframes } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import thaliImage from '../assets/images/thali1.png';
@@ -20,30 +20,30 @@ const heroConfigs = [
       { 
         text: 'Order', 
         color: '#ff0000',
-        fontSize: { xs: '2rem', sm: '2.5rem', md: '3.5rem', lg: '4rem' }
+        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' }
       },
       { 
         text: 'Your Favorite', 
         color: 'white',
-        fontSize: { xs: '2rem', sm: '2.5rem', md: '3.5rem', lg: '4rem' }
+        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' }
       }
     ],
     subtitle: [
       { 
         text: 'Meals', 
         color: '#ff0000',
-        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' }
+        fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
       },
       { 
         text: 'in Just a Few', 
         color: 'white',
-        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' }
+        fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
       }
     ],
     endText: { 
       text: 'Clicks!', 
       color: '#ff0000',
-      fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' }
+      fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
     }
   },
   {
@@ -54,30 +54,30 @@ const heroConfigs = [
       { 
         text: 'Satisfy', 
         color: '#ff0000',
-        fontSize: { xs: '2rem', sm: '2.5rem', md: '3.5rem', lg: '4rem' }
+        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' }
       },
       { 
         text: 'Your Cravings', 
         color: 'white',
-        fontSize: { xs: '2rem', sm: '2.5rem', md: '3.5rem', lg: '4rem' }
+        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' }
       }
     ],
     subtitle: [
       { 
         text: 'Meals', 
         color: '#ff0000',
-        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' }
+        fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
       },
       { 
         text: 'in Just a Few', 
         color: 'white',
-        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' }
+        fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
       }
     ],
     endText: { 
       text: 'Minutes!', 
       color: '#ff0000',
-      fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' }
+      fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
     }
   },
   {
@@ -88,30 +88,30 @@ const heroConfigs = [
       { 
         text: 'Delicious', 
         color: '#ff0000',
-        fontSize: { xs: '2rem', sm: '2.5rem', md: '3.5rem', lg: '4rem' }
+        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' }
       },
       { 
         text: 'Keto Meals', 
         color: 'white',
-        fontSize: { xs: '2rem', sm: '2.5rem', md: '3.5rem', lg: '4rem' }
+        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' }
       }
     ],
     subtitle: [
       { 
         text: 'Delivered', 
         color: '#ff0000',
-        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' }
+        fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
       },
       { 
         text: 'Fresh Daily', 
         color: 'white',
-        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' }
+        fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
       }
     ],
     endText: { 
       text: 'For You!', 
       color: '#ff0000',
-      fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' }
+      fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
     }
   },
   {
@@ -122,30 +122,30 @@ const heroConfigs = [
       { 
         text: 'Low-Carb', 
         color: '#ff0000',
-        fontSize: { xs: '2rem', sm: '2.5rem', md: '3.5rem', lg: '4rem' }
+        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' }
       },
       { 
         text: 'High-Taste', 
         color: 'white',
-        fontSize: { xs: '2rem', sm: '2.5rem', md: '3.5rem', lg: '4rem' }
+        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' }
       }
     ],
     subtitle: [
       { 
         text: 'Stay Fit', 
         color: '#ff0000',
-        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' }
+        fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
       },
       { 
         text: 'Every Bite', 
         color: 'white',
-        fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' }
+        fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
       }
     ],
     endText: { 
       text: 'Always!', 
       color: '#ff0000',
-      fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem', lg: '3rem' }
+      fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
     }
   }
 ];
@@ -192,7 +192,7 @@ const ContentWrapper = styled(Box)({
   width: '100%'
 });
 
-const ExploreButton = styled(Button)({
+const ExploreButton = styled(Button)(({ theme }) => ({
   backgroundColor: '#ff0000',
   color: 'white',
   padding: '15px 40px',
@@ -203,8 +203,16 @@ const ExploreButton = styled(Button)({
   '&:hover': {
     backgroundColor: '#cc0000',
   },
-  marginTop: '-20px'
-});
+  marginTop: '-20px',
+  [theme.breakpoints.down('md')]: {
+    padding: '12px 30px',
+    fontSize: '16px',
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: '10px 25px',
+    fontSize: '14px',
+  }
+}));
 
 const rotate = keyframes`
   from {
@@ -215,15 +223,30 @@ const rotate = keyframes`
   }
 `;
 
-const ThaliImage = styled('img')(({ slideIndex }) => ({
-  width: slideIndex === 0 ? '600px' : '500px',
-  height: slideIndex === 0 ? '600px' : '500px',
+const ThaliImage = styled('img')(({ slideIndex, theme }) => ({
+  width: slideIndex === 0 ? '500px' : '400px',
+  height: slideIndex === 0 ? '500px' : '400px',
   objectFit: 'contain',
   filter: 'drop-shadow(0px 4px 20px rgba(0, 0, 0, 0.25))',
   position: 'relative',
   zIndex: 3,
-  marginLeft: slideIndex === 0 ? '-300px' : '-250px',
-  animation: `${rotate} 20s linear infinite`
+  marginLeft: slideIndex === 0 ? '-250px' : '-200px',
+  animation: `${rotate} 20s linear infinite`,
+  [theme.breakpoints.down('lg')]: {
+    width: slideIndex === 0 ? '400px' : '300px',
+    height: slideIndex === 0 ? '400px' : '300px',
+    marginLeft: slideIndex === 0 ? '-200px' : '-150px',
+  },
+  [theme.breakpoints.down('md')]: {
+    width: slideIndex === 0 ? '300px' : '250px',
+    height: slideIndex === 0 ? '300px' : '250px',
+    marginLeft: slideIndex === 0 ? '-150px' : '-125px',
+  },
+  [theme.breakpoints.down('sm')]: {
+    width: slideIndex === 0 ? '250px' : '200px',
+    height: slideIndex === 0 ? '250px' : '200px',
+    marginLeft: slideIndex === 0 ? '-125px' : '-100px',
+  }
 }));
 
 const SliderDots = styled(Box)({
@@ -273,7 +296,7 @@ const HeroSection = () => {
             justifyContent: 'space-between',
             py: 8,
             position: 'relative',
-            mt: { xs: 8, md: 12 }
+            mt: 12
           }}>
             <Box sx={{
               flex: '0 1 50%',
@@ -293,12 +316,12 @@ const HeroSection = () => {
                   <Box sx={{ 
                     display: 'flex', 
                     alignItems: 'center',
-                    flexDirection: { xs: 'column', sm: 'row' },
-                    gap: { xs: 1, sm: 2, md: 0 }
+                    flexDirection: 'row',
+                    gap: 0
                   }}>
                     <span style={{ color: currentSlide.title[0].color }}>{currentSlide.title[0].text}</span>
                     <span style={{ 
-                      marginLeft: { xs: 0, sm: '20px' }, 
+                      marginLeft: '20px', 
                       color: currentSlide.title[1].color 
                     }}>{currentSlide.title[1].text}</span>
                   </Box>
@@ -316,12 +339,12 @@ const HeroSection = () => {
                   <Box sx={{ 
                     display: 'flex', 
                     alignItems: 'center',
-                    flexDirection: { xs: 'column', sm: 'row' },
-                    gap: { xs: 1, sm: 2, md: 0 }
+                    flexDirection: 'row',
+                    gap: 0
                   }}>
                     <span style={{ color: currentSlide.subtitle[0].color }}>{currentSlide.subtitle[0].text}</span>
                     <span style={{ 
-                      marginLeft: { xs: 0, sm: '20px' }, 
+                      marginLeft: '20px', 
                       color: currentSlide.subtitle[1].color 
                     }}>{currentSlide.subtitle[1].text}</span>
                   </Box>
@@ -356,7 +379,7 @@ const HeroSection = () => {
             </Box>
             <Box sx={{
               flex: '0 1 50%',
-              display: { xs: 'none', md: 'flex' },
+              display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
               position: 'relative',
