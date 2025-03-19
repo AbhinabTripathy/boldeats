@@ -217,9 +217,9 @@ const CartPage = () => {
     const deliveryDate = getDeliveryDateText();
     const itemsList = cartItems.map(item => 
       `${item.quantity}x ${item.title} - ₹${item.price}`
-    ).join('\\n');
+    ).join('\n');
     
-    const message = `Hi, I would like to place an order:\\n\\n${itemsList}\\n\\nTotal Amount: ₹${total}\\n\\n${deliveryDate}`;
+    const message = `Hi, I would like to place an order:\n${itemsList}\nTotal Amount: ₹${total}\n${deliveryDate}`;
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/+917684836139?text=${encodedMessage}`, '_blank');
   };
