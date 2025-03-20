@@ -6,7 +6,13 @@ import {
   Popper, 
   Grow, 
   Paper,
+  Modal,
+  TextField,
   IconButton,
+  InputAdornment,
+  Typography,
+  Select,
+  MenuItem,
   ListItemIcon,
   ListItemText,
   Drawer,
@@ -19,8 +25,15 @@ import {
   AccountCircle, 
   Login, 
   PersonAdd, 
+  Email, 
+  Lock,
+  Visibility,
+  VisibilityOff,
+  LoginOutlined,
   Close,
   Person,
+  Phone,
+  HowToReg,
   AccountBalanceWallet,
   Settings,
   Logout,
@@ -30,6 +43,8 @@ import { styled } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import logo from '../assets/images/BoldTribe Logo-2.svg';
 import WalletModal from './WalletModal';
+import LoginModal from './LoginModal';
+import RegisterModal from './RegisterModal';
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
   backgroundColor: 'transparent',
@@ -258,6 +273,75 @@ const DropdownPaper = styled(Paper)({
   minWidth: '160px',
 });
 
+const ModalContainer = styled(Box)({
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: '400px',
+  backgroundColor: 'white',
+  borderRadius: '20px',
+  boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
+  padding: '32px'
+});
+
+const CloseButton = styled(IconButton)({
+  position: 'absolute',
+  right: '16px',
+  top: '16px',
+  color: '#666',
+  '&:hover': {
+    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+    color: '#333',
+  },
+});
+
+const LoginButton = styled(Button)({
+  backgroundColor: '#C4362A',
+  color: 'white',
+  borderRadius: '25px',
+  padding: '12px',
+  width: '100%',
+  fontSize: '16px',
+  textTransform: 'none',
+  marginTop: '24px',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    backgroundColor: '#b02d23',
+    transform: 'scale(1.02)',
+    boxShadow: '0 4px 15px rgba(196, 54, 42, 0.2)',
+  },
+});
+
+const ModalLogo = styled('img')({
+  height: '150px',
+  display: 'block',
+  margin: '0 auto 24px'
+});
+
+const PhoneInputContainer = styled(Box)({
+  display: 'flex',
+  gap: '10px',
+  alignItems: 'flex-start',
+  marginBottom: '16px',
+  marginTop: '16px'
+});
+
+const CountryCodeSelect = styled(Select)({
+  width: '120px',
+  '& .MuiSelect-select': {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '13px 14px',
+  },
+  '& .MuiMenuItem-root': {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  }
+});
+
 const countryCodes = [
   { code: '+91', flag: '🇮🇳', country: 'India' },
   { code: '+1', flag: '🇺🇸', country: 'USA' },
@@ -280,6 +364,33 @@ const countryCodes = [
   { code: '+234', flag: '🇳🇬', country: 'Nigeria' },
   { code: '+20', flag: '🇪🇬', country: 'Egypt' },
 ];
+
+const RegisterButton = styled(Button)({
+  backgroundColor: '#C4362A',
+  color: 'white',
+  borderRadius: '25px',
+  padding: '12px',
+  width: '100%',
+  fontSize: '16px',
+  textTransform: 'none',
+  marginTop: '24px',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    backgroundColor: '#b02d23',
+    transform: 'scale(1.02)',
+    boxShadow: '0 4px 15px rgba(196, 54, 42, 0.2)',
+  },
+});
+
+const LoginLink = styled(Button)({
+  color: '#C4362A',
+  textTransform: 'none',
+  fontWeight: 500,
+  '&:hover': {
+    backgroundColor: 'transparent',
+    textDecoration: 'underline',
+  },
+});
 
 const AccountMenuItem = styled(Button)({
   color: '#000',
@@ -310,9 +421,23 @@ const Header = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [openLoginModal, setOpenLoginModal] = useState(false);
+  const [openRegisterModal, setOpenRegisterModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    // Check if user is logged in from localStorage
     return localStorage.getItem('isLoggedIn') === 'true';
   });
+  // Register form states
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [countryCode, setCountryCode] = useState('+91');
+  const [phone, setPhone] = useState('');
+  const [registerPassword, setRegisterPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isWalletOpen, setIsWalletOpen] = useState(false);
   const location = window.location.pathname;
   
@@ -320,26 +445,82 @@ const Header = () => {
   React.useEffect(() => {
     if (!isLoggedIn && window.location.pathname === '/profile') {
       navigate('/');
+      setOpenLoginModal(true);
     }
   }, [isLoggedIn, navigate]);
 
   const open = Boolean(anchorEl);
 
   const handleClick = (event) => {
-    if (!isLoggedIn) {
-      return;
+    if (isLoggedIn) {
+      setIsWalletOpen(true);
+    } else {
+      setAnchorEl(anchorEl ? null : event.currentTarget);
     }
-    setAnchorEl(anchorEl ? null : event.currentTarget);
   };
 
   const handleClose = () => {
     setAnchorEl(null);
   };
 
+  const handleOpenLoginModal = () => {
+    handleClose();
+    setOpenRegisterModal(false);
+    setOpenLoginModal(true);
+  };
+
+  const handleCloseLoginModal = () => {
+    setOpenLoginModal(false);
+    setEmail('');
+    setPassword('');
+    setShowPassword(false);
+  };
+
+  const handleOpenRegisterModal = () => {
+    handleClose();
+    setOpenLoginModal(false);
+    setOpenRegisterModal(true);
+  };
+
+  const handleCloseRegisterModal = () => {
+    setOpenRegisterModal(false);
+    setFirstName('');
+    setLastName('');
+    setPhone('');
+    setRegisterPassword('');
+    setConfirmPassword('');
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+  };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    console.log('Login with:', email, password);
+    setIsLoggedIn(true);
+    localStorage.setItem('isLoggedIn', 'true');
+    handleCloseLoginModal();
+    navigate('/');
+  };
+
   const handleLogout = () => {
     setIsLoggedIn(false);
     localStorage.removeItem('isLoggedIn');
     handleClose();
+    navigate('/');
+    setOpenLoginModal(true);
+  };
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+    console.log('Register with:', {
+      firstName,
+      lastName,
+      phone: countryCode + phone,
+      password: registerPassword
+    });
+    setIsLoggedIn(true);
+    localStorage.setItem('isLoggedIn', 'true');
+    handleCloseRegisterModal();
     navigate('/');
   };
 
@@ -399,13 +580,13 @@ const Header = () => {
               </IconContainer>
             )}
             <IconContainer>
-              <IconWrapper>
+              <IconWrapper onClick={handleClick}>
                 <AccountCircle 
                   sx={{ 
                     color: '#ff0000', 
-                    fontSize: 28
+                    fontSize: 28,
+                    cursor: 'pointer'
                   }} 
-                  onClick={handleClick}
                 />
               </IconWrapper>
             </IconContainer>
@@ -423,14 +604,14 @@ const Header = () => {
                       <>
                         <AccountButton
                           startIcon={<Login />}
-                          onClick={handleLogout}
+                          onClick={handleOpenLoginModal}
                           component="button"
                         >
                           Login
                         </AccountButton>
                         <AccountButton
                           startIcon={<PersonAdd />}
-                          onClick={handleLogout}
+                          onClick={handleOpenRegisterModal}
                           component="button"
                           sx={{ 
                             backgroundColor: '#C4362A',
@@ -545,13 +726,22 @@ const Header = () => {
           ) : (
             <>
               <MobileIconItem button onClick={() => {
-                handleLogout();
+                handleOpenLoginModal();
                 handleMobileMenuToggle();
               }}>
                 <ListItemIcon>
-                  <Logout sx={{ color: '#C4362A' }} />
+                  <Login />
                 </ListItemIcon>
-                <ListItemText primary="Logout" sx={{ color: '#C4362A' }} />
+                <ListItemText primary="Login" />
+              </MobileIconItem>
+              <MobileIconItem button onClick={() => {
+                handleOpenRegisterModal();
+                handleMobileMenuToggle();
+              }}>
+                <ListItemIcon>
+                  <PersonAdd />
+                </ListItemIcon>
+                <ListItemText primary="Register" />
               </MobileIconItem>
             </>
           )}
@@ -561,6 +751,40 @@ const Header = () => {
       <WalletModal 
         open={isWalletOpen} 
         onClose={handleWalletClose}
+      />
+
+      <LoginModal 
+        open={openLoginModal} 
+        onClose={handleCloseLoginModal}
+        onLogin={handleLogin}
+        email={email}
+        setEmail={setEmail}
+        password={password}
+        setPassword={setPassword}
+        showPassword={showPassword}
+        setShowPassword={setShowPassword}
+      />
+
+      <RegisterModal 
+        open={openRegisterModal} 
+        onClose={handleCloseRegisterModal}
+        onRegister={handleRegister}
+        firstName={firstName}
+        setFirstName={setFirstName}
+        lastName={lastName}
+        setLastName={setLastName}
+        phone={phone}
+        setPhone={setPhone}
+        countryCode={countryCode}
+        setCountryCode={setCountryCode}
+        registerPassword={registerPassword}
+        setRegisterPassword={setRegisterPassword}
+        confirmPassword={confirmPassword}
+        setConfirmPassword={setConfirmPassword}
+        showPassword={showPassword}
+        setShowPassword={setShowPassword}
+        showConfirmPassword={showConfirmPassword}
+        setShowConfirmPassword={setShowConfirmPassword}
       />
     </>
   );

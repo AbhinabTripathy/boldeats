@@ -4,26 +4,22 @@ import { styled } from '@mui/material/styles';
 import { useNavigate, useLocation } from 'react-router-dom';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
-const PageContainer = styled(Box)(({ theme }) => ({
+const PageContainer = styled(Box)({
   maxWidth: '1200px',
-  margin: { xs: '80px auto 20px', sm: '100px auto 30px', md: '120px auto 40px' },
-  padding: { xs: '0 16px', sm: '0 24px', md: '0 40px' },
-}));
+  margin: '120px auto 40px',
+  padding: '0 40px',
+});
 
-const ProductContainer = styled(Box)(({ theme }) => ({
+const ProductContainer = styled(Box)({
   display: 'flex',
-  flexDirection: { xs: 'column', md: 'row' },
-  gap: { xs: '30px', sm: '40px', md: '60px' },
-  marginTop: { xs: '20px', sm: '30px', md: '40px' },
-}));
+  gap: '60px',
+  marginTop: '40px',
+});
 
-const ImageContainer = styled(Box)(({ theme }) => ({
-  flex: { xs: '1', md: '0 0 45%' },
+const ImageContainer = styled(Box)({
+  flex: '0 0 45%',
   position: 'relative',
-  width: '100%',
-  maxWidth: { xs: '100%', md: '45%' },
-  margin: '0 auto',
-}));
+});
 
 const ProductImage = styled('img')({
   width: '100%',
@@ -32,36 +28,34 @@ const ProductImage = styled('img')({
   boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
 });
 
-const ProductInfo = styled(Box)(({ theme }) => ({
+const ProductInfo = styled(Box)({
   flex: '1',
-  width: '100%',
-}));
+});
 
-const PriceText = styled(Typography)(({ theme }) => ({
-  fontSize: { xs: '20px', sm: '22px', md: '24px' },
+const PriceText = styled(Typography)({
+  fontSize: '24px',
   fontWeight: 500,
   color: '#333',
   display: 'flex',
   alignItems: 'center',
-  gap: { xs: '8px', sm: '10px', md: '12px' },
-  marginBottom: { xs: '16px', sm: '20px', md: '24px' },
-  flexWrap: 'wrap',
-}));
+  gap: '12px',
+  marginBottom: '24px',
+});
 
-const StrikethroughPrice = styled(Typography)(({ theme }) => ({
+const StrikethroughPrice = styled(Typography)({
   textDecoration: 'line-through',
   color: '#666',
-  fontSize: { xs: '16px', sm: '18px', md: '20px' },
-}));
+  fontSize: '20px',
+});
 
-const BuyButton = styled(Button)(({ theme }) => ({
+const BuyButton = styled(Button)({
   backgroundColor: 'white',
   color: '#000',
   border: '1px solid #E0E0E0',
   borderRadius: '4px',
-  padding: { xs: '8px 16px', sm: '10px 20px', md: '12px 24px' },
+  padding: '12px 24px',
   textTransform: 'none',
-  fontSize: { xs: '14px', sm: '15px', md: '16px' },
+  fontSize: '16px',
   fontWeight: 500,
   width: '100%',
   transition: 'all 0.3s ease',
@@ -75,16 +69,16 @@ const BuyButton = styled(Button)(({ theme }) => ({
     opacity: 0.7,
     border: '1px solid #E0E0E0',
   }
-}));
+});
 
-const SubscribeButton = styled(Button)(({ theme }) => ({
+const SubscribeButton = styled(Button)({
   backgroundColor: '#C4362A',
   color: 'white',
   border: 'none',
   borderRadius: '4px',
-  padding: { xs: '8px 16px', sm: '10px 20px', md: '12px 24px' },
+  padding: '12px 24px',
   textTransform: 'none',
-  fontSize: { xs: '14px', sm: '15px', md: '16px' },
+  fontSize: '16px',
   fontWeight: 500,
   width: '100%',
   transition: 'all 0.3s ease',
@@ -96,7 +90,7 @@ const SubscribeButton = styled(Button)(({ theme }) => ({
     color: 'white',
     opacity: 0.7,
   }
-}));
+});
 
 const ProductPage = () => {
   const navigate = useNavigate();
@@ -153,12 +147,6 @@ const ProductPage = () => {
       <Breadcrumbs 
         separator={<NavigateNextIcon fontSize="small" />}
         aria-label="breadcrumb"
-        sx={{ 
-          fontSize: { xs: '14px', sm: '16px' },
-          '& .MuiBreadcrumbs-separator': {
-            margin: { xs: '0 4px', sm: '0 8px' }
-          }
-        }}
       >
         <Link
           underline="hover"
@@ -176,17 +164,7 @@ const ProductPage = () => {
         >
           {getBreadcrumbCategory()}
         </Link>
-        <Typography 
-          color="text.primary"
-          sx={{ 
-            fontSize: { xs: '14px', sm: '16px' },
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          {product.title}
-        </Typography>
+        <Typography color="text.primary">{product.title}</Typography>
       </Breadcrumbs>
 
       <ProductContainer>
@@ -195,49 +173,23 @@ const ProductPage = () => {
         </ImageContainer>
 
         <ProductInfo>
-          <Typography 
-            variant="h4" 
-            sx={{ 
-              mb: { xs: 2, sm: 2.5, md: 3 }, 
-              fontWeight: 600,
-              fontSize: { xs: '24px', sm: '28px', md: '32px' }
-            }}
-          >
+          <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
             {product.title}
           </Typography>
 
-          <Box sx={{ mb: { xs: 3, sm: 3.5, md: 4 } }}>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                mb: { xs: 1.5, sm: 2 }, 
-                fontWeight: 600,
-                fontSize: { xs: '16px', sm: '18px', md: '20px' }
-              }}
-            >
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
               Starts from
             </Typography>
             <PriceText>
               <StrikethroughPrice>{product.originalPrice}</StrikethroughPrice>
-              <Typography 
-                sx={{ 
-                  fontWeight: 600, 
-                  fontSize: { xs: '20px', sm: '22px', md: '24px' }
-                }}
-              >
+              <Typography sx={{ fontWeight: 600, fontSize: '24px' }}>
                 {product.selectedPrice}
               </Typography>
             </PriceText>
           </Box>
 
-          <Box 
-            sx={{ 
-              mb: { xs: 3, sm: 3.5, md: 4 }, 
-              display: 'flex', 
-              flexDirection: { xs: 'column', sm: 'row' },
-              gap: { xs: 1, sm: 2 }
-            }}
-          >
+          <Box sx={{ mb: 4, display: 'flex', gap: 2 }}>
             <BuyButton 
               disabled={!product.isPurchase}
               onClick={() => handleActionButtonClick(true)}
@@ -251,24 +203,11 @@ const ProductPage = () => {
             </SubscribeButton>
           </Box>
 
-          <Box sx={{ mb: { xs: 3, sm: 3.5, md: 4 } }}>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                mb: { xs: 1.5, sm: 2 }, 
-                fontWeight: 600,
-                fontSize: { xs: '16px', sm: '18px', md: '20px' }
-              }}
-            >
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
               Product Info
             </Typography>
-            <Typography 
-              variant="body1" 
-              sx={{ 
-                color: '#666',
-                fontSize: { xs: '14px', sm: '15px', md: '16px' }
-              }}
-            >
+            <Typography variant="body1" sx={{ color: '#666' }}>
               {product.description}
             </Typography>
           </Box>
