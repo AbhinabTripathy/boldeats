@@ -110,22 +110,19 @@ const ProductPage = () => {
   };
 
   const handleActionButtonClick = (isPurchase) => {
-    const userName = "User"; // This should be replaced with actual user name from your auth system
-    const whatsappNumber = "917684836139";
-    let message = "";
-
-    if (isPurchase) {
-      message = `Hi ${userName}, buying once ${product.title} with price ${product.buyOncePrice}. Please provide me the Payment details.`;
-    } else {
-      message = `Hi ${userName}, buying Subscription ${product.title} with price ${product.subscribePrice}. Please provide me the Payment details and details of the subscriptions.`;
-    }
-
-    // Encode the message for URL
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+    // Add item to cart
+    const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const cartItem = {
+      ...product,
+      quantity: 1,
+      isPurchase,
+      price: isPurchase ? product.buyOncePrice : product.subscribePrice
+    };
+    existingCart.push(cartItem);
+    localStorage.setItem('cart', JSON.stringify(existingCart));
     
-    // Open WhatsApp in a new tab
-    window.open(whatsappUrl, '_blank');
+    // Navigate to cart page
+    navigate('/cart');
   };
 
   const getBreadcrumbCategory = () => {

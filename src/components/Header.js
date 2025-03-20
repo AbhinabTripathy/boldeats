@@ -14,12 +14,7 @@ import {
   Select,
   MenuItem,
   ListItemIcon,
-  ListItemText,
-  Drawer,
-  List,
-  ListItem,
-  useMediaQuery,
-  useTheme
+  ListItemText
 } from '@mui/material';
 import { 
   AccountCircle, 
@@ -36,17 +31,14 @@ import {
   HowToReg,
   AccountBalanceWallet,
   Settings,
-  Logout,
-  Menu
+  Logout
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import logo from '../assets/images/BoldTribe Logo-2.svg';
 import WalletModal from './WalletModal';
-import LoginModal from './LoginModal';
-import RegisterModal from './RegisterModal';
 
-const StyledAppBar = styled(AppBar)(({ theme }) => ({
+const StyledAppBar = styled(AppBar)({
   backgroundColor: 'transparent',
   boxShadow: 'none',
   position: 'fixed',
@@ -57,12 +49,9 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
   left: 0,
   right: 0,
   zIndex: 1000,
-  [theme.breakpoints.down('md')]: {
-    height: '70px',
-  }
-}));
+});
 
-const HeaderContainer = styled(Box)(({ theme }) => ({
+const HeaderContainer = styled(Box)({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'flex-start',
@@ -72,14 +61,10 @@ const HeaderContainer = styled(Box)(({ theme }) => ({
   height: '100%',
   padding: '0',
   position: 'relative',
-  marginLeft: '-20px',
-  [theme.breakpoints.down('md')]: {
-    marginLeft: '0',
-    padding: '0 16px',
-  }
-}));
+  marginLeft: '-20px'
+});
 
-const NavbarSection = styled(Box)(({ theme }) => ({
+const NavbarSection = styled(Box)({
   display: 'flex',
   alignItems: 'center',
   gap: '60px',
@@ -89,107 +74,20 @@ const NavbarSection = styled(Box)(({ theme }) => ({
   width: '1134px',
   height: '84px',
   marginLeft: '0',
-  backgroundColor: '#FFFFFF',
-  [theme.breakpoints.down('lg')]: {
-    width: '100%',
-    padding: '0 20px',
-  },
-  [theme.breakpoints.down('md')]: {
-    height: '70px',
-    padding: '0 10px',
-  }
-}));
+  backgroundColor: '#FFFFFF'
+});
 
-const Logo = styled('img')(({ theme }) => ({
-  height: '100px',
-  marginLeft: '40px',
-  [theme.breakpoints.down('md')]: {
-    height: '100px',
-    marginLeft: '20px',
-  }
-}));
+const Logo = styled('img')({
+  height: '35px',
+  marginLeft: '40px'
+});
 
-const NavigationLinks = styled(Box)(({ theme }) => ({
+const NavigationLinks = styled(Box)({
   display: 'flex',
   alignItems: 'center',
   gap: '120px',
   marginLeft: '180px',
-  marginRight: '60px',
-  [theme.breakpoints.down('lg')]: {
-    gap: '60px',
-    marginLeft: '60px',
-    marginRight: '20px',
-  },
-  [theme.breakpoints.down('md')]: {
-    display: 'none',
-  }
-}));
-
-const MobileMenuButton = styled(IconButton)(({ theme }) => ({
-  display: 'none',
-  [theme.breakpoints.down('md')]: {
-    display: 'block',
-    marginLeft: '10px',
-    color: '#000000',
-    '&:hover': {
-      backgroundColor: 'rgba(0, 0, 0, 0.04)',
-    }
-  }
-}));
-
-const MobileDrawer = styled(Drawer)(({ theme }) => ({
-  '& .MuiDrawer-paper': {
-    width: '280px',
-    padding: '20px',
-    backgroundColor: '#FFFFFF',
-    left: 0,
-    right: 'auto',
-  }
-}));
-
-const MobileNavList = styled(List)({
-  marginTop: '20px',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '8px',
-});
-
-const MobileNavItem = styled(ListItem)({
-  padding: '12px 0',
-  '& .MuiListItemText-root': {
-    '& .MuiTypography-root': {
-      fontSize: '18px',
-      fontWeight: 500,
-      color: '#ff0000',
-      '&:hover': {
-        color: '#cc0000',
-      }
-    }
-  }
-});
-
-const MobileIconSection = styled(Box)({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '8px',
-  marginTop: '20px',
-  padding: '16px 0',
-  borderTop: '1px solid #eee',
-});
-
-const MobileIconItem = styled(ListItem)({
-  padding: '12px 0',
-  '& .MuiListItemIcon-root': {
-    minWidth: '40px',
-    color: '#ff0000',
-  },
-  '& .MuiListItemText-root': {
-    '& .MuiTypography-root': {
-      fontSize: '16px',
-      fontWeight: 500,
-      color: '#000',
-    }
-  }
+  marginRight: '60px'
 });
 
 const NavLink = styled(RouterLink)(({ isActive }) => ({
@@ -205,17 +103,13 @@ const NavLink = styled(RouterLink)(({ isActive }) => ({
   padding: '8px 0'
 }));
 
-const AccountSection = styled(Box)(({ theme }) => ({
+const AccountSection = styled(Box)({
   display: 'flex',
   alignItems: 'center',
   gap: '30px',
   position: 'absolute',
-  right: '-30px',
-  [theme.breakpoints.down('md')]: {
-    right: '0',
-    gap: '15px',
-  }
-}));
+  right: '-30px'
+});
 
 const IconContainer = styled(Box)({
   display: 'flex',
@@ -417,9 +311,6 @@ const AccountMenuItem = styled(Button)({
 
 const Header = () => {
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [openLoginModal, setOpenLoginModal] = useState(false);
   const [openRegisterModal, setOpenRegisterModal] = useState(false);
@@ -438,6 +329,7 @@ const Header = () => {
   const [phone, setPhone] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [gender, setGender] = useState('');
   const [isWalletOpen, setIsWalletOpen] = useState(false);
   const location = window.location.pathname;
   
@@ -452,11 +344,11 @@ const Header = () => {
   const open = Boolean(anchorEl);
 
   const handleClick = (event) => {
-    if (isLoggedIn) {
-      setIsWalletOpen(true);
-    } else {
-      setAnchorEl(anchorEl ? null : event.currentTarget);
+    if (!isLoggedIn) {
+      setOpenLoginModal(true);
+      return;
     }
+    setAnchorEl(anchorEl ? null : event.currentTarget);
   };
 
   const handleClose = () => {
@@ -512,16 +404,26 @@ const Header = () => {
 
   const handleRegister = (e) => {
     e.preventDefault();
-    console.log('Register with:', {
+    // Store user data in localStorage
+    const userData = {
       firstName,
       lastName,
       phone: countryCode + phone,
-      password: registerPassword
-    });
+      gender,
+      // Address will be fetched from cart later
+      address: ''
+    };
+    localStorage.setItem('userData', JSON.stringify(userData));
     setIsLoggedIn(true);
     localStorage.setItem('isLoggedIn', 'true');
+    
+    // Clear any existing cart data for the new user
+    localStorage.removeItem('cart');
+    localStorage.removeItem('addresses');
+    localStorage.removeItem('transactions');
+    
     handleCloseRegisterModal();
-    navigate('/');
+    navigate('/profile');
   };
 
   const handleWalletOpen = () => {
@@ -532,40 +434,21 @@ const Header = () => {
     setIsWalletOpen(false);
   };
 
-  const handleMobileMenuToggle = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
-
-  const handleMobileNavClick = (path) => {
-    navigate(path);
-    setMobileMenuOpen(false);
-  };
-
   return (
     <>
-      <StyledAppBar>
-        <HeaderContainer>
-          <NavbarSection>
-            {isMobile && (
-              <MobileMenuButton
-                edge="start"
-                color="inherit"
-                aria-label="menu"
-                onClick={handleMobileMenuToggle}
-              >
-                <Menu />
-              </MobileMenuButton>
-            )}
-            <Logo src={logo} alt="BoldEats" />
-            <NavigationLinks>
+    <StyledAppBar>
+      <HeaderContainer>
+        <NavbarSection>
+            <Logo src={logo} alt="BoldEats" sx={{width: '100px', height: '300px'}} />
+          <NavigationLinks>
               <NavLink to="/" isActive={location === '/'}>Home</NavLink>
               <NavLink to="/menu" isActive={location === '/menu'}>Menu</NavLink>
               <NavLink to="/subscription" isActive={location === '/subscription'}>Subscription</NavLink>
               <NavLink to="/cart" isActive={location === '/cart'}>Cart</NavLink>
-            </NavigationLinks>
-          </NavbarSection>
+          </NavigationLinks>
+        </NavbarSection>
 
-          <AccountSection sx={{ display: { xs: 'none', md: 'flex' } }}>
+        <AccountSection>
             {isLoggedIn && (
               <IconContainer>
                 <IconWrapper onClick={handleWalletOpen}>
@@ -580,13 +463,13 @@ const Header = () => {
               </IconContainer>
             )}
             <IconContainer>
-              <IconWrapper onClick={handleClick}>
+              <IconWrapper>
                 <AccountCircle 
                   sx={{ 
                     color: '#ff0000', 
-                    fontSize: 28,
-                    cursor: 'pointer'
+                    fontSize: 28
                   }} 
+                  onClick={handleClick}
                 />
               </IconWrapper>
             </IconContainer>
@@ -663,128 +546,285 @@ const Header = () => {
                 </Grow>
               )}
             </Popper>
-          </AccountSection>
-        </HeaderContainer>
-      </StyledAppBar>
 
-      <MobileDrawer
-        anchor="left"
-        open={mobileMenuOpen}
-        onClose={handleMobileMenuToggle}
-      >
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
-          <IconButton onClick={handleMobileMenuToggle}>
-            <Close />
-          </IconButton>
-        </Box>
-        <MobileNavList>
-          <MobileNavItem button onClick={() => handleMobileNavClick('/')}>
-            <ListItemText primary="Home" />
-          </MobileNavItem>
-          <MobileNavItem button onClick={() => handleMobileNavClick('/menu')}>
-            <ListItemText primary="Menu" />
-          </MobileNavItem>
-          <MobileNavItem button onClick={() => handleMobileNavClick('/subscription')}>
-            <ListItemText primary="Subscription" />
-          </MobileNavItem>
-          <MobileNavItem button onClick={() => handleMobileNavClick('/cart')}>
-            <ListItemText primary="Cart" />
-          </MobileNavItem>
-        </MobileNavList>
+            {/* Login Modal */}
+            <Modal
+              open={openLoginModal}
+              onClose={handleCloseLoginModal}
+              aria-labelledby="login-modal"
+            >
+              <ModalContainer>
+                <CloseButton onClick={handleCloseLoginModal}>
+                  <Close />
+                </CloseButton>
+                <ModalLogo src={logo} alt="BoldEats" />
+                <form onSubmit={handleLogin}>
+                  <TextField
+                    fullWidth
+                    margin="normal"
+                    label="Email"
+                    variant="outlined"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Email sx={{ color: '#666' }} />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{ mb: 2 }}
+                  />
+                  <TextField
+                    fullWidth
+                    margin="normal"
+                    label="Password"
+                    type={showPassword ? 'text' : 'password'}
+                    variant="outlined"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Lock sx={{ color: '#666' }} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => setShowPassword(!showPassword)}
+                            edge="end"
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                  <LoginButton
+                    type="submit"
+                    variant="contained"
+                    startIcon={<LoginOutlined />}
+                  >
+                    Login
+                  </LoginButton>
+                </form>
+                <Box sx={{ textAlign: 'center', mt: 3 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Don't have an account?{' '}
+                    <LoginLink 
+                      onClick={handleOpenRegisterModal}
+                      component="button"
+                    >
+                      Register
+                    </LoginLink>
+                  </Typography>
+                </Box>
+              </ModalContainer>
+            </Modal>
 
-        <MobileIconSection>
-          {isLoggedIn ? (
-            <>
-              <MobileIconItem button onClick={() => {
-                handleMobileNavClick('/profile');
-                handleMobileMenuToggle();
-              }}>
-                <ListItemIcon>
-                  <Person />
-                </ListItemIcon>
-                <ListItemText primary="Profile" />
-              </MobileIconItem>
-              <MobileIconItem button onClick={() => {
-                handleWalletOpen();
-                handleMobileMenuToggle();
-              }}>
-                <ListItemIcon>
-                  <AccountBalanceWallet />
-                </ListItemIcon>
-                <ListItemText primary="Wallet" />
-              </MobileIconItem>
-              <MobileIconItem button onClick={() => {
-                handleLogout();
-                handleMobileMenuToggle();
-              }}>
-                <ListItemIcon>
-                  <Logout sx={{ color: '#C4362A' }} />
-                </ListItemIcon>
-                <ListItemText primary="Logout" sx={{ color: '#C4362A' }} />
-              </MobileIconItem>
-            </>
-          ) : (
-            <>
-              <MobileIconItem button onClick={() => {
-                handleOpenLoginModal();
-                handleMobileMenuToggle();
-              }}>
-                <ListItemIcon>
-                  <Login />
-                </ListItemIcon>
-                <ListItemText primary="Login" />
-              </MobileIconItem>
-              <MobileIconItem button onClick={() => {
-                handleOpenRegisterModal();
-                handleMobileMenuToggle();
-              }}>
-                <ListItemIcon>
-                  <PersonAdd />
-                </ListItemIcon>
-                <ListItemText primary="Register" />
-              </MobileIconItem>
-            </>
-          )}
-        </MobileIconSection>
-      </MobileDrawer>
+            {/* Register Modal */}
+            <Modal
+              open={openRegisterModal}
+              onClose={handleCloseRegisterModal}
+              aria-labelledby="register-modal"
+            >
+              <ModalContainer>
+                <CloseButton onClick={handleCloseRegisterModal}>
+                  <Close />
+                </CloseButton>
+                <ModalLogo src={logo} alt="BoldEats" />
+                <form onSubmit={handleRegister}>
+                  <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                    <TextField
+                      fullWidth
+                      label="First Name"
+                      variant="outlined"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Person sx={{ color: '#666' }} />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                    <TextField
+                      fullWidth
+                      label="Last Name"
+                      variant="outlined"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Person sx={{ color: '#666' }} />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Box>
+
+                  <PhoneInputContainer>
+                    <CountryCodeSelect
+                      value={countryCode}
+                      onChange={(e) => setCountryCode(e.target.value)}
+                      variant="outlined"
+                      MenuProps={{
+                        PaperProps: {
+                          style: {
+                            maxHeight: 300,
+                          },
+                        },
+                      }}
+                    >
+                      {countryCodes.map((country) => (
+                        <MenuItem 
+                          key={country.code} 
+                          value={country.code}
+                          sx={{
+                            minHeight: '40px',
+                            '&:hover': {
+                              backgroundColor: 'rgba(196, 54, 42, 0.04)',
+                            },
+                            '&.Mui-selected': {
+                              backgroundColor: 'rgba(196, 54, 42, 0.08)',
+                              '&:hover': {
+                                backgroundColor: 'rgba(196, 54, 42, 0.12)',
+                              },
+                            },
+                          }}
+                        >
+                          <span style={{ fontSize: '1.2rem' }}>{country.flag}</span>
+                          <span>{country.code}</span>
+                        </MenuItem>
+                      ))}
+                    </CountryCodeSelect>
+                    <TextField
+                      fullWidth
+                      label="Mobile Number"
+                      variant="outlined"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      inputProps={{
+                        maxLength: 10,
+                        pattern: '[0-9]*'
+                      }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Phone sx={{ color: '#666' }} />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </PhoneInputContainer>
+
+                  <TextField
+                    fullWidth
+                    select
+                    margin="normal"
+                    label="Gender"
+                    variant="outlined"
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Person sx={{ color: '#666' }} />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{ mb: 2 }}
+                  >
+                    <MenuItem value="male">Male</MenuItem>
+                    <MenuItem value="female">Female</MenuItem>
+                    <MenuItem value="other">Other</MenuItem>
+                  </TextField>
+
+                  <TextField
+                    fullWidth
+                    margin="normal"
+                    label="Password"
+                    type={showPassword ? 'text' : 'password'}
+                    variant="outlined"
+                    value={registerPassword}
+                    onChange={(e) => setRegisterPassword(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Lock sx={{ color: '#666' }} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => setShowPassword(!showPassword)}
+                            edge="end"
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{ mb: 2 }}
+                  />
+
+                  <TextField
+                    fullWidth
+                    margin="normal"
+                    label="Confirm Password"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    variant="outlined"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Lock sx={{ color: '#666' }} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            edge="end"
+                          >
+                            {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+
+                  <RegisterButton
+                    type="submit"
+                    variant="contained"
+                    startIcon={<HowToReg />}
+                  >
+                    Register
+                  </RegisterButton>
+                </form>
+                <Box sx={{ textAlign: 'center', mt: 3 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Have an account?{' '}
+                    <LoginLink 
+                      onClick={handleOpenLoginModal}
+                    >
+                      Login
+                    </LoginLink>
+                  </Typography>
+                </Box>
+              </ModalContainer>
+            </Modal>
+        </AccountSection>
+      </HeaderContainer>
+    </StyledAppBar>
 
       <WalletModal 
         open={isWalletOpen} 
         onClose={handleWalletClose}
-      />
-
-      <LoginModal 
-        open={openLoginModal} 
-        onClose={handleCloseLoginModal}
-        onLogin={handleLogin}
-        email={email}
-        setEmail={setEmail}
-        password={password}
-        setPassword={setPassword}
-        showPassword={showPassword}
-        setShowPassword={setShowPassword}
-      />
-
-      <RegisterModal 
-        open={openRegisterModal} 
-        onClose={handleCloseRegisterModal}
-        onRegister={handleRegister}
-        firstName={firstName}
-        setFirstName={setFirstName}
-        lastName={lastName}
-        setLastName={setLastName}
-        phone={phone}
-        setPhone={setPhone}
-        countryCode={countryCode}
-        setCountryCode={setCountryCode}
-        registerPassword={registerPassword}
-        setRegisterPassword={setRegisterPassword}
-        confirmPassword={confirmPassword}
-        setConfirmPassword={setConfirmPassword}
-        showPassword={showPassword}
-        setShowPassword={setShowPassword}
-        showConfirmPassword={showConfirmPassword}
-        setShowConfirmPassword={setShowConfirmPassword}
       />
     </>
   );

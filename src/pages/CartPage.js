@@ -145,6 +145,8 @@ const CartPage = () => {
   const [addresses, setAddresses] = useState([]);
   const [pincode, setPincode] = useState('');
   const [loading, setLoading] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [addressDetails, setAddressDetails] = useState({
     buildingNumber: '',
     floorNumber: '',
@@ -156,16 +158,33 @@ const CartPage = () => {
   });
 
   useEffect(() => {
+    // Check if user is logged in
+    const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    setIsLoggedIn(loggedIn);
+
+    if (!loggedIn) {
+      navigate('/');
+      return;
+    }
+
+    // Load user data
+    const storedUserData = localStorage.getItem('userData');
+    if (storedUserData) {
+      setUserData(JSON.parse(storedUserData));
+    }
+
+    // Load cart items
     const items = JSON.parse(localStorage.getItem('cart') || '[]');
     setCartItems(items);
     calculateTotal(items);
+
     // Load saved addresses
     const savedAddresses = JSON.parse(localStorage.getItem('addresses') || '[]');
     setAddresses(savedAddresses);
     if (savedAddresses.length > 0) {
       setSelectedAddress(savedAddresses[0].id);
     }
-  }, []);
+  }, [navigate]);
 
   const calculateTotal = (items) => {
     const sum = items.reduce((acc, item) => {
@@ -291,18 +310,67 @@ const CartPage = () => {
     <PageContainer>
       <ContentContainer>
         <MainContent>
-          {cartItems.length === 0 ? (
-            <Box sx={{ textAlign: 'center', mt: 4 }}>
-              <Typography variant="h6" sx={{ mb: 2 }}>Your cart is empty</Typography>
+          {!isLoggedIn ? (
+            <Box sx={{ 
+              textAlign: 'center', 
+              mt: 4,
+              backgroundColor: 'white',
+              borderRadius: '15px',
+              padding: '40px',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)'
+            }}>
+              <Typography variant="h5" sx={{ mb: 2, color: '#333' }}>
+                Please Login to View Cart
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 3, color: '#666' }}>
+                You need to be logged in to view and manage your cart
+              </Typography>
+              <Button 
+                variant="contained" 
+                onClick={() => navigate('/')}
+                sx={{ 
+                  backgroundColor: '#C4362A',
+                  '&:hover': { backgroundColor: '#b02d23' },
+                  padding: '12px 32px',
+                  fontSize: '16px',
+                  textTransform: 'none'
+                }}
+              >
+                Go to Login
+              </Button>
+            </Box>
+          ) : cartItems.length === 0 ? (
+            <Box sx={{ 
+              textAlign: 'center', 
+              mt: 4,
+              backgroundColor: 'white',
+              borderRadius: '15px',
+              padding: '40px',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)'
+            }}>
+              <Typography variant="h5" sx={{ mb: 2, color: '#333' }}>
+                Welcome{userData ? `, ${userData.firstName}` : ''}!
+              </Typography>
+              <Typography variant="h6" sx={{ mb: 2, color: '#666' }}>
+                Your cart is empty
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 3, color: '#666' }}>
+                Start your journey with BoldEats by exploring our delicious menu
+              </Typography>
               <Button 
                 variant="contained" 
                 onClick={() => navigate('/menu')}
                 sx={{ 
                   backgroundColor: '#C4362A',
-                  '&:hover': { backgroundColor: '#b02d23' }
+                  '&:hover': { backgroundColor: '#b02d23' },
+                  padding: '12px 32px',
+                  fontSize: '16px',
+                  textTransform: 'none',
+                  borderRadius: '25px',
+                  boxShadow: '0 4px 15px rgba(196, 54, 42, 0.2)'
                 }}
               >
-                Continue Shopping
+                Start Ordering
               </Button>
             </Box>
           ) : (

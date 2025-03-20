@@ -17,15 +17,13 @@ const WalletModal = ({ open, onClose }) => {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: { xs: '90%', sm: '80%', md: '900px' },
-          height: { xs: 'auto', sm: '238px' },
-          minHeight: { xs: '300px', sm: '238px' },
+          width: 900,
+          height: 238,
           bgcolor: '#9797d3',
           borderRadius: '25px',
           boxShadow: 24,
-          padding: { xs: '24px 16px', sm: '16px 24px' },
-          color: 'white',
-          overflow: 'auto'
+          padding: '16px 24px',
+          color: 'white'
         }}
       >
         {/* Close Button */}
@@ -34,8 +32,8 @@ const WalletModal = ({ open, onClose }) => {
           sx={{ 
             color: 'white',
             position: 'absolute',
-            right: { xs: 8, sm: 16 },
-            top: { xs: 8, sm: 16 },
+            right: 16,
+            top: 16,
             '&:hover': {
               bgcolor: 'rgba(255, 255, 255, 0.1)'
             }
@@ -49,16 +47,15 @@ const WalletModal = ({ open, onClose }) => {
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
-          pt: { xs: 2, sm: 0 }
+          alignItems: 'center'
         }}>
           {/* Logo and Title */}
-          <Box sx={{ mb: { xs: 3, sm: 2 } }}>
+          <Box sx={{ mb: 2 }}>
             <img 
               src={logo} 
               alt="BoldEats" 
               style={{ 
-                height: { xs: '50px', sm: '60px' },
+                height: '60px',
                 display: 'block',
                 margin: '0 auto',
                 marginBottom: '8px',
@@ -71,7 +68,7 @@ const WalletModal = ({ open, onClose }) => {
               sx={{
                 fontWeight: 500,
                 textAlign: 'center',
-                fontSize: { xs: '20px', sm: '24px' }
+                fontSize: '24px'
               }}
             >
               Your wallet
@@ -81,65 +78,29 @@ const WalletModal = ({ open, onClose }) => {
           {/* Wallet Information */}
           <Box sx={{ 
             width: '100%',
-            padding: { xs: '0 16px', sm: '0 48px' }
+            padding: '0 48px'
           }}>
             <Box sx={{ 
               display: 'flex', 
               justifyContent: 'space-between', 
-              mb: { xs: 3, sm: 2 },
-              flexWrap: { xs: 'wrap', sm: 'nowrap' },
-              gap: { xs: 2, sm: 0 }
+              mb: 2
             }}>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  fontWeight: 400, 
-                  fontSize: { xs: '16px', sm: '20px' },
-                  width: { xs: '100%', sm: 'auto' },
-                  textAlign: { xs: 'center', sm: 'left' }
-                }}
-              >
+              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '20px' }}>
                 Balance : ₹350
               </Typography>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  fontWeight: 400, 
-                  fontSize: { xs: '16px', sm: '20px' },
-                  width: { xs: '100%', sm: 'auto' },
-                  textAlign: { xs: 'center', sm: 'left' }
-                }}
-              >
+              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '20px' }}>
                 Month : jan
               </Typography>
             </Box>
 
             <Box sx={{ 
               display: 'flex', 
-              justifyContent: 'space-between',
-              flexWrap: { xs: 'wrap', sm: 'nowrap' },
-              gap: { xs: 2, sm: 0 }
+              justifyContent: 'space-between'
             }}>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  fontWeight: 400, 
-                  fontSize: { xs: '16px', sm: '20px' },
-                  width: { xs: '100%', sm: 'auto' },
-                  textAlign: { xs: 'center', sm: 'left' }
-                }}
-              >
+              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '20px' }}>
                 last pay : ₹250
               </Typography>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  fontWeight: 400, 
-                  fontSize: { xs: '16px', sm: '20px' },
-                  width: { xs: '100%', sm: 'auto' },
-                  textAlign: { xs: 'center', sm: 'left' }
-                }}
-              >
+              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '20px' }}>
                 recharged : ₹1000
               </Typography>
             </Box>

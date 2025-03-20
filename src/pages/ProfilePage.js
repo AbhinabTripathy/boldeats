@@ -177,38 +177,22 @@ const WalletAmount = styled(Box)({
 const ProfilePage = () => {
   const [isTransactionOpen, setIsTransactionOpen] = useState(false);
   const [isWalletOpen, setIsWalletOpen] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [transactions, setTransactions] = useState([]);
 
-  // Sample transaction data
-  const transactions = [
-    {
-      id: 1,
-      date: '2024-02-20',
-      description: 'Wallet Recharge',
-      amount: '+₹500',
-      status: 'Success'
-    },
-    {
-      id: 2,
-      date: '2024-02-19',
-      description: 'Food Order #123',
-      amount: '-₹250',
-      status: 'Completed'
-    },
-    {
-      id: 3,
-      date: '2024-02-18',
-      description: 'Subscription Payment',
-      amount: '-₹999',
-      status: 'Success'
-    },
-    {
-      id: 4,
-      date: '2024-02-17',
-      description: 'Wallet Recharge',
-      amount: '+₹1000',
-      status: 'Success'
+  // Load user data and transactions from localStorage on component mount
+  React.useEffect(() => {
+    const storedUserData = localStorage.getItem('userData');
+    const storedTransactions = localStorage.getItem('transactions');
+    
+    if (storedUserData) {
+      setUserData(JSON.parse(storedUserData));
     }
-  ];
+    
+    if (storedTransactions) {
+      setTransactions(JSON.parse(storedTransactions));
+    }
+  }, []);
 
   const handleWalletOpen = () => setIsWalletOpen(true);
   const handleWalletClose = () => setIsWalletOpen(false);
@@ -224,22 +208,22 @@ const ProfilePage = () => {
           <Box sx={{ flex: 1 }}>
             <InfoRow>
               <Label>Name :</Label>
-              <Value>Nikita Pradhan</Value>
+              <Value>{userData ? `${userData.firstName} ${userData.lastName}` : 'Not Available'}</Value>
             </InfoRow>
 
             <InfoRow>
               <Label>Ph no. :</Label>
-              <Value>564189452634</Value>
+              <Value>{userData ? userData.phone : 'Not Available'}</Value>
             </InfoRow>
 
             <InfoRow>
               <Label>Gender :</Label>
-              <Value>Female</Value>
+              <Value>{userData ? userData.gender.charAt(0).toUpperCase() + userData.gender.slice(1) : 'Not Available'}</Value>
             </InfoRow>
 
             <InfoRow>
               <Label>Address :</Label>
-              <Value>sebfiwaebfkjasevfiu</Value>
+              <Value>{userData ? userData.address || 'Not Available' : 'Not Available'}</Value>
             </InfoRow>
 
             <WalletButton onClick={handleWalletOpen}>
@@ -262,59 +246,72 @@ const ProfilePage = () => {
             isOpen={isTransactionOpen}
           >
             <Typography variant="body1" sx={{ fontWeight: 500 }}>
-              view transaction history
+              {transactions.length > 0 ? 'View Transaction History' : 'No Transactions Yet'}
             </Typography>
-            {isTransactionOpen ? 
-              <KeyboardArrowUp sx={{ color: '#666', transition: 'transform 0.3s ease' }} /> : 
-              <KeyboardArrowDown sx={{ color: '#666', transition: 'transform 0.3s ease' }} />
-            }
+            {transactions.length > 0 && (
+              isTransactionOpen ? 
+                <KeyboardArrowUp sx={{ color: '#666', transition: 'transform 0.3s ease' }} /> : 
+                <KeyboardArrowDown sx={{ color: '#666', transition: 'transform 0.3s ease' }} />
+            )}
           </TransactionButton>
           
           <Collapse in={isTransactionOpen}>
             <TransactionHistory>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <StyledTableCell className="header">Date</StyledTableCell>
-                      <StyledTableCell className="header">Description</StyledTableCell>
-                      <StyledTableCell className="header" align="right">Amount</StyledTableCell>
-                      <StyledTableCell className="header" align="center">Status</StyledTableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {transactions.map((transaction) => (
-                      <StyledTableRow key={transaction.id}>
-                        <StyledTableCell>{transaction.date}</StyledTableCell>
-                        <StyledTableCell>{transaction.description}</StyledTableCell>
-                        <StyledTableCell 
-                          align="right"
-                          sx={{ 
-                            color: transaction.amount.startsWith('+') ? '#4caf50' : '#ff0000',
-                            fontWeight: 500
-                          }}
-                        >
-                          {transaction.amount}
-                        </StyledTableCell>
-                        <StyledTableCell align="center">
-                          <Typography
-                            sx={{
-                              display: 'inline-block',
-                              padding: '4px 12px',
-                              borderRadius: '12px',
-                              backgroundColor: transaction.status === 'Success' ? '#e8f5e9' : '#fff3e0',
-                              color: transaction.status === 'Success' ? '#2e7d32' : '#ef6c00',
-                              fontSize: '0.875rem'
+              {transactions.length > 0 ? (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <StyledTableCell className="header">Date</StyledTableCell>
+                        <StyledTableCell className="header">Description</StyledTableCell>
+                        <StyledTableCell className="header" align="right">Amount</StyledTableCell>
+                        <StyledTableCell className="header" align="center">Status</StyledTableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {transactions.map((transaction) => (
+                        <StyledTableRow key={transaction.id}>
+                          <StyledTableCell>{transaction.date}</StyledTableCell>
+                          <StyledTableCell>{transaction.description}</StyledTableCell>
+                          <StyledTableCell 
+                            align="right"
+                            sx={{ 
+                              color: transaction.amount.startsWith('+') ? '#4caf50' : '#ff0000',
+                              fontWeight: 500
                             }}
                           >
-                            {transaction.status}
-                          </Typography>
-                        </StyledTableCell>
-                      </StyledTableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                            {transaction.amount}
+                          </StyledTableCell>
+                          <StyledTableCell align="center">
+                            <Typography
+                              sx={{
+                                display: 'inline-block',
+                                padding: '4px 12px',
+                                borderRadius: '12px',
+                                backgroundColor: transaction.status === 'Success' ? '#e8f5e9' : '#fff3e0',
+                                color: transaction.status === 'Success' ? '#2e7d32' : '#ef6c00',
+                                fontSize: '0.875rem'
+                              }}
+                            >
+                              {transaction.status}
+                            </Typography>
+                          </StyledTableCell>
+                        </StyledTableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Box sx={{ 
+                  padding: '40px', 
+                  textAlign: 'center',
+                  backgroundColor: '#f8f8f8'
+                }}>
+                  <Typography variant="body1" color="text.secondary">
+                    You haven't made any transactions yet. Start ordering food to see your transaction history here!
+                  </Typography>
+                </Box>
+              )}
             </TransactionHistory>
           </Collapse>
         </Box>
@@ -325,6 +322,8 @@ const ProfilePage = () => {
           1. You can use wallet money to make a purchase on Boldeats Website only.
           <br />
           2. Your money is 100 % safe with us.
+          <br />
+          3. {transactions.length === 0 && "Make your first order to start your transaction history!"}
         </Note>
 
         <WalletModal
@@ -337,13 +336,13 @@ const ProfilePage = () => {
             
             <WalletInfo>
               <WalletAmount>
-                <Typography variant="h3">Balance : ₹350</Typography>
-                <Typography variant="h3">last pay : ₹250</Typography>
+                <Typography variant="h3">Balance : ₹0</Typography>
+                <Typography variant="h3">Last Payment : No payments yet</Typography>
               </WalletAmount>
               
               <Box>
-                <Typography sx={{ textAlign: 'right', mb: 2 }}>Month : jan</Typography>
-                <Typography sx={{ textAlign: 'right' }}>recharged : ₹1000</Typography>
+                <Typography sx={{ textAlign: 'right', mb: 2 }}>Month : {new Date().toLocaleString('default', { month: 'long' })}</Typography>
+                <Typography sx={{ textAlign: 'right' }}>Recharged : ₹0</Typography>
               </Box>
             </WalletInfo>
           </WalletCard>
