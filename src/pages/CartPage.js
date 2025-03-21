@@ -24,7 +24,11 @@ const PageContainer = styled(Box)({
   alignItems: 'center',
   marginTop: '120px',
   padding: '40px',
-  width: '100%'
+  width: '100%',
+  '@media (max-width: 768px)': {
+    marginTop: '80px',
+    padding: '20px'
+  }
 });
 
 const CartItemCard = styled(Box)({
@@ -37,14 +41,23 @@ const CartItemCard = styled(Box)({
   boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
   marginBottom: '20px',
   width: '100%',
-  maxWidth: '500px'
+  maxWidth: '500px',
+  '@media (max-width: 768px)': {
+    flexDirection: 'column',
+    textAlign: 'center',
+    padding: '16px'
+  }
 });
 
 const ItemImage = styled('img')({
   width: '120px',
   height: '120px',
   objectFit: 'cover',
-  borderRadius: '8px'
+  borderRadius: '8px',
+  '@media (max-width: 768px)': {
+    width: '100%',
+    height: '200px'
+  }
 });
 
 const QuantityControl = styled(Box)({
@@ -67,7 +80,12 @@ const AddressModal = styled(Box)({
   backgroundColor: 'white',
   borderRadius: '16px',
   boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-  padding: '32px'
+  padding: '32px',
+  '@media (max-width: 768px)': {
+    width: '90%',
+    maxWidth: '400px',
+    padding: '20px'
+  }
 });
 
 const AddressButton = styled(Button)({
@@ -94,7 +112,11 @@ const DeliveryAddressSection = styled(Box)({
   maxWidth: '500px',
   boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
   display: 'flex',
-  flexDirection: 'column'
+  flexDirection: 'column',
+  '@media (max-width: 768px)': {
+    maxWidth: '100%',
+    padding: '16px'
+  }
 });
 
 const ContentContainer = styled(Box)({
@@ -104,13 +126,21 @@ const ContentContainer = styled(Box)({
   width: '100%',
   justifyContent: 'center',
   position: 'relative',
-  padding: '0 20px'
+  padding: '0 20px',
+  '@media (max-width: 768px)': {
+    flexDirection: 'column',
+    padding: '0 16px',
+    gap: '20px'
+  }
 });
 
 const MainContent = styled(Box)({
   flex: 1,
   maxWidth: '500px',
-  width: '100%'
+  width: '100%',
+  '@media (max-width: 768px)': {
+    maxWidth: '100%'
+  }
 });
 
 const BillDetailsCard = styled(Paper)({
@@ -123,7 +153,13 @@ const BillDetailsCard = styled(Paper)({
   position: 'sticky',
   top: '120px',
   boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
-  marginLeft: '40px'
+  marginLeft: '40px',
+  '@media (max-width: 768px)': {
+    position: 'relative',
+    top: '0',
+    marginLeft: '0',
+    maxWidth: '100%'
+  }
 });
 
 const WhatsAppButton = styled(Button)({
@@ -147,6 +183,7 @@ const CartPage = () => {
   const [loading, setLoading] = useState(false);
   const [userData, setUserData] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [addressDetails, setAddressDetails] = useState({
     buildingNumber: '',
     floorNumber: '',
@@ -233,14 +270,40 @@ const CartPage = () => {
   };
 
   const handleCheckout = () => {
+    // Check if address is selected
+    if (!selectedAddress) {
+      alert('Please enter your delivery address');
+      return;
+    }
+
+    const selectedAddressDetails = addresses.find(addr => addr.id === selectedAddress);
+    if (!selectedAddressDetails) {
+      alert('Please enter your delivery address');
+      return;
+    }
+
     const deliveryDate = getDeliveryDateText();
     const itemsList = cartItems.map(item => 
       `${item.quantity}x ${item.title} - ₹${item.price}`
     ).join('\n');
     
-    const message = `Hi, I would like to place an order:\n${itemsList}\nTotal Amount: ₹${total}\n${deliveryDate}`;
+    const message = `Hi, I would like to place an order:\n${itemsList}\nTotal Amount: ₹${total}\n${deliveryDate}\n\nDelivery Address:\n${selectedAddressDetails.fullAddress}`;
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/+917684836139?text=${encodedMessage}`, '_blank');
+
+    // Clear cart immediately
+    localStorage.setItem('cart', '[]');
+    setCartItems([]);
+    setTotal(0);
+    
+    // Show success message
+    setShowSuccessMessage(true);
+    
+    // Hide success message and redirect to homepage after 10 seconds
+    setTimeout(() => {
+      setShowSuccessMessage(false);
+      navigate('/');
+    }, 10000); // 10 seconds
   };
 
   const handlePincodeChange = async (e) => {
@@ -308,6 +371,34 @@ const CartPage = () => {
 
   return (
     <PageContainer>
+      {showSuccessMessage && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: 'white',
+            padding: '30px',
+            borderRadius: '15px',
+            boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
+            zIndex: 1000,
+            textAlign: 'center',
+            maxWidth: '90%',
+            width: '400px'
+          }}
+        >
+          <Typography variant="h5" sx={{ mb: 2, color: '#4CAF50' }}>
+            Order Placed Successfully!
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            {getDeliveryDateText()}
+          </Typography>
+          <Typography variant="body1" sx={{ color: '#666' }}>
+            You will receive your order at 1:00 PM
+          </Typography>
+        </Box>
+      )}
       <ContentContainer>
         <MainContent>
           {!isLoggedIn ? (

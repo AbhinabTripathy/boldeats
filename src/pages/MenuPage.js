@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Box, Typography, Button, styled, Tab, Tabs } from '@mui/material';
-import mealImage from '../assets/images/mealImg.png'; // You'll need to add this image to your assets
+import mealImage from '../assets/images/mealImg.png';  
 import { useNavigate } from 'react-router-dom';
 
 const PageContainer = styled(Box)({
-  minHeight: 'calc(100vh - 90px)',
+  minHeight: 'calc(100vh - 90px)', 
   display: 'flex',
   flexDirection: 'column',
   marginTop: '120px',
@@ -25,6 +25,9 @@ const CategoryTabs = styled(Tabs)({
   '& .MuiTabs-flexContainer': {
     height: '100%',
     alignItems: 'center',
+  },
+  '@media (max-width: 768px)': {
+    height: '80px',
   }
 });
 
@@ -46,6 +49,11 @@ const CategoryTab = styled(Tab)({
     backgroundColor: props => props.selected ? '#C4362A' : 'white',
     color: props => props.selected ? 'white' : '#000',
   },
+  '@media (max-width: 768px)': {
+    padding: '8px 20px',
+    fontSize: '14px',
+    margin: '0 5px',
+  }
 });
 
 const MenuGrid = styled(Box)({
@@ -55,6 +63,11 @@ const MenuGrid = styled(Box)({
   padding: '40px',
   maxWidth: '1200px',
   margin: '0 auto',
+  '@media (max-width: 768px)': {
+    gridTemplateColumns: '1fr',
+    padding: '20px',
+    gap: '15px',
+  }
 });
 
 const MenuCard = styled(Box)({
@@ -72,6 +85,11 @@ const MenuCard = styled(Box)({
   '&:hover': {
     transform: 'translateY(-2px)',
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+  },
+  '@media (max-width: 768px)': {
+    height: '120px',
+    padding: '10px',
+    gap: '10px',
   }
 });
 
@@ -80,7 +98,11 @@ const MealImage = styled('img')({
   height: '100px',
   objectFit: 'cover',
   borderRadius: '8px',
-  flexShrink: 0
+  flexShrink: 0,
+  '@media (max-width: 768px)': {
+    width: '80px',
+    height: '80px',
+  }
 });
 
 const BuyButton = styled(Button)({
@@ -97,6 +119,11 @@ const BuyButton = styled(Button)({
     backgroundColor: '#f5f5f5',
     border: '1px solid #E0E0E0',
   },
+  '@media (max-width: 768px)': {
+    fontSize: '10px',
+    padding: '2px 10px',
+    minWidth: '70px',
+  }
 });
 
 const SubscribeButton = styled(Button)({
@@ -112,6 +139,11 @@ const SubscribeButton = styled(Button)({
   '&:hover': {
     backgroundColor: '#b02d23',
   },
+  '@media (max-width: 768px)': {
+    fontSize: '10px',
+    padding: '2px 10px',
+    minWidth: '70px',
+  }
 });
 
 // Add cart context if not already present
@@ -354,12 +386,15 @@ const MenuPage = () => {
                   mb: 1, 
                   fontWeight: 'normal',
                   fontSize: '16px',
-                  lineHeight: '1.2'
+                  lineHeight: '1.2',
+                  '@media (max-width: 768px)': {
+                    fontSize: '14px',
+                  }
                 }}
               >
                 {item.title}
               </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, '@media (max-width: 768px)': { '& .MuiTypography-root': { fontSize: '12px', } } }}>
                 <Typography variant="body2" sx={{ textDecoration: 'line-through', color: '#666' }}>
                   {item.originalPrice}
                 </Typography>

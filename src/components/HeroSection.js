@@ -150,7 +150,7 @@ const heroConfigs = [
   }
 ];
 
-const StyledHeroSection = styled(Box)(({ activeIndex }) => ({
+const StyledHeroSection = styled(Box)(({ activeIndex, theme }) => ({
   position: 'relative',
   minHeight: '100vh',
   display: 'flex',
@@ -167,7 +167,10 @@ const StyledHeroSection = styled(Box)(({ activeIndex }) => ({
     background: heroConfigs[activeIndex].background,
     zIndex: 0,
     transition: 'background 0.5s ease-in-out',
-    borderRadius: '0 300px 400px 0'
+    borderRadius: '0 300px 400px 0',
+    [theme.breakpoints.down('sm')]: {
+      borderRadius: '0 150px 200px 0'
+    }
   },
   '&::after': {
     content: '""',
@@ -182,7 +185,11 @@ const StyledHeroSection = styled(Box)(({ activeIndex }) => ({
     filter: 'brightness(0.4)',
     zIndex: 1,
     borderRadius: '300px 0 0 400px',
-    transition: 'all 0.5s ease-in-out'
+    transition: 'all 0.5s ease-in-out',
+    [theme.breakpoints.down('sm')]: {
+      width: '100%',
+      borderRadius: '150px 0 0 200px'
+    }
   }
 }));
 
@@ -271,6 +278,7 @@ const Dot = styled(Box)(({ active }) => ({
 const HeroSection = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const navigate = useNavigate();
+  const theme = useTheme();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -296,14 +304,31 @@ const HeroSection = () => {
             justifyContent: 'space-between',
             py: 8,
             position: 'relative',
-            mt: 12
+            mt: 12,
+            [theme.breakpoints.down('sm')]: {
+              flexDirection: 'column',
+              textAlign: 'center',
+              py: 4,
+              mt: 6
+            }
           }}>
             <Box sx={{
               flex: '0 1 50%',
               position: 'relative',
               zIndex: 3,
+              [theme.breakpoints.down('sm')]: {
+                flex: '0 1 100%',
+                mb: 4
+              }
             }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: 9,
+                [theme.breakpoints.down('sm')]: {
+                  gap: 4
+                }
+              }}>
                 <Typography
                   variant="h1"
                   sx={{
@@ -384,6 +409,10 @@ const HeroSection = () => {
               alignItems: 'center',
               position: 'relative',
               zIndex: 3,
+              [theme.breakpoints.down('sm')]: {
+                flex: '0 1 100%',
+                mt: 2
+              }
             }}>
               <ThaliImage 
                 src={currentSlide.thali} 

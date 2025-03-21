@@ -1,9 +1,12 @@
 import React from 'react';
-import { Modal, Box, Typography, IconButton } from '@mui/material';
+import { Modal, Box, Typography, IconButton, useTheme, useMediaQuery } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import logo from '../assets/images/BoldTribe Logo-2.svg';
 
 const WalletModal = ({ open, onClose }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
     <Modal
       open={open}
@@ -17,12 +20,12 @@ const WalletModal = ({ open, onClose }) => {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: 900,
-          height: 238,
+          width: isMobile ? '90%' : 900,
+          height: isMobile ? 'auto' : 238,
           bgcolor: '#9797d3',
           borderRadius: '25px',
           boxShadow: 24,
-          padding: '16px 24px',
+          padding: isMobile ? '16px' : '16px 24px',
           color: 'white'
         }}
       >
@@ -47,7 +50,8 @@ const WalletModal = ({ open, onClose }) => {
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center'
+          alignItems: 'center',
+          paddingTop: isMobile ? '20px' : '0'
         }}>
           {/* Logo and Title */}
           <Box sx={{ mb: 2 }}>
@@ -55,7 +59,7 @@ const WalletModal = ({ open, onClose }) => {
               src={logo} 
               alt="BoldEats" 
               style={{ 
-                height: '60px',
+                height: isMobile ? '40px' : '60px',
                 display: 'block',
                 margin: '0 auto',
                 marginBottom: '8px',
@@ -68,7 +72,7 @@ const WalletModal = ({ open, onClose }) => {
               sx={{
                 fontWeight: 500,
                 textAlign: 'center',
-                fontSize: '24px'
+                fontSize: isMobile ? '20px' : '24px'
               }}
             >
               Your wallet
@@ -78,30 +82,34 @@ const WalletModal = ({ open, onClose }) => {
           {/* Wallet Information */}
           <Box sx={{ 
             width: '100%',
-            padding: '0 48px'
+            padding: isMobile ? '0 16px' : '0 48px'
           }}>
             <Box sx={{ 
               display: 'flex', 
+              flexDirection: isMobile ? 'column' : 'row',
               justifyContent: 'space-between', 
-              mb: 2
+              mb: 2,
+              gap: isMobile ? 1 : 0
             }}>
-              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '20px' }}>
-                Balance : ₹350
+              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: isMobile ? '18px' : '20px' }}>
+                Balance : ₹0
               </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '20px' }}>
-                Month : jan
+              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: isMobile ? '18px' : '20px' }}>
+                Month : -
               </Typography>
             </Box>
 
             <Box sx={{ 
               display: 'flex', 
-              justifyContent: 'space-between'
+              flexDirection: isMobile ? 'column' : 'row',
+              justifyContent: 'space-between',
+              gap: isMobile ? 1 : 0
             }}>
-              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '20px' }}>
-                last pay : ₹250
+              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: isMobile ? '18px' : '20px' }}>
+                last pay : ₹0
               </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '20px' }}>
-                recharged : ₹1000
+              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: isMobile ? '18px' : '20px' }}>
+                recharged : ₹0
               </Typography>
             </Box>
           </Box>
