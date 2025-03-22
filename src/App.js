@@ -7,7 +7,7 @@ import SubscriptionSection from './components/SubscriptionSection';
 import ReviewsSection from './components/ReviewsSection';
 import NewsletterSection from './components/NewsletterSection';
 import Footer from './components/Footer';
-import SubscriptionPage from './pages/SubscriptionPage';
+// import SubscriptionPage from './pages/SubscriptionPage';
 import MenuPage from './pages/MenuPage';
 import CartPage from './pages/CartPage';
 import ProfilePage from './pages/ProfilePage';
@@ -68,14 +68,14 @@ const AppContent = () => {
             </ProtectedRoute>
           } 
         />
-        <Route 
+        {/* <Route 
           path="/subscription" 
           element={
             <ProtectedRoute>
               <SubscriptionPage />
             </ProtectedRoute>
           } 
-        />
+        /> */}
         <Route 
           path="/cart" 
           element={

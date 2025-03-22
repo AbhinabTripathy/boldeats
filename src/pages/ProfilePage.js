@@ -2,18 +2,6 @@ import React, { useState } from 'react';
 import { Box, Typography, styled, Collapse, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Modal } from '@mui/material';
 import { Edit, KeyboardArrowDown, KeyboardArrowUp, AccountBalanceWallet } from '@mui/icons-material';
 
-const PageContainer = styled(Box)({
-  minHeight: 'calc(100vh - 180px)',
-  display: 'flex',
-  flexDirection: 'column',
-  position: 'relative',
-  marginTop: '120px',
-  marginBottom: '60px',
-  padding: '40px',
-  alignItems: 'center',
-  justifyContent: 'center'
-});
-
 const ProfileCard = styled(Box)({
   backgroundColor: '#f5f5f5',
   borderRadius: '15px',
@@ -198,7 +186,22 @@ const ProfilePage = () => {
   const handleWalletClose = () => setIsWalletOpen(false);
 
   return (
-    <PageContainer>
+    <Box sx={{ 
+      minHeight: 'calc(100vh - 90px)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      marginTop: '120px',
+      padding: '40px',
+      width: '100%',
+      '@media (max-width: 768px)': {
+        marginTop: '80px',
+        padding: '20px'
+      }
+    }}>
+      <Typography variant="h4" sx={{ mb: 4 }}>
+        Profile
+      </Typography>
       <ProfileCard>
         <EditButton>
           <Edit sx={{ fontSize: 24 }} />
@@ -348,7 +351,7 @@ const ProfilePage = () => {
           </WalletCard>
         </WalletModal>
       </ProfileCard>
-    </PageContainer>
+    </Box>
   );
 };
 

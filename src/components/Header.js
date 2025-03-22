@@ -34,7 +34,7 @@ import {
   Person,
   Phone,
   HowToReg,
-  AccountBalanceWallet,
+  // AccountBalanceWallet,
   Settings,
   Logout,
   Menu as MenuIcon
@@ -42,7 +42,7 @@ import {
 import { styled } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import logo from '../assets/images/BoldTribe Logo-2.svg';
-import WalletModal from './WalletModal';
+// import WalletModal from './WalletModal';
 
 const StyledAppBar = styled(AppBar)({
   backgroundColor: 'transparent',
@@ -73,11 +73,11 @@ const HeaderContainer = styled(Box)({
 const NavbarSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: '60px',
-  padding: '0 40px',
+  gap: '40px',
+  padding: '0 30px',
   borderRadius: '0 50px 50px 0',
   boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-  width: '1000px',
+  width: '800px',
   height: '70px',
   marginLeft: '0',
   backgroundColor: '#FFFFFF',
@@ -97,9 +97,9 @@ const Logo = styled('img')({
 const NavigationLinks = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: '80px',
-  marginLeft: '120px',
-  marginRight: '40px',
+  gap: '100px',
+  marginLeft: '80px',
+  marginRight: '30px',
   width: '100%',
   justifyContent: 'flex-start',
   [theme.breakpoints.down('md')]: {
@@ -153,7 +153,7 @@ const MobileNavLink = styled(RouterLink)(({ isActive }) => ({
 const NavLink = styled(RouterLink)(({ isActive }) => ({
   color: '#ff0000',
   textDecoration: 'none',
-  fontSize: '16px',
+  fontSize: '18px',
   fontWeight: isActive ? 700 : 500,
   letterSpacing: '1px',
   '&:hover': {
@@ -485,7 +485,7 @@ const Header = () => {
   const [registerPassword, setRegisterPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [gender, setGender] = useState('');
-  const [isWalletOpen, setIsWalletOpen] = useState(false);
+  // const [isWalletOpen, setIsWalletOpen] = useState(false);
   const location = window.location.pathname;
   
   // Close mobile drawer when switching to desktop view
@@ -588,13 +588,13 @@ const Header = () => {
     navigate('/profile');
   };
 
-  const handleWalletOpen = () => {
-    setIsWalletOpen(true);
-  };
+  // const handleWalletOpen = () => {
+  //   setIsWalletOpen(true);
+  // };
 
-  const handleWalletClose = () => {
-    setIsWalletOpen(false);
-  };
+  // const handleWalletClose = () => {
+  //   setIsWalletOpen(false);
+  // };
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -610,7 +610,7 @@ const Header = () => {
         px: 2
       }}>
         <Box sx={{ display: 'flex', gap: 2 }}>
-          {isLoggedIn && (
+          {/* {isLoggedIn && (
             <IconWrapper onClick={handleWalletOpen}>
               <AccountBalanceWallet 
                 sx={{ 
@@ -620,7 +620,7 @@ const Header = () => {
                 }}
               />
             </IconWrapper>
-          )}
+          )} */}
           <IconWrapper onClick={handleClick}>
             <AccountCircle 
               sx={{ 
@@ -777,12 +777,14 @@ const Header = () => {
               <MenuIcon />
             </MobileMenuButton>
           )}
-          <Logo src={logo} alt="BoldEats" sx={{width: '100px', height: '300px'}} />
+          <RouterLink to="/" style={{ display: 'block', cursor: 'pointer' }}>
+            <Logo src={logo} alt="BoldEats" sx={{width: '100px', height: '300px'}} />
+          </RouterLink>
           {!isMobile && (
             <NavigationLinks>
               <NavLink to="/" isActive={location === '/'}>Home</NavLink>
               <NavLink to="/menu" isActive={location === '/menu'}>Menu</NavLink>
-              <NavLink to="/subscription" isActive={location === '/subscription'}>Subscription</NavLink>
+              {/* <NavLink to="/subscription" isActive={location === '/subscription'}>Subscription</NavLink> */}
               <NavLink to="/cart" isActive={location === '/cart'}>Cart</NavLink>
             </NavigationLinks>
           )}
@@ -790,7 +792,7 @@ const Header = () => {
 
         {!isMobile && (
           <AccountSection>
-            {isLoggedIn && (
+            {/* {isLoggedIn && (
               <IconContainer>
                 <IconWrapper onClick={handleWalletOpen}>
                   <AccountBalanceWallet 
@@ -802,7 +804,7 @@ const Header = () => {
                   />
                 </IconWrapper>
               </IconContainer>
-            )}
+            )} */}
             <IconContainer>
               <IconWrapper>
                 <AccountCircle 
@@ -1233,10 +1235,10 @@ const Header = () => {
       </ModalOverlay>
     </Modal>
 
-    <WalletModal 
+    {/* <WalletModal 
       open={isWalletOpen} 
       onClose={handleWalletClose}
-    />
+    /> */}
     </>
   );
 };
