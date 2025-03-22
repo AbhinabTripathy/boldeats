@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { CssBaseline, ThemeProvider, createTheme, Box } from '@mui/material';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Header from './components/Header';
@@ -14,6 +14,7 @@ import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import SplashScreen from './components/SplashScreen';
 import ProductPage from './pages/ProductPage';
+import SubscriptionModal from './components/SubscriptionModal';
 
 const theme = createTheme({
   typography: {
@@ -26,20 +27,37 @@ const theme = createTheme({
   },
 });
 
-const HomePage = () => (
-  <Box sx={{ marginTop: '-90px' }}>
-    <HeroSection />
-    <Box sx={{ mt: 12 }}>
-      <SubscriptionSection />
+const HomePage = () => {
+  const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    // Show modal after splash screen (assuming splash screen takes 2 seconds)
+    const timer = setTimeout(() => {
+      setShowModal(true);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <Box sx={{ marginTop: '-90px' }}>
+      <HeroSection />
+      <Box sx={{ mt: 12 }}>
+        <SubscriptionSection />
+      </Box>
+      <Box sx={{ mt: 12 }}>
+        <ReviewsSection />
+      </Box>
+      <Box sx={{ mt: 12 }}>
+        <NewsletterSection />
+      </Box>
+      <SubscriptionModal 
+        open={showModal} 
+        onClose={() => setShowModal(false)} 
+      />
     </Box>
-    <Box sx={{ mt: 12 }}>
-      <ReviewsSection />
-    </Box>
-    <Box sx={{ mt: 12 }}>
-      <NewsletterSection />
-    </Box>
-  </Box>
-);
+  );
+};
 
 const AppContent = () => {
   const location = useLocation();
