@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, styled, Tab, Tabs } from '@mui/material';
 import mealImage from '../assets/images/mealImg.png';  
 import { useNavigate } from 'react-router-dom';
@@ -106,27 +106,6 @@ const MealImage = styled('img')({
 });
 
 const BuyButton = styled(Button)({
-  backgroundColor: 'white',
-  color: '#000',
-  border: '1px solid #E0E0E0',
-  borderRadius: '4px',
-  padding: '4px 15px',
-  textTransform: 'none',
-  fontSize: '12px',
-  minWidth: '80px',
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    backgroundColor: '#f5f5f5',
-    border: '1px solid #E0E0E0',
-  },
-  '@media (max-width: 768px)': {
-    fontSize: '10px',
-    padding: '2px 10px',
-    minWidth: '70px',
-  }
-});
-
-const SubscribeButton = styled(Button)({
   backgroundColor: '#C4362A',
   color: 'white',
   border: 'none',
@@ -152,16 +131,70 @@ const addToCart = (item, isPurchase = true) => {
   const cartItem = {
     ...item,
     quantity: 1,
-    isPurchase,
-    price: isPurchase ? item.buyOncePrice : item.subscribePrice
+    isPurchase: true,
+    price: item.buyOncePrice
   };
   existingCart.push(cartItem);
   localStorage.setItem('cart', JSON.stringify(existingCart));
 };
 
+// Define a global function to open the login modal that can be called from any component
+window.openLoginModal = () => {
+  // Set the flag in localStorage
+  localStorage.setItem('requiresLogin', 'true');
+  // Try both event types
+  window.dispatchEvent(new Event('showLoginModal'));
+  window.dispatchEvent(new CustomEvent('showLoginModal'));
+};
+
 const MenuPage = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState(0);
+  
+  // Check if user is logged in whenever component renders
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return localStorage.getItem('isLoggedIn') === 'true';
+  });
+
+  // Listen for login events
+  useEffect(() => {
+    // Function to check login status
+    const checkLoginStatus = () => {
+      const currentLoginStatus = localStorage.getItem('isLoggedIn') === 'true';
+      setIsLoggedIn(currentLoginStatus);
+      
+      // If user just logged in and there's a pending cart item in localStorage
+      if (currentLoginStatus) {
+        const pendingItemStr = localStorage.getItem('pendingCartItem');
+        if (pendingItemStr) {
+          try {
+            // Parse the pending item from localStorage
+            const pendingItem = JSON.parse(pendingItemStr);
+            // Add the pending item to cart
+            addToCart(pendingItem, true);
+            // Clear the pending item
+            localStorage.removeItem('pendingCartItem');
+            // Navigate to cart page
+            navigate('/cart');
+          } catch (error) {
+            console.error('Error parsing pending cart item:', error);
+          }
+        }
+      }
+    };
+
+    // Check on mount and when storage changes
+    window.addEventListener('storage', checkLoginStatus);
+    
+    // Check initially and set up an interval
+    checkLoginStatus();
+    const loginCheckInterval = setInterval(checkLoginStatus, 500);
+    
+    return () => {
+      window.removeEventListener('storage', checkLoginStatus);
+      clearInterval(loginCheckInterval);
+    };
+  }, [navigate]);
 
   const handleCategoryChange = (event, newValue) => {
     setSelectedCategory(newValue);
@@ -184,16 +217,43 @@ const MenuPage = () => {
 
   const handleBuyClick = (e, item) => {
     e.stopPropagation();
-    // Add item to cart with buy once price
+    
+    // Check if user is logged in
+    if (!isLoggedIn) {
+      // Store the item that was going to be added to cart in localStorage
+      localStorage.setItem('pendingCartItem', JSON.stringify(item));
+      
+      // Set flags in localStorage that will be checked by Header component
+      localStorage.setItem('requiresLogin', 'true');
+      localStorage.setItem('loginRedirectUrl', '/cart');
+      
+      // Try all approaches to trigger the login modal
+      
+      // 1. Try the direct function exposed by Header component (most reliable)
+      if (typeof window.openLoginModalFromHeader === 'function') {
+        window.openLoginModalFromHeader();
+        return;
+      }
+      
+      // 2. Use the global function approach
+      if (typeof window.openLoginModal === 'function') {
+        window.openLoginModal();
+      }
+      
+      // 3. Try the event dispatch approach
+      window.dispatchEvent(new CustomEvent('showLoginModal'));
+      
+      // 4. Reload the page as a last resort (this is the most reliable method)
+      // Use a short timeout to allow the localStorage to be set
+      setTimeout(() => {
+        window.location.reload();
+      }, 50);
+      
+      return;
+    }
+    
+    // User is logged in, add to cart
     addToCart(item, true);
-    // Navigate to cart page
-    navigate('/cart');
-  };
-
-  const handleSubscribeClick = (e, item) => {
-    e.stopPropagation();
-    // Add item to cart with subscription price
-    addToCart(item, false);
     // Navigate to cart page
     navigate('/cart');
   };
@@ -407,14 +467,8 @@ const MenuPage = () => {
                   size="small"
                   onClick={(e) => handleBuyClick(e, item)}
                 >
-                  Buy once @ {item.buyOncePrice}
+                  {item.buyOncePrice}
                 </BuyButton>
-                <SubscribeButton 
-                  size="small"
-                  onClick={(e) => handleSubscribeClick(e, item)}
-                >
-                  Subscribe to get @ {item.subscribePrice}
-                </SubscribeButton>
               </Box>
             </Box>
           </MenuCard>

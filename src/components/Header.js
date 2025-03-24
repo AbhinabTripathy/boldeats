@@ -90,8 +90,8 @@ const NavbarSection = styled(Box)(({ theme }) => ({
 }));
 
 const Logo = styled('img')({
-  height: '35px',
-  marginLeft: '40px'
+  height: '150px',
+  marginLeft: '-10px'
 });
 
 const NavigationLinks = styled(Box)(({ theme }) => ({
@@ -495,6 +495,58 @@ const Header = () => {
     }
   }, [isMobile]);
 
+  // Add a public function to window object to open login modal from anywhere
+  React.useEffect(() => {
+    // Define the function on the window object
+    window.openLoginModalFromHeader = () => {
+      setOpenLoginModal(true);
+    };
+    
+    return () => {
+      // Clean up
+      delete window.openLoginModalFromHeader;
+    };
+  }, []);
+
+  // Check for login requirement
+  React.useEffect(() => {
+    const checkLoginRequirement = () => {
+      const requiresLogin = localStorage.getItem('requiresLogin') === 'true';
+      
+      if (requiresLogin && !isLoggedIn) {
+        // Open login modal if login is required and user is not logged in
+        setOpenLoginModal(true);
+        // Clear the flag to prevent repeatedly opening the modal
+        localStorage.removeItem('requiresLogin');
+      }
+    };
+    
+    // Check immediately when component mounts
+    checkLoginRequirement();
+    
+    // Also check when storage changes
+    window.addEventListener('storage', checkLoginRequirement);
+    
+    // Check regularly with an interval
+    const loginCheckInterval = setInterval(checkLoginRequirement, 500);
+    
+    // Listen for custom showLoginModal event
+    const handleShowLoginModal = () => {
+      // Always open the login modal when this event is triggered
+      // regardless of login status
+      setOpenLoginModal(true);
+      console.log("Login modal opening triggered by event");
+    };
+    
+    window.addEventListener('showLoginModal', handleShowLoginModal);
+    
+    return () => {
+      window.removeEventListener('storage', checkLoginRequirement);
+      window.removeEventListener('showLoginModal', handleShowLoginModal);
+      clearInterval(loginCheckInterval);
+    };
+  }, [isLoggedIn]);
+
   // Check login status on component mount
   React.useEffect(() => {
     if (!isLoggedIn && window.location.pathname === '/profile') {
@@ -553,7 +605,15 @@ const Header = () => {
     setIsLoggedIn(true);
     localStorage.setItem('isLoggedIn', 'true');
     handleCloseLoginModal();
-    navigate('/');
+    
+    // Check if there's a redirect URL after login
+    const redirectUrl = localStorage.getItem('loginRedirectUrl');
+    if (redirectUrl) {
+      localStorage.removeItem('loginRedirectUrl');
+      navigate(redirectUrl);
+    } else {
+      navigate('/');
+    }
   };
 
   const handleLogout = () => {
@@ -585,7 +645,15 @@ const Header = () => {
     localStorage.removeItem('transactions');
     
     handleCloseRegisterModal();
-    navigate('/profile');
+    
+    // Check if there's a redirect URL after registration
+    const redirectUrl = localStorage.getItem('loginRedirectUrl');
+    if (redirectUrl) {
+      localStorage.removeItem('loginRedirectUrl');
+      navigate(redirectUrl);
+    } else {
+      navigate('/profile');
+    }
   };
 
   // const handleWalletOpen = () => {
@@ -778,7 +846,7 @@ const Header = () => {
             </MobileMenuButton>
           )}
           <RouterLink to="/" style={{ display: 'block', cursor: 'pointer' }}>
-            <Logo src={logo} alt="BoldEats" sx={{width: '100px', height: '300px'}} />
+            <Logo src={logo} alt="BoldEats" />
           </RouterLink>
           {!isMobile && (
             <NavigationLinks>

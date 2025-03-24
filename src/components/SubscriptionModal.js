@@ -51,12 +51,12 @@ const SubscriptionModal = ({ open, onClose }) => {
       PaperProps={{
         sx: {
           borderRadius: 2,
-          padding: isMobile ? 0.75 : 1,
+          padding: isMobile ? 0.5 : 0.75,
           position: 'relative',
           animation: `${scaleIn} 0.3s ease-out`,
-          maxWidth: isMobile ? '90%' : '450px',
+          maxWidth: isMobile ? '80%' : '400px',
           margin: isMobile ? 'auto 1 1 1' : 'auto 2 2 2',
-          maxHeight: isMobile ? '75vh' : '80vh',
+          maxHeight: isMobile ? '70vh' : '75vh',
         }
       }}
       TransitionProps={{
@@ -98,7 +98,7 @@ const SubscriptionModal = ({ open, onClose }) => {
             src={logo} 
             alt="Logo" 
             sx={{ 
-              width: isMobile ? 70 : 100, 
+              width: isMobile ? 90 : 120, 
               height: 'auto',
               animation: `${fadeIn} 0.3s ease-out 0.2s both`,
             }} 
@@ -111,7 +111,7 @@ const SubscriptionModal = ({ open, onClose }) => {
             alt="Subscription"
             sx={{
               width: '100%',
-              maxWidth: isMobile ? 220 : 300,
+              maxWidth: isMobile ? 150 : 200,
               height: 'auto',
               borderRadius: 1,
               boxShadow: 2,
@@ -121,10 +121,10 @@ const SubscriptionModal = ({ open, onClose }) => {
           
           {/* Text */}
           <Typography
-            variant={isMobile ? "subtitle2" : "subtitle1"}
+            variant={isMobile ? "body2" : "body1"}
             align="center"
             sx={{ 
-              mt: isMobile ? 0.25 : 0.5, 
+              mt: isMobile ? 0.75 : 1.25, 
               fontWeight: 'bold',
               animation: `${fadeIn} 0.3s ease-out 0.4s both`,
               fontSize: isMobile ? '0.8rem' : '0.9rem',
@@ -149,7 +149,7 @@ const SubscriptionModal = ({ open, onClose }) => {
               width: isMobile ? 36 : 44,
               height: isMobile ? 36 : 44,
               animation: `${fadeIn} 0.3s ease-out 0.5s both`,
-              marginTop: isMobile ? 0.25 : 0.5,
+              marginTop: isMobile ? 1.5 : 2,
             }}
           >
             <WhatsAppIcon sx={{ fontSize: isMobile ? 22 : 26 }} />
