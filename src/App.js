@@ -16,6 +16,7 @@ import SplashScreen from './components/SplashScreen';
 import ProductPage from './pages/ProductPage';
 import SubscriptionModal from './components/SubscriptionModal';
 
+
 const theme = createTheme({
   typography: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
