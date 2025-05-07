@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Modal, Box, TextField, Button, IconButton, InputAdornment, Typography, Select, MenuItem } from '@mui/material';
-import { Close, Visibility, VisibilityOff } from '@mui/icons-material';
+import { Close, Visibility, VisibilityOff, Email, Phone, Lock, Person } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import logo from '../assets/images/BoldTribe Logo-2.svg';
+import axios from 'axios';
 
 const ModalContainer = styled(Box)({
   position: 'absolute',
@@ -100,26 +101,148 @@ const RegisterModal = ({
   open,
   onClose,
   onRegister,
-  firstName,
-  setFirstName,
-  lastName,
-  setLastName,
+  name,
+  setName,
+  email,
+  setEmail,
   phone,
   setPhone,
   countryCode,
   setCountryCode,
   registerPassword,
   setRegisterPassword,
-  confirmPassword,
-  setConfirmPassword,
   showPassword,
-  setShowPassword,
-  showConfirmPassword,
-  setShowConfirmPassword
+  setShowPassword
 }) => {
-  const handleSubmit = (e) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Handle onChange events with logging
+  const handleNameChange = (e) => {
+    const value = e.target.value;
+    console.log('Name input:', value);
+    setName(value);
+  };
+
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    console.log('Email input:', value);
+    setEmail(value);
+  };
+
+  const handlePhoneChange = (e) => {
+    const value = e.target.value;
+    console.log('Phone input:', value);
+    setPhone(value);
+  };
+
+  const handleCountryCodeChange = (e) => {
+    const value = e.target.value;
+    console.log('Country code selected:', value);
+    setCountryCode(value);
+  };
+
+  const handlePasswordChange = (e) => {
+    const value = e.target.value;
+    console.log('Password input:', value);
+    setRegisterPassword(value);
+  };
+
+  const handleShowPasswordClick = () => {
+    const newValue = !showPassword;
+    console.log('Show password toggled:', newValue);
+    setShowPassword(newValue);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onRegister(e);
+    setLoading(true);
+    setError('');
+    
+    // Validate input
+    if (!name || !email || !phone || !registerPassword) {
+      setError('All fields are required');
+      setLoading(false);
+      return;
+    }
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
+      setLoading(false);
+      return;
+    }
+    
+    // Phone validation - only numbers
+    const phoneRegex = /^\d+$/;
+    if (!phoneRegex.test(phone)) {
+      setError('Phone number should contain only digits');
+      setLoading(false);
+      return;
+    }
+    
+    // Password length check
+    if (registerPassword.length < 6) {
+      setError('Password must be at least 6 characters long');
+      setLoading(false);
+      return;
+    }
+    
+    try {
+      // Format the data according to what the API expects
+      const userData = {
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        phone_number: `${countryCode}${phone}`.replace(/\s+/g, ''),
+        password: registerPassword
+      };
+      
+      console.log('Sending registration data:', userData);
+      console.log('API endpoint:', 'http://3.108.237.86:3333/api/users/register');
+      
+      // Try using a different content type
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      const response = await axios.post(
+        'http://3.108.237.86:3333/api/users/register', 
+        userData,
+        { headers }
+      );
+      
+      console.log('Registration response:', response.data);
+      
+      if (response.data) {
+        // Registration successful, call the onRegister function from props
+        onRegister(e);
+      }
+    } catch (error) {
+      // Log the raw error object for full details
+      console.error('Raw error object:', error);
+      
+      // Check for specific error response details
+      if (error.response && error.response.data) {
+        console.log('Server error details:', error.response.data);
+        
+        // Check if the response has specific error messages
+        const serverErrorMsg = 
+          typeof error.response.data === 'string' 
+            ? error.response.data 
+            : error.response.data.message || error.response.data.error || JSON.stringify(error.response.data);
+        
+        setError(`Registration failed: ${serverErrorMsg}`);
+      } else if (error.request) {
+        console.log('No response received from server');
+        setError('Server is not responding. Please try again later.');
+      } else {
+        console.log('Request setup error:', error.message);
+        setError(`Error: ${error.message}`);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -140,29 +263,49 @@ const RegisterModal = ({
         <Typography variant="body2" align="center" color="textSecondary" sx={{ mb: 3 }}>
           Join BoldEats today
         </Typography>
+        {error && (
+          <Typography color="error" align="center" sx={{ mb: 2 }}>
+            {error}
+          </Typography>
+        )}
         <form onSubmit={handleSubmit}>
           <TextField
             fullWidth
-            label="First Name"
+            label="Full Name"
             variant="outlined"
             margin="normal"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
+            value={name}
+            onChange={handleNameChange}
             required
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Person sx={{ color: '#666' }} />
+                </InputAdornment>
+              ),
+            }}
           />
           <TextField
             fullWidth
-            label="Last Name"
+            label="Email Address"
+            type="email"
             variant="outlined"
             margin="normal"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
+            value={email}
+            onChange={handleEmailChange}
             required
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Email sx={{ color: '#666' }} />
+                </InputAdornment>
+              ),
+            }}
           />
           <PhoneInputContainer>
             <CountryCodeSelect
               value={countryCode}
-              onChange={(e) => setCountryCode(e.target.value)}
+              onChange={handleCountryCodeChange}
               variant="outlined"
             >
               {countryCodes.map((country) => (
@@ -176,8 +319,15 @@ const RegisterModal = ({
               label="Phone Number"
               variant="outlined"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={handlePhoneChange}
               required
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Phone sx={{ color: '#666' }} />
+                  </InputAdornment>
+                ),
+              }}
             />
           </PhoneInputContainer>
           <TextField
@@ -187,13 +337,18 @@ const RegisterModal = ({
             variant="outlined"
             margin="normal"
             value={registerPassword}
-            onChange={(e) => setRegisterPassword(e.target.value)}
+            onChange={handlePasswordChange}
             required
             InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Lock sx={{ color: '#666' }} />
+                </InputAdornment>
+              ),
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={handleShowPasswordClick}
                     edge="end"
                   >
                     {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -202,30 +357,8 @@ const RegisterModal = ({
               ),
             }}
           />
-          <TextField
-            fullWidth
-            label="Confirm Password"
-            type={showConfirmPassword ? 'text' : 'password'}
-            variant="outlined"
-            margin="normal"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    edge="end"
-                  >
-                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-          <RegisterButton type="submit">
-            Register
+          <RegisterButton type="submit" disabled={loading}>
+            {loading ? 'Registering...' : 'Register'}
           </RegisterButton>
         </form>
       </ModalContainer>

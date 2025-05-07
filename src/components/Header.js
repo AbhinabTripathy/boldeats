@@ -42,6 +42,7 @@ import {
 import { styled } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import logo from '../assets/images/BoldTribe Logo-2.svg';
+import axios from 'axios';
 // import WalletModal from './WalletModal';
 
 const StyledAppBar = styled(AppBar)({
@@ -60,14 +61,13 @@ const StyledAppBar = styled(AppBar)({
 const HeaderContainer = styled(Box)({
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'flex-start',
+  justifyContent: 'center',
   width: '100%',
   maxWidth: '1440px',
   margin: '0 auto',
   height: '100%',
   padding: '0',
   position: 'relative',
-  marginLeft: '-20px'
 });
 
 const NavbarSection = styled(Box)(({ theme }) => ({
@@ -91,7 +91,6 @@ const NavbarSection = styled(Box)(({ theme }) => ({
 
 const Logo = styled('img')({
   height: '150px',
-  marginLeft: '-10px'
 });
 
 const NavigationLinks = styled(Box)(({ theme }) => ({
@@ -470,22 +469,16 @@ const Header = () => {
   const [openLoginModal, setOpenLoginModal] = useState(false);
   const [openRegisterModal, setOpenRegisterModal] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    // Check if user is logged in from localStorage
     return localStorage.getItem('isLoggedIn') === 'true';
   });
   // Register form states
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [name, setName] = useState('');
   const [countryCode, setCountryCode] = useState('+91');
   const [phone, setPhone] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [gender, setGender] = useState('');
-  // const [isWalletOpen, setIsWalletOpen] = useState(false);
   const location = window.location.pathname;
   
   // Close mobile drawer when switching to desktop view
@@ -590,29 +583,86 @@ const Header = () => {
 
   const handleCloseRegisterModal = () => {
     setOpenRegisterModal(false);
-    setFirstName('');
-    setLastName('');
+    setName('');
+    setEmail('');
     setPhone('');
     setRegisterPassword('');
-    setConfirmPassword('');
     setShowPassword(false);
-    setShowConfirmPassword(false);
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log('Login with:', email, password);
-    setIsLoggedIn(true);
-    localStorage.setItem('isLoggedIn', 'true');
-    handleCloseLoginModal();
     
-    // Check if there's a redirect URL after login
-    const redirectUrl = localStorage.getItem('loginRedirectUrl');
-    if (redirectUrl) {
-      localStorage.removeItem('loginRedirectUrl');
-      navigate(redirectUrl);
-    } else {
-      navigate('/');
+    try {
+      // Format data according to API requirements
+      const loginData = {
+        email: email.trim().toLowerCase(),
+        password: password
+      };
+      
+      console.log('Sending login data:', loginData);
+      
+      // Set explicit headers
+      const config = {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      };
+      
+      const response = await axios.post('http://3.108.237.86:3333/api/users/login', loginData, config);
+      
+      console.log('Login response:', response.data);
+      
+      if (response?.data?.data) {
+        // Store user data in localStorage with consistent formatting
+        if (response?.data?.data?.user) {
+          localStorage.setItem('userData', JSON.stringify(response?.data?.data?.user));
+        }
+        
+        setIsLoggedIn(true);
+        localStorage.setItem('isLoggedIn', 'true');
+        console.log("response token", response?.data?.data?.token)
+        
+        // Store token if provided
+        if (response?.data?.data?.token) {
+            localStorage.setItem('token', response?.data?.data?.token);
+          }
+        
+        handleCloseLoginModal();
+        
+        // Check if there's a redirect URL after login
+        const redirectUrl = localStorage.getItem('loginRedirectUrl');
+        if (redirectUrl) {
+          localStorage.removeItem('loginRedirectUrl');
+          navigate(redirectUrl);
+        } else {
+          navigate('/');
+        }
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      
+      if (error.response && error.response.data) {
+        // Log detailed error information
+        console.error('Server error details:', {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers
+        });
+        
+        // Extract and display the error message
+        const errorMessage = typeof error.response.data === 'string' 
+          ? error.response.data 
+          : error.response.data.message || error.response.data.error || 'Login failed';
+          
+        alert(`Login failed: ${errorMessage}`);
+      } else if (error.request) {
+        console.error('No response received from server');
+        alert('Server is not responding. Please try again later.');
+      } else {
+        console.error('Request setup error:', error.message);
+        alert(`Error: ${error.message}`);
+      }
     }
   };
 
@@ -624,45 +674,114 @@ const Header = () => {
     setOpenLoginModal(true);
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    // Store user data in localStorage
-    const userData = {
-      firstName,
-      lastName,
-      phone: countryCode + phone,
-      gender,
-      // Address will be fetched from cart later
-      address: ''
-    };
-    localStorage.setItem('userData', JSON.stringify(userData));
-    setIsLoggedIn(true);
-    localStorage.setItem('isLoggedIn', 'true');
     
-    // Clear any existing cart data for the new user
-    localStorage.removeItem('cart');
-    localStorage.removeItem('addresses');
-    localStorage.removeItem('transactions');
+    // Validate input
+    if (!name || !email || !phone || !registerPassword) {
+      // Show error message
+      console.error('All fields are required');
+      return;
+    }
     
-    handleCloseRegisterModal();
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      console.error('Please enter a valid email address');
+      return;
+    }
     
-    // Check if there's a redirect URL after registration
-    const redirectUrl = localStorage.getItem('loginRedirectUrl');
-    if (redirectUrl) {
-      localStorage.removeItem('loginRedirectUrl');
-      navigate(redirectUrl);
-    } else {
-      navigate('/profile');
+    // Phone validation - only numbers
+    const phoneRegex = /^\d+$/;
+    if (!phoneRegex.test(phone)) {
+      console.error('Phone number should contain only digits');
+      return;
+    }
+    
+    // Password length check
+    if (registerPassword.length < 6) {
+      console.error('Password must be at least 6 characters long');
+      return;
+    }
+    
+    try {
+      // Format data according to API requirements
+      const userData = {
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        phone_number: `${countryCode}${phone}`.replace(/\s+/g, ''),
+        password: registerPassword
+      };
+      
+      console.log('Sending registration data:', userData);
+      
+      // Set explicit headers
+      const config = {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      };
+      
+      const response = await axios.post('http://3.108.237.86:3333/api/users/register', userData, config);
+      
+      console.log('Registration response:', response.data);
+      
+      if (response.data) {
+        // Store user data in localStorage with consistent formatting
+        if (response?.data?.data?.user) {
+          localStorage.setItem('userData', JSON.stringify(response?.data?.data?.user));
+        }
+        
+        // Store token if provided
+        if (response?.data?.data?.token) {
+          localStorage.setItem('token', response?.data?.data?.token);
+        }
+        
+        setIsLoggedIn(true);
+        localStorage.setItem('isLoggedIn', 'true');
+        
+        // Clear any existing cart data for the new user
+        localStorage.removeItem('cart');
+        localStorage.removeItem('addresses');
+        localStorage.removeItem('transactions');
+        
+        handleCloseRegisterModal();
+        
+        // Check if there's a redirect URL after registration
+        const redirectUrl = localStorage.getItem('loginRedirectUrl');
+        if (redirectUrl) {
+          localStorage.removeItem('loginRedirectUrl');
+          navigate(redirectUrl);
+        } else {
+          navigate('/profile');
+        }
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      
+      if (error.response && error.response.data) {
+        // Log detailed error information
+        console.error('Server error details:', {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers
+        });
+        
+        // Extract and display the error message
+        const errorMessage = typeof error.response.data === 'string' 
+          ? error.response.data 
+          : error.response.data.message || error.response.data.error || 'Registration failed';
+          
+        alert(`Registration failed: ${errorMessage}`);
+      } else if (error.request) {
+        console.error('No response received from server');
+        alert('Server is not responding. Please try again later.');
+      } else {
+        console.error('Request setup error:', error.message);
+        alert(`Error: ${error.message}`);
+      }
     }
   };
-
-  // const handleWalletOpen = () => {
-  //   setIsWalletOpen(true);
-  // };
-
-  // const handleWalletClose = () => {
-  //   setIsWalletOpen(false);
-  // };
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -678,17 +797,6 @@ const Header = () => {
         px: 2
       }}>
         <Box sx={{ display: 'flex', gap: 2 }}>
-          {/* {isLoggedIn && (
-            <IconWrapper onClick={handleWalletOpen}>
-              <AccountBalanceWallet 
-                sx={{ 
-                  color: '#ff0000', 
-                  fontSize: 24,
-                  cursor: 'pointer'
-                }}
-              />
-            </IconWrapper>
-          )} */}
           <IconWrapper onClick={handleClick}>
             <AccountCircle 
               sx={{ 
@@ -711,11 +819,6 @@ const Header = () => {
         <MobileNavItem>
           <MobileNavLink to="/menu" isActive={location === '/menu'} onClick={handleDrawerToggle}>
             Menu
-          </MobileNavLink>
-        </MobileNavItem>
-        <MobileNavItem>
-          <MobileNavLink to="/subscription" isActive={location === '/subscription'} onClick={handleDrawerToggle}>
-            Subscription
           </MobileNavLink>
         </MobileNavItem>
         <MobileNavItem>
@@ -786,6 +889,7 @@ const Header = () => {
                   <>
                     <AccountMenuItem
                       onClick={() => {
+                        
                         handleClose();
                         handleDrawerToggle();
                         navigate('/profile');
@@ -852,7 +956,6 @@ const Header = () => {
             <NavigationLinks>
               <NavLink to="/" isActive={location === '/'}>Home</NavLink>
               <NavLink to="/menu" isActive={location === '/menu'}>Menu</NavLink>
-              {/* <NavLink to="/subscription" isActive={location === '/subscription'}>Subscription</NavLink> */}
               <NavLink to="/cart" isActive={location === '/cart'}>Cart</NavLink>
             </NavigationLinks>
           )}
@@ -860,19 +963,6 @@ const Header = () => {
 
         {!isMobile && (
           <AccountSection>
-            {/* {isLoggedIn && (
-              <IconContainer>
-                <IconWrapper onClick={handleWalletOpen}>
-                  <AccountBalanceWallet 
-                    sx={{ 
-                      color: '#ff0000', 
-                      fontSize: 24,
-                      cursor: 'pointer'
-                    }}
-                  />
-                </IconWrapper>
-              </IconContainer>
-            )} */}
             <IconContainer>
               <IconWrapper>
                 <AccountCircle 
@@ -921,7 +1011,7 @@ const Header = () => {
                     ) : (
                       <>
                         <AccountMenuItem
-                          onClick={() => {
+                            onClick={() => {
                             handleClose();
                             navigate('/profile');
                           }}
@@ -1085,44 +1175,45 @@ const Header = () => {
           </CloseButton>
           <ModalLogo src={logo} alt="BoldEats" />
           <form onSubmit={handleRegister}>
-            <Box sx={{ 
-              display: 'flex', 
-              gap: 2, 
-              mb: 2,
-              [theme.breakpoints.down('sm')]: {
-                flexDirection: 'column',
-                gap: 1
-              }
-            }}>
-              <TextField
-                fullWidth
-                label="First Name"
-                variant="outlined"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Person sx={{ color: '#666' }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <TextField
-                fullWidth
-                label="Last Name"
-                variant="outlined"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Person sx={{ color: '#666' }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Box>
+            <TextField
+              fullWidth
+              label="Full Name"
+              variant="outlined"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Person sx={{ color: '#666' }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ mb: 2 }}
+            />
+
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Email Address"
+              type="email"
+              variant="outlined"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Email sx={{ color: '#666' }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ 
+                mb: 2,
+                [theme.breakpoints.down('sm')]: {
+                  marginTop: '8px',
+                  marginBottom: '12px'
+                }
+              }}
+            />
 
             <PhoneInputContainer>
               <CountryCodeSelect
@@ -1181,34 +1272,6 @@ const Header = () => {
 
             <TextField
               fullWidth
-              select
-              margin="normal"
-              label="Gender"
-              variant="outlined"
-              value={gender}
-              onChange={(e) => setGender(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Person sx={{ color: '#666' }} />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ 
-                mb: 2,
-                [theme.breakpoints.down('sm')]: {
-                  marginTop: '8px',
-                  marginBottom: '12px'
-                }
-              }}
-            >
-              <MenuItem value="male">Male</MenuItem>
-              <MenuItem value="female">Female</MenuItem>
-              <MenuItem value="other">Other</MenuItem>
-            </TextField>
-
-            <TextField
-              fullWidth
               margin="normal"
               label="Password"
               type={showPassword ? 'text' : 'password'}
@@ -1234,39 +1297,6 @@ const Header = () => {
               }}
               sx={{ 
                 mb: 2,
-                [theme.breakpoints.down('sm')]: {
-                  marginTop: '8px',
-                  marginBottom: '12px'
-                }
-              }}
-            />
-
-            <TextField
-              fullWidth
-              margin="normal"
-              label="Confirm Password"
-              type={showConfirmPassword ? 'text' : 'password'}
-              variant="outlined"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Lock sx={{ color: '#666' }} />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      edge="end"
-                    >
-                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ 
                 [theme.breakpoints.down('sm')]: {
                   marginTop: '8px',
                   marginBottom: '12px'
@@ -1303,10 +1333,6 @@ const Header = () => {
       </ModalOverlay>
     </Modal>
 
-    {/* <WalletModal 
-      open={isWalletOpen} 
-      onClose={handleWalletClose}
-    /> */}
     </>
   );
 };

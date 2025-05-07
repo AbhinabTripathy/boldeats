@@ -16,6 +16,7 @@ import {
 import { styled } from '@mui/material/styles';
 import { Add, Remove, Delete, Close, WhatsApp } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const PageContainer = styled(Box)({
   minHeight: 'calc(100vh - 90px)',
@@ -185,14 +186,12 @@ const CartPage = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [addressDetails, setAddressDetails] = useState({
-    buildingNumber: '',
-    floorNumber: '',
-    address: '',
+    addressLine1: '',
+    addressLine2: '',
     state: '',
-    district: '',
     city: '',
-    area: ''
   });
+  const [isDefault, setIsDefault] = useState(false);
 
   useEffect(() => {
     // Check if user is logged in
@@ -215,12 +214,75 @@ const CartPage = () => {
     setCartItems(items);
     calculateTotal(items);
 
-    // Load saved addresses
-    const savedAddresses = JSON.parse(localStorage.getItem('addresses') || '[]');
-    setAddresses(savedAddresses);
-    if (savedAddresses.length > 0) {
-      setSelectedAddress(savedAddresses[0].id);
-    }
+    // Fetch addresses from the API
+    const fetchAddresses = async () => {
+      try {
+        setLoading(true);
+        // Get auth token
+        const token = localStorage.getItem('token');
+        
+        // Log the token
+        console.log('User authentication token:', token);
+        
+        if (!token) {
+          console.error('No authentication token found');
+          setLoading(false);
+          return;
+        }
+
+        const response = await axios.get('http://3.108.237.86:3333/api/addresses', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        // Log the full address response
+        console.log('Fetched addresses response:', response.data);
+        
+        if (response.data && response.data.data && Array.isArray(response.data.data.addresses)) {
+          // Log all addresses in a more readable format
+          console.log('All fetched addresses:', response.data.data.addresses);
+          
+          // Transform addresses from API to match our format
+          const fetchedAddresses = response.data.data.addresses.map((addr, index) => ({
+            id: addr._id || `addr-${index}`,
+            type: `Address ${index + 1}`,
+            addressLine1: addr.addressLine1 || '',
+            addressLine2: addr.addressLine2 || '',
+            pincode: addr.pincode || '',
+            city: addr.city || '',
+            state: addr.state || '',
+            isDefault: addr.isDefault || false,
+            fullAddress: `${addr.addressLine1 || ''}${addr.addressLine2 ? `, ${addr.addressLine2}` : ''}, ${addr.city || ''}, ${addr.state || ''} - ${addr.pincode || ''}`
+          }));
+          
+          setAddresses(fetchedAddresses);
+          
+          // Set the default address as selected if there is one
+          const defaultAddress = fetchedAddresses.find(addr => addr.isDefault === true);
+          if (defaultAddress) {
+            setSelectedAddress(defaultAddress.id);
+          } else if (fetchedAddresses.length > 0) {
+            // Otherwise, select the first address
+            setSelectedAddress(fetchedAddresses[0].id);
+          }
+        } else {
+          console.error('Invalid address data structure:', response.data);
+          setAddresses([]);
+          // Add an error message if needed
+        }
+      } catch (error) {
+        console.error('Error fetching addresses:', error);
+        if (error.response) {
+          console.error('API error response:', error.response.data);
+        }
+        setAddresses([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAddresses();
   }, [navigate]);
 
   const calculateTotal = (items) => {
@@ -321,9 +383,7 @@ const CartPage = () => {
           setAddressDetails(prev => ({
             ...prev,
             state: location.State,
-            district: location.District,
             city: location.Division,
-            area: location.Name
           }));
         }
       } catch (error) {
@@ -333,40 +393,104 @@ const CartPage = () => {
     }
   };
 
-  const handleSaveAddress = () => {
-    if (!addressDetails?.address || !addressDetails.address.trim()) {
+  const handleSaveAddress = async () => {
+    if (!addressDetails?.addressLine1 || !addressDetails.addressLine1.trim()) {
       return;
     }
-    
-    const newAddress = {
-      id: addresses.length + 1,
-      type: `Address ${addresses.length + 1}`,
-      buildingNumber: addressDetails.buildingNumber || '',
-      floorNumber: addressDetails.floorNumber || '',
-      address: addressDetails.address.trim(),
-      pincode,
-      ...addressDetails,
-      fullAddress: `${addressDetails.buildingNumber || ''}${addressDetails.floorNumber ? `, Floor ${addressDetails.floorNumber}` : ''}, ${addressDetails.address.trim()}, ${addressDetails.area || ''}, ${addressDetails.city || ''}, ${addressDetails.district || ''}, ${addressDetails.state || ''} - ${pincode}`
-    };
-    const updatedAddresses = [...addresses, newAddress];
-    setAddresses(updatedAddresses);
-    localStorage.setItem('addresses', JSON.stringify(updatedAddresses));
-    setSelectedAddress(newAddress.id);
-    setOpenAddressModal(false);
-    resetAddressForm();
+
+    try {
+      setLoading(true);
+      // Get the stored token
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        alert('Please log in to save your address');
+        setLoading(false);
+        return;
+      }
+
+      const addressData = {
+        addressLine1: addressDetails.addressLine1.trim(),
+        addressLine2: addressDetails.addressLine2.trim() || '',
+        pincode,
+        city: addressDetails.city,
+        state: addressDetails.state,
+        isDefault: isDefault
+      };
+
+      // Make API call to save address
+      const response = await axios.post('http://3.108.237.86:3333/api/addresses', addressData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.data) {
+        console.log('Address saved successfully:', response.data);
+        
+        // Fetch updated addresses from the API
+        const addressesResponse = await axios.get('http://3.108.237.86:3333/api/addresses', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        // Log the token and address response
+        console.log('User token after saving address:', token);
+        console.log('Updated addresses response:', addressesResponse.data);
+        
+        if (addressesResponse.data && addressesResponse.data.data && Array.isArray(addressesResponse.data.data.addresses)) {
+          // Log all addresses in a more readable format
+          console.log('All updated addresses:', addressesResponse.data.data.addresses);
+          
+          // Transform addresses from API to match our format
+          const fetchedAddresses = addressesResponse.data.data.addresses.map((addr, index) => ({
+            id: addr._id || `addr-${index}`,
+            type: `Address ${index + 1}`,
+            addressLine1: addr.addressLine1 || '',
+            addressLine2: addr.addressLine2 || '',
+            pincode: addr.pincode || '',
+            city: addr.city || '',
+            state: addr.state || '',
+            isDefault: addr.isDefault || false,
+            fullAddress: `${addr.addressLine1 || ''}${addr.addressLine2 ? `, ${addr.addressLine2}` : ''}, ${addr.city || ''}, ${addr.state || ''} - ${addr.pincode || ''}`
+          }));
+          
+          setAddresses(fetchedAddresses);
+          
+          // Set the default address as selected if there is one
+          const defaultAddress = fetchedAddresses.find(addr => addr.isDefault === true);
+          if (defaultAddress) {
+            setSelectedAddress(defaultAddress.id);
+          } else if (fetchedAddresses.length > 0) {
+            // Otherwise, select the first address
+            setSelectedAddress(fetchedAddresses[0].id);
+          }
+        } else {
+          console.error('Invalid address data structure in save response:', addressesResponse.data);
+        }
+        
+        setOpenAddressModal(false);
+        resetAddressForm();
+      }
+    } catch (error) {
+      console.error('Error saving address:', error);
+      alert('Failed to save address. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resetAddressForm = () => {
     setPincode('');
     setAddressDetails({
-      buildingNumber: '',
-      floorNumber: '',
-      address: '',
+      addressLine1: '',
+      addressLine2: '',
       state: '',
-      district: '',
       city: '',
-      area: ''
     });
+    setIsDefault(false);
   };
 
   return (
@@ -526,7 +650,7 @@ const CartPage = () => {
                 </Typography>
                 
                 <Box sx={{ mb: 2, maxHeight: '300px', overflowY: 'auto' }}>
-                  {addresses.length > 0 && (
+                  {addresses.length > 0 ? (
                     <RadioGroup
                       value={selectedAddress}
                       onChange={(e) => setSelectedAddress(e.target.value)}
@@ -551,7 +675,7 @@ const CartPage = () => {
                                 <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
                                   {address.type}
                                 </Typography>
-                                {address.id === addresses[0].id && (
+                                {address.isDefault && (
                                   <Typography 
                                     variant="caption" 
                                     sx={{ 
@@ -591,6 +715,10 @@ const CartPage = () => {
                         />
                       ))}
                     </RadioGroup>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
+                      No saved addresses found. Please add a new address.
+                    </Typography>
                   )}
                 </Box>
 
@@ -698,40 +826,26 @@ const CartPage = () => {
 
           <TextField
             fullWidth
-            label="Building Number"
-            value={addressDetails.buildingNumber}
-            onChange={(e) => setAddressDetails(prev => ({ ...prev, buildingNumber: e.target.value }))}
+            label="Address Line 1"
+            value={addressDetails.addressLine1}
+            onChange={(e) => setAddressDetails(prev => ({ ...prev, addressLine1: e.target.value }))}
             sx={{ mb: 2 }}
             InputLabelProps={{
               shrink: true,
             }}
-            placeholder="Enter building number"
+            placeholder="Enter address line 1"
           />
 
           <TextField
             fullWidth
-            label="Floor Number"
-            value={addressDetails.floorNumber}
-            onChange={(e) => setAddressDetails(prev => ({ ...prev, floorNumber: e.target.value }))}
+            label="Address Line 2"
+            value={addressDetails.addressLine2}
+            onChange={(e) => setAddressDetails(prev => ({ ...prev, addressLine2: e.target.value }))}
             sx={{ mb: 2 }}
             InputLabelProps={{
               shrink: true,
             }}
-            placeholder="Enter floor number (optional)"
-          />
-
-          <TextField
-            fullWidth
-            label="Address"
-            value={addressDetails.address}
-            onChange={(e) => setAddressDetails(prev => ({ ...prev, address: e.target.value }))}
-            multiline
-            rows={2}
-            sx={{ mb: 2 }}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            placeholder="Enter complete address"
+            placeholder="Enter address line 2 (optional)"
           />
 
           <TextField
@@ -755,28 +869,8 @@ const CartPage = () => {
             <>
               <TextField
                 fullWidth
-                label="Area"
-                value={addressDetails.area}
-                disabled
-                sx={{ mb: 2 }}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-              <TextField
-                fullWidth
                 label="City"
                 value={addressDetails.city}
-                disabled
-                sx={{ mb: 2 }}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-              <TextField
-                fullWidth
-                label="District"
-                value={addressDetails.district}
                 disabled
                 sx={{ mb: 2 }}
                 InputLabelProps={{
@@ -796,19 +890,37 @@ const CartPage = () => {
             </>
           )}
 
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="body1" sx={{ mb: 1 }}>Set as Default Address:</Typography>
+            <RadioGroup 
+              row 
+              value={isDefault.toString()} 
+              onChange={(e) => setIsDefault(e.target.value === "true")}
+            >
+              <FormControlLabel 
+                value="true" 
+                control={<Radio />} 
+                label="Yes" 
+              />
+              <FormControlLabel 
+                value="false" 
+                control={<Radio />} 
+                label="No" 
+              />
+            </RadioGroup>
+          </Box>
+
           <Button
             fullWidth
             variant="contained"
             onClick={handleSaveAddress}
             disabled={
-              !addressDetails?.buildingNumber?.trim() ||
-              !addressDetails?.address?.trim() ||
+              !addressDetails?.addressLine1?.trim() ||
               !pincode ||
               pincode.length !== 6 ||
               loading ||
               !addressDetails?.state ||
-              !addressDetails?.city ||
-              !addressDetails?.area
+              !addressDetails?.city
             }
             sx={{
               backgroundColor: '#C4362A',
