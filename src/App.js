@@ -15,6 +15,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import SplashScreen from './components/SplashScreen';
 import ProductPage from './pages/ProductPage';
 import SubscriptionModal from './components/SubscriptionModal';
+import MenuDetails from './pages/MenuDetails';
 
 
 const theme = createTheme({
@@ -64,12 +65,14 @@ const AppContent = () => {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
   const isSubscriptionPage = location.pathname === '/subscription';
+  const isMenuDetails = location.pathname === '/menu-details';
 
   return (
     <Box sx={{ 
       pt: isHomePage ? '90px' : isSubscriptionPage ? '0px' : '0px',
       minHeight: '100vh'
     }}>
+      {!isMenuDetails && <Header />}
       <Routes>
         <Route path="/" element={
           <>
@@ -77,8 +80,9 @@ const AppContent = () => {
             <HomePage />
           </>
         } />
-        <Route path="/menu" element={<MenuPage />} />
+        <Route path="/kitchen" element={<MenuPage />} />
         <Route path="/product" element={<ProductPage />} />
+        <Route path="/menu-details" element={<MenuDetails />} />
         <Route 
           path="/profile" 
           element={
@@ -114,7 +118,6 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
-        <Header />
         <AppContent />
         <Box sx={{ mt: 12 }}>
           <Footer />

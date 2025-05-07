@@ -1,479 +1,398 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, styled, Tab, Tabs } from '@mui/material';
-import mealImage from '../assets/images/mealImg.png';  
+import React from 'react';
+import { Box, Typography, Button, styled, Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 const PageContainer = styled(Box)({
-  minHeight: 'calc(100vh - 90px)', 
+  minHeight: 'calc(100vh - 90px)',
   display: 'flex',
   flexDirection: 'column',
   marginTop: '120px',
-  paddingBottom: '40px'
+  paddingBottom: '40px',
+  background: '#fff',
 });
 
-const CategoryTabs = styled(Tabs)({
-  backgroundColor: '#f5f5f5',
-  height: '100px',
+const Banner = styled(Box)({
   width: '100%',
+  minHeight: '190px',
+  background: 'linear-gradient(90deg, #C4362A 0%, #ff5e62 60%, #ff9966 100%)',
+  borderRadius: '16px',
+  marginBottom: '36px',
+  boxShadow: '0 4px 16px rgba(196,54,42,0.10)',
   display: 'flex',
+  flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  '& .MuiTabs-indicator': {
-    backgroundColor: '#C4362A',
-    height: '3px',
-  },
-  '& .MuiTabs-flexContainer': {
-    height: '100%',
-    alignItems: 'center',
-  },
-  '@media (max-width: 768px)': {
-    height: '80px',
-  }
+  padding: '40px 16px 32px 16px',
+  position: 'relative',
+  textAlign: 'center',
+  overflow: 'hidden',
 });
 
-const CategoryTab = styled(Tab)({
-  backgroundColor: 'white',
-  borderRadius: '30px',
-  margin: '0 10px',
-  padding: '10px 40px',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  color: '#000',
-  boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
-  transition: 'all 0.3s ease',
-  '&.Mui-selected': {
-    backgroundColor: '#C4362A',
-    color: 'white',
-  },
-  '&:hover': {
-    backgroundColor: props => props.selected ? '#C4362A' : 'white',
-    color: props => props.selected ? 'white' : '#000',
-  },
-  '@media (max-width: 768px)': {
-    padding: '8px 20px',
-    fontSize: '14px',
-    margin: '0 5px',
-  }
-});
-
-const MenuGrid = styled(Box)({
-  display: 'grid',
-  gridTemplateColumns: 'repeat(2, 1fr)',
-  gap: '30px',
-  padding: '40px',
-  maxWidth: '1200px',
-  margin: '0 auto',
-  '@media (max-width: 768px)': {
-    gridTemplateColumns: '1fr',
-    padding: '20px',
-    gap: '15px',
-  }
-});
-
-const MenuCard = styled(Box)({
-  backgroundColor: 'white',
-  borderRadius: '15px',
-  padding: '15px',
+const FoodEmojis = styled('div')({
+  fontSize: '2.7rem',
+  marginBottom: '14px',
+  letterSpacing: '0.18em',
   display: 'flex',
-  alignItems: 'center',
-  gap: '20px',
-  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-  height: '160px',
+  flexWrap: 'wrap',
+  justifyContent: 'center',
+  gap: '0.18em',
+  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.10))',
+});
+
+const QuoteText = styled(Typography)({
+  fontWeight: 700,
+  fontSize: '2rem',
+  color: '#7C3A00',
+  marginBottom: '6px',
+  '@media (max-width: 600px)': {
+    fontSize: '1.2rem',
+  },
+});
+
+const SubText = styled(Typography)({
+  fontWeight: 400,
+  fontSize: '1.1rem',
+  color: '#7C3A00',
+  opacity: 0.85,
+  '@media (max-width: 600px)': {
+    fontSize: '0.95rem',
+  },
+});
+
+const BannerWave = styled('div')({
+  position: 'absolute',
+  left: 0,
+  bottom: 0,
   width: '100%',
-  cursor: 'pointer',
-  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-  },
-  '@media (max-width: 768px)': {
-    height: '120px',
-    padding: '10px',
-    gap: '10px',
-  }
+  zIndex: 2,
+  lineHeight: 0,
 });
 
-const MealImage = styled('img')({
-  width: '100px',
-  height: '100px',
+const CatererCard = styled(Box)({
+  display: 'flex',
+  alignItems: 'flex-start',
+  background: '#fff',
+  borderRadius: '12px',
+  boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+  padding: '24px',
+  width: '100%',
+  maxWidth: '1000px',
+  margin: '0 auto 24px auto',
+  gap: '32px',
+  '@media (max-width: 768px)': {
+    flexDirection: 'column',
+    gap: '16px',
+    padding: '12px',
+  },
+});
+
+const CardImage = styled('img')({
+  width: '220px',
+  height: '220px',
   objectFit: 'cover',
-  borderRadius: '8px',
-  flexShrink: 0,
+  borderRadius: '10px',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
   '@media (max-width: 768px)': {
-    width: '80px',
-    height: '80px',
-  }
-});
-
-const BuyButton = styled(Button)({
-  backgroundColor: '#C4362A',
-  color: 'white',
-  border: 'none',
-  borderRadius: '4px',
-  padding: '4px 15px',
-  textTransform: 'none',
-  fontSize: '12px',
-  minWidth: '80px',
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    backgroundColor: '#b02d23',
+    width: '100%',
+    height: '160px',
   },
-  '@media (max-width: 768px)': {
-    fontSize: '10px',
-    padding: '2px 10px',
-    minWidth: '70px',
-  }
 });
 
-// Add cart context if not already present
-const addToCart = (item, isPurchase = true) => {
-  const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
-  const cartItem = {
-    ...item,
-    quantity: 1,
-    isPurchase: true,
-    price: item.buyOncePrice
-  };
-  existingCart.push(cartItem);
-  localStorage.setItem('cart', JSON.stringify(existingCart));
-};
+const InfoBox = styled(Box)({
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '8px',
+});
 
-// Define a global function to open the login modal that can be called from any component
-window.openLoginModal = () => {
-  // Set the flag in localStorage
-  localStorage.setItem('requiresLogin', 'true');
-  // Try both event types
-  window.dispatchEvent(new Event('showLoginModal'));
-  window.dispatchEvent(new CustomEvent('showLoginModal'));
-};
+const Star = styled('span')({
+  color: '#FFD600',
+  fontSize: '22px',
+  marginRight: '2px',
+});
+
+const MenuButton = styled(Button)({
+  background: '#C4362A',
+  color: '#fff',
+  borderRadius: '7px',
+  fontSize: '15px',
+  fontWeight: 500,
+  minWidth: '100px',
+  marginRight: '10px',
+  textTransform: 'none',
+  boxShadow: 'none',
+  '&:hover': {
+    background: '#a82a1f',
+    opacity: 0.9,
+  },
+});
+
+const ContactText = styled(Typography)({
+  fontSize: '16px',
+  color: '#222',
+  marginTop: '6px',
+  lineHeight: 1.5,
+});
+
+const mealImage = require('../assets/images/mealImg.png');
+
+const caterers = [
+  {
+    name: 'Glorious Caterers',
+    address: 'Main road Side, F1/F3/03',
+    phone: '098533 37333',
+    years: '10+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'chinese',
+  },
+  {
+    name: 'Royal Feast',
+    address: 'MG Road, Block 2',
+    phone: '098512 11122',
+    years: '8+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'chinese',
+  },
+  {
+    name: 'Spice Route Caterers',
+    address: 'Sector 21, Near Park',
+    phone: '098533 22244',
+    years: '12+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'pureveg',
+  },
+  {
+    name: 'Maharaja Foods',
+    address: 'Old City, Shop 7',
+    phone: '098544 55566',
+    years: '15+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'pureveg',
+  },
+  {
+    name: 'Tandoor Treats',
+    address: 'Market Lane, 3rd Floor',
+    phone: '098577 88899',
+    years: '9+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'northindian',
+  },
+  {
+    name: 'Saffron Spice',
+    address: 'Green Avenue, 12B',
+    phone: '098599 12345',
+    years: '11+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'northindian',
+  },
+  {
+    name: 'Punjabi Rasoi',
+    address: 'Station Road, 4A',
+    phone: '098511 67890',
+    years: '7+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'northindian',
+  },
+  {
+    name: 'Biryani House',
+    address: 'Lake View, 9C',
+    phone: '098522 33344',
+    years: '13+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'southindian',
+  },
+  {
+    name: 'Flavours of India',
+    address: 'Sunset Street, 5',
+    phone: '098533 77788',
+    years: '10+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'southindian',
+  },
+  {
+    name: 'Masala Magic',
+    address: 'Hilltop, 2nd Cross',
+    phone: '098544 99900',
+    years: '6+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'southindian',
+  },
+  {
+    name: 'Curry Kingdom',
+    address: 'Central Plaza, 1A',
+    phone: '098555 11122',
+    years: '14+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'southindian',
+  },
+  {
+    name: 'Desi Delights',
+    address: 'Garden Road, 8',
+    phone: '098566 22233',
+    years: '8+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'southindian',
+  },
+  {
+    name: 'Annapurna Caterers',
+    address: 'Temple Lane, 10',
+    phone: '098577 44455',
+    years: '16+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'mondaypureveg',
+  },
+  {
+    name: 'Taste of Tradition',
+    address: 'Heritage Street, 6',
+    phone: '098588 55566',
+    years: '9+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'mondaypureveg',
+  },
+  {
+    name: 'Shahi Dawat',
+    address: 'Palace Road, 3B',
+    phone: '098599 66677',
+    years: '10+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'mondaypureveg',
+  },
+  {
+    name: 'Urban Zaika',
+    address: 'Metro Complex, 7F',
+    phone: '098511 77788',
+    years: '5+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'mondaypureveg',
+  },
+  {
+    name: 'Rasoi Ghar',
+    address: 'Bazaar Street, 2',
+    phone: '098522 88899',
+    years: '12+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'wednesdayfridaynonveg',
+  },
+  {
+    name: 'The Indian Platter',
+    address: 'Food Court, 11',
+    phone: '098533 99900',
+    years: '11+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'wednesdayfridaynonveg',
+  },
+  {
+    name: 'Zaika Express',
+    address: 'Expressway, 4C',
+    phone: '098544 11122',
+    years: '7+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'wednesdayfridaynonveg',
+  },
+  {
+    name: 'Royal Rasam',
+    address: 'Lotus Lane, 5A',
+    phone: '098555 22233',
+    years: '13+',
+    image: mealImage,
+    serviceType: 'Lunch',
+    menuType: 'wednesdayfridaynonveg',
+  },
+];
+
+const LunchLabel = styled(Box)({
+  position: 'absolute',
+  top: '18px',
+  left: '-35px',
+  marginLeft: '24px',
+  background: '#1976d2',
+  color: '#fff',
+  fontWeight: 700,
+  fontSize: '1rem',
+  padding: '4px 38px',
+  borderRadius: '7px',
+  transform: 'rotate(-25deg)',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+  zIndex: 2,
+  letterSpacing: 1,
+});
+
+const CardImageWrapper = styled(Box)({
+  position: 'relative',
+  display: 'inline-block',
+});
 
 const MenuPage = () => {
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState(0);
-  
-  // Check if user is logged in whenever component renders
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem('isLoggedIn') === 'true';
-  });
-
-  // Listen for login events
-  useEffect(() => {
-    // Function to check login status
-    const checkLoginStatus = () => {
-      const currentLoginStatus = localStorage.getItem('isLoggedIn') === 'true';
-      setIsLoggedIn(currentLoginStatus);
-      
-      // If user just logged in and there's a pending cart item in localStorage
-      if (currentLoginStatus) {
-        const pendingItemStr = localStorage.getItem('pendingCartItem');
-        if (pendingItemStr) {
-          try {
-            // Parse the pending item from localStorage
-            const pendingItem = JSON.parse(pendingItemStr);
-            // Add the pending item to cart
-            addToCart(pendingItem, true);
-            // Clear the pending item
-            localStorage.removeItem('pendingCartItem');
-            // Navigate to cart page
-            navigate('/cart');
-          } catch (error) {
-            console.error('Error parsing pending cart item:', error);
-          }
-        }
-      }
-    };
-
-    // Check on mount and when storage changes
-    window.addEventListener('storage', checkLoginStatus);
-    
-    // Check initially and set up an interval
-    checkLoginStatus();
-    const loginCheckInterval = setInterval(checkLoginStatus, 500);
-    
-    return () => {
-      window.removeEventListener('storage', checkLoginStatus);
-      clearInterval(loginCheckInterval);
-    };
-  }, [navigate]);
-
-  const handleCategoryChange = (event, newValue) => {
-    setSelectedCategory(newValue);
-  };
-
-  const handleCardClick = (item) => {
-    const category = getCategoryName(selectedCategory);
-    navigate('/product', {
-      state: {
-        product: {
-          ...item,
-          description: 'Fresh homestyle meal prepared with high-quality ingredients',
-          selectedPrice: item.buyOncePrice,
-          isPurchase: true,
-          category: category
-        }
-      }
-    });
-  };
-
-  const handleBuyClick = (e, item) => {
-    e.stopPropagation();
-    
-    // Check if user is logged in
-    if (!isLoggedIn) {
-      // Store the item that was going to be added to cart in localStorage
-      localStorage.setItem('pendingCartItem', JSON.stringify(item));
-      
-      // Set flags in localStorage that will be checked by Header component
-      localStorage.setItem('requiresLogin', 'true');
-      localStorage.setItem('loginRedirectUrl', '/cart');
-      
-      // Try all approaches to trigger the login modal
-      
-      // 1. Try the direct function exposed by Header component (most reliable)
-      if (typeof window.openLoginModalFromHeader === 'function') {
-        window.openLoginModalFromHeader();
-        return;
-      }
-      
-      // 2. Use the global function approach
-      if (typeof window.openLoginModal === 'function') {
-        window.openLoginModal();
-      }
-      
-      // 3. Try the event dispatch approach
-      window.dispatchEvent(new CustomEvent('showLoginModal'));
-      
-      // 4. Reload the page as a last resort (this is the most reliable method)
-      // Use a short timeout to allow the localStorage to be set
-      setTimeout(() => {
-        window.location.reload();
-      }, 50);
-      
-      return;
-    }
-    
-    // User is logged in, add to cart
-    addToCart(item, true);
-    // Navigate to cart page
-    navigate('/cart');
-  };
-
-  const getCategoryName = (index) => {
-    switch(index) {
-      case 0:
-        return 'Veg';
-      case 1:
-        return 'Non-Veg';
-      case 2:
-        return 'Keto';
-      default:
-        return 'Veg';
-    }
-  };
-
-  const vegItems = [
-    {
-      title: 'Rice, Dal, Veg Curry, Papad, Salad',
-      originalPrice: '₹99',
-      buyOncePrice: '₹89',
-      subscribePrice: '₹79',
-      image: mealImage,
-    },
-    {
-      title: 'Rice, Dal, Veg Curry, Papad, Salad',
-      originalPrice: '₹99',
-      buyOncePrice: '₹89',
-      subscribePrice: '₹79',
-      image: mealImage,
-    },
-    {
-      title: 'Rice, Dal, Veg Curry, Papad, Salad',
-      originalPrice: '₹99',
-      buyOncePrice: '₹89',
-      subscribePrice: '₹79',
-      image: mealImage,
-    },
-    {
-      title: 'Rice, Dal, Veg Curry, Papad, Salad',
-      originalPrice: '₹99',
-      buyOncePrice: '₹89',
-      subscribePrice: '₹79',
-      image: mealImage,
-    },
-    {
-      title: 'Rice, Dal, Veg Curry, Papad, Salad',
-      originalPrice: '₹99',
-      buyOncePrice: '₹89',
-      subscribePrice: '₹79',
-      image: mealImage,
-    },
-    {
-      title: 'Rice, Dal, Veg Curry, Papad, Salad',
-      originalPrice: '₹99',
-      buyOncePrice: '₹89',
-      subscribePrice: '₹79',
-      image: mealImage,
-    },
-    {
-      title: 'Rice, Dal, Veg Curry, Papad, Salad',
-      originalPrice: '₹99',
-      buyOncePrice: '₹89',
-      subscribePrice: '₹79',
-      image: mealImage,
-    },
-    {
-      title: 'Rice, Dal, Veg Curry, Papad, Salad',
-      originalPrice: '₹99',
-      buyOncePrice: '₹89',
-      subscribePrice: '₹79',
-      image: mealImage,
-    },
-    {
-      title: 'Rice, Dal, Veg Curry, Papad, Salad',
-      originalPrice: '₹99',
-      buyOncePrice: '₹89',
-      subscribePrice: '₹79',
-      image: mealImage,
-    },
-    {
-      title: 'Rice, Dal, Veg Curry, Papad, Salad',
-      originalPrice: '₹99',
-      buyOncePrice: '₹89',
-      subscribePrice: '₹79',
-      image: mealImage,
-    },
-    // ... other veg items
-  ];
-
-  const nonVegItems = [
-    {
-      title: 'Chicken Biryani with Raita',
-      originalPrice: '₹149',
-      buyOncePrice: '₹129',
-      subscribePrice: '₹119',
-      image: mealImage,
-    },
-    {
-      title: 'Fish Curry with Rice',
-      originalPrice: '₹139',
-      buyOncePrice: '₹119',
-      subscribePrice: '₹109',
-      image: mealImage,
-    },
-    // ... other non-veg items
-  ];
-
-  const ketoItems = [
-    {
-      title: 'Keto Bowl with Grilled Chicken',
-      originalPrice: '₹199',
-      buyOncePrice: '₹179',
-      subscribePrice: '₹159',
-      image: mealImage,
-    },
-    {
-      title: 'Keto Cauliflower Rice Bowl',
-      originalPrice: '₹179',
-      buyOncePrice: '₹159',
-      subscribePrice: '₹139',
-      image: mealImage,
-    },
-    // ... other keto items
-  ];
-
-  // Get current menu items based on selected category
-  const getCurrentMenuItems = () => {
-    switch(selectedCategory) {
-      case 0:
-        return vegItems;
-      case 1:
-        return nonVegItems;
-      case 2:
-        return ketoItems;
-      default:
-        return vegItems;
-    }
-  };
-
   return (
     <PageContainer>
-      <Box sx={{ 
-        backgroundColor: '#f5f5f5', 
-        width: '100%',
-        height: '100px',
-        display: 'flex',
-        alignItems: 'center',
-        marginBottom: '20px'
-      }}>
-        <Box sx={{ width: '100%', margin: '0 auto' }}>
-          <CategoryTabs
-            value={selectedCategory}
-            onChange={handleCategoryChange}
-            centered
-            TabIndicatorProps={{
-              style: {
-                display: 'none'
-              }
-            }}
-          >
-            <CategoryTab 
-              label="VEG" 
-              selected={selectedCategory === 0}
-            />
-            <CategoryTab 
-              label="NON-VEG" 
-              selected={selectedCategory === 1}
-            />
-            <CategoryTab 
-              label="KETO" 
-              selected={selectedCategory === 2}
-            />
-          </CategoryTabs>
-        </Box>
-      </Box>
-
-      <MenuGrid>
-        {getCurrentMenuItems().map((item, index) => (
-          <MenuCard 
-            key={index}
-            onClick={() => handleCardClick(item)}
-          >
-            <MealImage src={item.image} alt={item.title} />
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  mb: 1, 
-                  fontWeight: 'normal',
-                  fontSize: '16px',
-                  lineHeight: '1.2',
-                  '@media (max-width: 768px)': {
-                    fontSize: '14px',
-                  }
-                }}
-              >
-                {item.title}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, '@media (max-width: 768px)': { '& .MuiTypography-root': { fontSize: '12px', } } }}>
-                <Typography variant="body2" sx={{ textDecoration: 'line-through', color: '#666' }}>
-                  {item.originalPrice}
-                </Typography>
-                <Typography variant="body2">
-                  Only For {item.buyOncePrice}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', gap: 1.5 }}>
-                <BuyButton 
-                  size="small"
-                  onClick={(e) => handleBuyClick(e, item)}
-                >
-                  {item.buyOncePrice}
-                </BuyButton>
-              </Box>
+      {/* Attractive Banner with Quote and Food Emojis */}
+      <Banner>
+        <FoodEmojis>
+          🍛 🥗 🍲 🍚 🍢 🥒 🥘 🍤 🍥 🥔 🧆 🥭 🥦
+        </FoodEmojis>
+        <QuoteText sx={{ color: '#fff', textShadow: '0 2px 8px rgba(0,0,0,0.10)' }}>
+          Bringing the Taste of India to Your Events!
+        </QuoteText>
+        <SubText sx={{ color: '#fff', opacity: 0.92, textShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+          Delicious memories, one plate at a time.
+        </SubText>
+        <BannerWave>
+          <svg viewBox="0 0 500 30" preserveAspectRatio="none" style={{ width: '100%', height: 30, display: 'block' }}>
+            <path d="M0,10 Q250,40 500,10 L500,30 L0,30 Z" fill="#fff" fillOpacity="0.18" />
+          </svg>
+        </BannerWave>
+      </Banner>
+      {/* Info Note */}
+      <Typography sx={{ textAlign: 'center', fontSize: '1.08rem', color: '#1976d2', mb: 3, fontWeight: 500 }}>
+        For Breakfast and Dinner, contact <span style={{fontWeight:'bold', color:'#C4362A'}}>support@boldeats.in</span>
+      </Typography>
+      {/* Caterer Cards */}
+      {caterers.map((caterer, idx) => (
+        <CatererCard key={idx}>
+          <CardImageWrapper>
+            <LunchLabel>Lunch</LunchLabel>
+            <CardImage src={caterer.image} alt={caterer.name} />
+          </CardImageWrapper>
+          <InfoBox>
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>
+              {caterer.name}
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+              {[...Array(5)].map((_, i) => (
+                <Star key={i}>★</Star>
+              ))}
             </Box>
-          </MenuCard>
-        ))}
-      </MenuGrid>
+            <Box sx={{ display: 'flex', gap: 2, mb: 1, alignItems: 'center' }}>
+              <MenuButton onClick={() => navigate('/menu-details', { state: { caterer, menuType: caterer.menuType } })}>Menu</MenuButton>
+            </Box>
+            <ContactText>
+              {caterer.years} years in business · {caterer.address} · {caterer.phone}<br />
+              Open 24 hours<br />
+              On-site services · Online appointments
+            </ContactText>
+          </InfoBox>
+        </CatererCard>
+      ))}
     </PageContainer>
   );
 };

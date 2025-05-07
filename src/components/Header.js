@@ -817,8 +817,8 @@ const Header = () => {
           </MobileNavLink>
         </MobileNavItem>
         <MobileNavItem>
-          <MobileNavLink to="/menu" isActive={location === '/menu'} onClick={handleDrawerToggle}>
-            Menu
+          <MobileNavLink to="/kitchen" isActive={location === '/kitchen'} onClick={handleDrawerToggle}>
+            Kitchen
           </MobileNavLink>
         </MobileNavItem>
         <MobileNavItem>
@@ -955,7 +955,7 @@ const Header = () => {
           {!isMobile && (
             <NavigationLinks>
               <NavLink to="/" isActive={location === '/'}>Home</NavLink>
-              <NavLink to="/menu" isActive={location === '/menu'}>Menu</NavLink>
+              <NavLink to="/kitchen" isActive={location === '/kitchen'}>Kitchen</NavLink>
               <NavLink to="/cart" isActive={location === '/cart'}>Cart</NavLink>
             </NavigationLinks>
           )}
