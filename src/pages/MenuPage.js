@@ -1,6 +1,8 @@
 import React from 'react';
-import { Box, Typography, Button, styled, Chip } from '@mui/material';
+import { Box, Typography, Button, styled, Chip, Card, CardContent, Grid } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import FSSAILogo from '../assets/FSSAI_logo.png';
+import TheGrandOdishaKitchen from '../assets/87CA09FD-3098-4E33-B005-3843ECA95446-Photoroom_11zon.png';
 
 const PageContainer = styled(Box)({
   minHeight: 'calc(100vh - 90px)',
@@ -68,63 +70,90 @@ const BannerWave = styled('div')({
   lineHeight: 0,
 });
 
-const CatererCard = styled(Box)({
+const CardRow = styled(Box)({
   display: 'flex',
   alignItems: 'flex-start',
   background: '#fff',
   borderRadius: '12px',
   boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-  padding: '24px',
   width: '100%',
   maxWidth: '1000px',
   margin: '0 auto 24px auto',
   gap: '32px',
+  overflow: 'hidden',
   '@media (max-width: 768px)': {
     flexDirection: 'column',
-    gap: '16px',
-    padding: '12px',
+    gap: '0',
+    padding: '0',
   },
 });
 
-const CardImage = styled('img')({
-  width: '220px',
-  height: '220px',
+const CardImageLeft = styled('img')({
+  width: '160px',
+  height: '160px',
   objectFit: 'cover',
-  borderRadius: '10px',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+  borderTopLeftRadius: '12px',
+  borderBottomLeftRadius: '12px',
+  borderTopRightRadius: 0,
+  borderBottomRightRadius: 0,
+  marginTop: '20px',
   '@media (max-width: 768px)': {
     width: '100%',
-    height: '160px',
+    height: '120px',
+    borderRadius: '12px 12px 0 0',
+    marginTop: '8px',
   },
+  marginLeft: "20px"
 });
 
-const InfoBox = styled(Box)({
+const CardContentRight = styled(Box)({
   flex: 1,
   display: 'flex',
   flexDirection: 'column',
-  gap: '8px',
+  padding: '18px 0 0 18px',
+  '@media (max-width: 768px)': {
+    padding: '16px',
+  },
 });
 
-const Star = styled('span')({
-  color: '#FFD600',
-  fontSize: '22px',
-  marginRight: '2px',
-});
+const StaticPill = styled(Box)(({ color }) => ({
+  display: 'inline-block',
+  background: color === 'red' ? '#C4362A' : '#43a047',
+  color: '#fff',
+  borderRadius: '7px',
+  fontSize: '15px',
+  fontWeight: 500,
+  minWidth: '80px',
+  padding: '4px 22px',
+  marginRight: '10px',
+  textAlign: 'center',
+  marginTop: '8px',
+  marginBottom: '8px',
+  pointerEvents: 'none',
+  opacity: 0.95,
+}));
 
-const MenuButton = styled(Button)({
+const PriceButton = styled(Button)({
   background: '#C4362A',
   color: '#fff',
   borderRadius: '7px',
   fontSize: '15px',
   fontWeight: 500,
   minWidth: '100px',
-  marginRight: '10px',
   textTransform: 'none',
   boxShadow: 'none',
+  marginTop: '8px',
+  marginBottom: '8px',
   '&:hover': {
     background: '#a82a1f',
     opacity: 0.9,
   },
+});
+
+const Star = styled('span')({
+  color: '#FFD600',
+  fontSize: '22px',
+  marginRight: '2px',
 });
 
 const ContactText = styled(Typography)({
@@ -136,15 +165,63 @@ const ContactText = styled(Typography)({
 
 const mealImage = require('../assets/images/mealImg.png');
 
-const caterers = [
+const odishaLunchMenu = [
+  { day: 'Monday', items: [{ desc: 'Rice, Dalma, Bhaja, Khata, Pampad' }] },
+  { day: 'Tuesday', items: [
+    { desc: 'Rice, Dal, Sessional Curry, Bhaja, Pampad' },
+    { desc: 'Rice, Dal, Egg curry, Bhaja, Pampad' },
+  ] },
+  { day: 'Wednesday', items: [
+    { desc: 'Rice, Dal, Mushroom Curry, Bhaja, Pampad' },
+    { desc: 'Rice, Dal, Chicken Curry, Bhaja, Pampad' },
+    { desc: 'Rice, Dal, Fish Curry, Bhaja, Pampad' },
+  ] },
+  { day: 'Thursday', items: [
+    { desc: 'Rice, Dal, Paneer Curry, Bhaja, Pampad' },
+    { desc: 'Rice, Dal, Egg Curry, Bhaja, Pampad' },
+  ] },
+  { day: 'Friday', items: [
+    { desc: 'Rice, Dal, Sessional Curry, Bhaja, Pampad' },
+    { desc: 'Rice, Dal, Egg Curry, Bhaja, Pampad' },
+    { desc: 'Rice, Dal, Fish Curry, Pampad, Bhaja' },
+  ] },
+  { day: 'Saturday', items: [
+    { desc: 'Rice, Dal, Bhaja, Sessional Curry, Pampad' },
+    { desc: 'Rice, Dal, Bhaja, Pampad, Egg Curry' },
+  ] },
+];
+
+const odishaDinnerMenu = [
+  { day: 'Monday', items: [{ desc: 'Roti, Dal Fry, Mixed Veg, Salad' }] },
+  { day: 'Tuesday', items: [{ desc: 'Roti, Paneer Curry, Dal, Salad' }] },
+  { day: 'Wednesday', items: [{ desc: 'Roti, Chana Masala, Dal, Salad' }] },
+  { day: 'Thursday', items: [{ desc: 'Roti, Aloo Gobi, Dal, Salad' }] },
+  { day: 'Friday', items: [{ desc: 'Roti, Bhindi Masala, Dal, Salad' }] },
+  { day: 'Saturday', items: [{ desc: 'Roti, Dal Makhani, Mixed Veg, Salad' }] },
+];
+
+const odishaBreakfastMenu = [
+  { day: 'Monday', items: [{ desc: 'Poha, Chutney, Banana' }] },
+  { day: 'Tuesday', items: [{ desc: 'Idli, Sambar, Chutney' }] },
+  { day: 'Wednesday', items: [{ desc: 'Upma, Chutney, Tea' }] },
+  { day: 'Thursday', items: [{ desc: 'Paratha, Curd, Pickle' }] },
+  { day: 'Friday', items: [{ desc: 'Dosa, Sambar, Chutney' }] },
+  { day: 'Saturday', items: [{ desc: 'Aloo Puri, Chutney, Banana' }] },
+];
+
+export const caterers = [
   {
-    name: 'Glorious Caterers',
-    address: 'Main road Side, F1/F3/03',
-    phone: '098533 37333',
-    years: '10+',
-    image: mealImage,
+    name: 'The Grand Odisha Kitchen',
+    address: 'Patia, Bhubaneswar',
+    phone: '+91 8249045766',
+    years: '2+',
+    image: TheGrandOdishaKitchen,
     serviceType: 'Lunch',
     menuType: 'chinese',
+    fssaiNumber: '22022066000045',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
   {
     name: 'Royal Feast',
@@ -154,6 +231,10 @@ const caterers = [
     image: mealImage,
     serviceType: 'Lunch',
     menuType: 'chinese',
+    fssaiNumber: '22022066000046',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
   {
     name: 'Spice Route Caterers',
@@ -163,6 +244,10 @@ const caterers = [
     image: mealImage,
     serviceType: 'Lunch',
     menuType: 'pureveg',
+    fssaiNumber: '22022066000047',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
   {
     name: 'Maharaja Foods',
@@ -172,6 +257,10 @@ const caterers = [
     image: mealImage,
     serviceType: 'Lunch',
     menuType: 'pureveg',
+    fssaiNumber: '22022066000048',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
   {
     name: 'Tandoor Treats',
@@ -181,6 +270,10 @@ const caterers = [
     image: mealImage,
     serviceType: 'Lunch',
     menuType: 'northindian',
+    fssaiNumber: '22022066000049',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
   {
     name: 'Saffron Spice',
@@ -190,6 +283,10 @@ const caterers = [
     image: mealImage,
     serviceType: 'Lunch',
     menuType: 'northindian',
+    fssaiNumber: '22022066000050',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
   {
     name: 'Punjabi Rasoi',
@@ -199,6 +296,10 @@ const caterers = [
     image: mealImage,
     serviceType: 'Lunch',
     menuType: 'northindian',
+    fssaiNumber: '22022066000051',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
   {
     name: 'Biryani House',
@@ -208,6 +309,10 @@ const caterers = [
     image: mealImage,
     serviceType: 'Lunch',
     menuType: 'southindian',
+    fssaiNumber: '22022066000052',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
   {
     name: 'Flavours of India',
@@ -217,6 +322,10 @@ const caterers = [
     image: mealImage,
     serviceType: 'Lunch',
     menuType: 'southindian',
+    fssaiNumber: '22022066000053',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
   {
     name: 'Masala Magic',
@@ -226,6 +335,10 @@ const caterers = [
     image: mealImage,
     serviceType: 'Lunch',
     menuType: 'southindian',
+    fssaiNumber: '22022066000054',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
   {
     name: 'Curry Kingdom',
@@ -235,6 +348,10 @@ const caterers = [
     image: mealImage,
     serviceType: 'Lunch',
     menuType: 'southindian',
+    fssaiNumber: '22022066000055',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
   {
     name: 'Desi Delights',
@@ -244,6 +361,10 @@ const caterers = [
     image: mealImage,
     serviceType: 'Lunch',
     menuType: 'southindian',
+    fssaiNumber: '22022066000056',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
   {
     name: 'Annapurna Caterers',
@@ -253,6 +374,10 @@ const caterers = [
     image: mealImage,
     serviceType: 'Lunch',
     menuType: 'mondaypureveg',
+    fssaiNumber: '22022066000057',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
   {
     name: 'Taste of Tradition',
@@ -262,6 +387,10 @@ const caterers = [
     image: mealImage,
     serviceType: 'Lunch',
     menuType: 'mondaypureveg',
+    fssaiNumber: '22022066000058',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
   {
     name: 'Shahi Dawat',
@@ -271,6 +400,10 @@ const caterers = [
     image: mealImage,
     serviceType: 'Lunch',
     menuType: 'mondaypureveg',
+    fssaiNumber: '22022066000059',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
   {
     name: 'Urban Zaika',
@@ -280,6 +413,10 @@ const caterers = [
     image: mealImage,
     serviceType: 'Lunch',
     menuType: 'mondaypureveg',
+    fssaiNumber: '22022066000060',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
   {
     name: 'Rasoi Ghar',
@@ -289,6 +426,10 @@ const caterers = [
     image: mealImage,
     serviceType: 'Lunch',
     menuType: 'wednesdayfridaynonveg',
+    fssaiNumber: '22022066000061',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
   {
     name: 'The Indian Platter',
@@ -298,6 +439,10 @@ const caterers = [
     image: mealImage,
     serviceType: 'Lunch',
     menuType: 'wednesdayfridaynonveg',
+    fssaiNumber: '22022066000062',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
   {
     name: 'Zaika Express',
@@ -307,6 +452,10 @@ const caterers = [
     image: mealImage,
     serviceType: 'Lunch',
     menuType: 'wednesdayfridaynonveg',
+    fssaiNumber: '22022066000063',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
   {
     name: 'Royal Rasam',
@@ -316,30 +465,46 @@ const caterers = [
     image: mealImage,
     serviceType: 'Lunch',
     menuType: 'wednesdayfridaynonveg',
+    fssaiNumber: '22022066000064',
+    lunchMenu: odishaLunchMenu,
+    dinnerMenu: odishaDinnerMenu,
+    breakfastMenu: odishaBreakfastMenu,
   },
 ];
 
-const LunchLabel = styled(Box)({
-  position: 'absolute',
-  top: '18px',
-  left: '-35px',
-  marginLeft: '24px',
-  background: '#1976d2',
-  color: '#fff',
-  fontWeight: 700,
-  fontSize: '1rem',
-  padding: '4px 38px',
-  borderRadius: '7px',
-  transform: 'rotate(-25deg)',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
-  zIndex: 2,
-  letterSpacing: 1,
-});
-
-const CardImageWrapper = styled(Box)({
-  position: 'relative',
+// Add a styled pill for menu type
+const MenuTypePill = styled(Box)(({ color }) => ({
   display: 'inline-block',
-});
+  background: color || '#1976d2',
+  color: '#fff',
+  borderRadius: '7px',
+  fontSize: '15px',
+  fontWeight: 600,
+  minWidth: '110px',
+  padding: '4px 22px',
+  marginBottom: '8px',
+  textAlign: 'center',
+  marginRight: '10px',
+  letterSpacing: 0.5,
+  boxShadow: '0 2px 8px rgba(25,118,210,0.10)',
+}));
+
+// Helper to determine menu type label
+function getMenuTypeLabel(caterer, idx) {
+  // Special case for the first card (Odisha Menu)
+  if (idx === 0 && caterer.name === 'The Grand Odisha Kitchen') {
+    return { label: 'Breakfast + Lunch + Dinner', color: '#1976d2' };
+  }
+  if (caterer.menuType === 'chinese') return { label: 'Chinese', color: '#ff9800' };
+  const hasBreakfast = !!caterer.breakfastMenu;
+  const hasLunch = !!caterer.lunchMenu;
+  const hasDinner = !!caterer.dinnerMenu;
+  if (hasBreakfast && hasLunch && hasDinner) return { label: 'Breakfast + Lunch + Dinner', color: '#1976d2' };
+  if (hasLunch && hasDinner && !hasBreakfast) return { label: 'Lunch + Dinner', color: '#388e3c' };
+  if (hasLunch && !hasDinner && !hasBreakfast) return { label: 'Lunch', color: '#43a047' };
+  if (caterer.menuType === 'pureveg' || (!hasBreakfast && !hasDinner && hasLunch)) return { label: 'Pure Veg', color: '#43a047' };
+  return { label: 'Menu', color: '#1976d2' };
+}
 
 const MenuPage = () => {
   const navigate = useNavigate();
@@ -368,30 +533,43 @@ const MenuPage = () => {
       </Typography>
       {/* Caterer Cards */}
       {caterers.map((caterer, idx) => (
-        <CatererCard key={idx}>
-          <CardImageWrapper>
-            <LunchLabel>Lunch</LunchLabel>
-            <CardImage src={caterer.image} alt={caterer.name} />
-          </CardImageWrapper>
-          <InfoBox>
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>
-              {caterer.name}
-            </Typography>
+        <CardRow key={idx} onClick={() => navigate('/menu-details', { state: { caterer, menuType: 'lunch' } })} style={{ cursor: 'pointer' }}>
+          <CardImageLeft src={caterer.image} alt={caterer.name} />
+          <CardContentRight>
+            {/* Menu Type Label */}
+            {(() => {
+              const { label, color } = getMenuTypeLabel(caterer, idx);
+              return <MenuTypePill color={color}>{label}</MenuTypePill>;
+            })()}
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>{caterer.name}</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               {[...Array(5)].map((_, i) => (
                 <Star key={i}>★</Star>
               ))}
             </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <img src={require('../assets/FSSAI_logo.png')} alt="FSSAI Logo" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+              <Typography sx={{ fontSize: '0.8rem', color: '#666', textAlign: 'right', ml: 1 }}>{caterer.fssaiNumber}</Typography>
+            </Box>
             <Box sx={{ display: 'flex', gap: 2, mb: 1, alignItems: 'center' }}>
-              <MenuButton onClick={() => navigate('/menu-details', { state: { caterer, menuType: caterer.menuType } })}>Menu</MenuButton>
+              <StaticPill color="red">Non-veg</StaticPill>
+              <StaticPill color="green">Veg</StaticPill>
             </Box>
             <ContactText>
-              {caterer.years} years in business · {caterer.address} · {caterer.phone}<br />
+              <span style={{ fontWeight: 500 }}> {caterer.years} years in business</span> · {caterer.address} · {caterer.phone}<br />
               Open 24 hours<br />
-              On-site services · Online appointments
+              On-site services·Online appointments
             </ContactText>
-          </InfoBox>
-        </CatererCard>
+            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+              <PriceButton
+                onClick={e => { e.stopPropagation(); navigate('/menu-details', { state: { caterer, menuType: 'lunch' } }); }}
+                sx={{ ml: 'auto', mr: 2, fontSize: '0.98rem', py: 0.5, px: 2, minWidth: 120 }}
+              >
+                ₹1500 / 15 Days Subscription
+              </PriceButton>
+            </Box>
+          </CardContentRight>
+        </CardRow>
       ))}
     </PageContainer>
   );

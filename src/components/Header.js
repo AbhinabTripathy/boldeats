@@ -34,7 +34,7 @@ import {
   Person,
   Phone,
   HowToReg,
-  // AccountBalanceWallet,
+  AccountBalanceWallet,
   Settings,
   Logout,
   Menu as MenuIcon
@@ -43,7 +43,7 @@ import { styled } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import logo from '../assets/images/BoldTribe Logo-2.svg';
 import axios from 'axios';
-// import WalletModal from './WalletModal';
+import WalletModal from './WalletModal';
 
 const StyledAppBar = styled(AppBar)({
   backgroundColor: 'transparent',
@@ -61,7 +61,7 @@ const StyledAppBar = styled(AppBar)({
 const HeaderContainer = styled(Box)({
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'center',
+  justifyContent: 'space-between',
   width: '100%',
   maxWidth: '1440px',
   margin: '0 auto',
@@ -75,11 +75,12 @@ const NavbarSection = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   gap: '40px',
   padding: '0 30px',
-  borderRadius: '0 50px 50px 0',
+  borderRadius: '50px',
   boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
   width: '800px',
   height: '70px',
   marginLeft: '0',
+  marginRight: '290px',
   backgroundColor: '#FFFFFF',
   [theme.breakpoints.down('md')]: {
     width: '100%',
@@ -96,11 +97,11 @@ const Logo = styled('img')({
 const NavigationLinks = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: '100px',
-  marginLeft: '80px',
-  marginRight: '30px',
+  gap: '120px',
+  marginLeft: '0',
+  marginRight: '0',
   width: '100%',
-  justifyContent: 'flex-start',
+  justifyContent: 'space-around',
   [theme.breakpoints.down('md')]: {
     display: 'none'
   }
@@ -169,7 +170,8 @@ const AccountSection = styled(Box)({
   gap: '30px',
   position: 'absolute',
   right: '-30px',
-  marginLeft: '-50px'
+  marginLeft: '40px',
+  marginRight: '40px',
 });
 
 const IconContainer = styled(Box)({
@@ -938,6 +940,13 @@ const Header = () => {
     <>
     <StyledAppBar>
       <HeaderContainer>
+        {/* Logo on the left, vertically centered */}
+        <Box sx={{ display: 'flex', alignItems: 'center', height: '100%', pl: 2 }}>
+          <RouterLink to="/" style={{ display: 'block', cursor: 'pointer' }}>
+            <Logo src={logo} alt="BoldEats" />
+          </RouterLink>
+        </Box>
+        {/* Navbar in the middle */}
         <NavbarSection>
           {isMobile && (
             <MobileMenuButton
@@ -949,9 +958,6 @@ const Header = () => {
               <MenuIcon />
             </MobileMenuButton>
           )}
-          <RouterLink to="/" style={{ display: 'block', cursor: 'pointer' }}>
-            <Logo src={logo} alt="BoldEats" />
-          </RouterLink>
           {!isMobile && (
             <NavigationLinks>
               <NavLink to="/" isActive={location === '/'}>Home</NavLink>
@@ -960,9 +966,27 @@ const Header = () => {
             </NavigationLinks>
           )}
         </NavbarSection>
-
+        {/* Account icon on the right */}
         {!isMobile && (
           <AccountSection>
+            {/* Wallet Icon */}
+            <IconContainer>
+              <IconWrapper>
+                <AccountBalanceWallet 
+                  sx={{ 
+                    color: '#ff0000', 
+                    fontSize: 26,
+                    mr: 1
+                  }} 
+                  onClick={() => {
+                    // Future: open wallet modal or navigate
+                    if (typeof window.openWalletModal === 'function') {
+                      window.openWalletModal();
+                    }
+                  }}
+                />
+              </IconWrapper>
+            </IconContainer>
             <IconContainer>
               <IconWrapper>
                 <AccountCircle 

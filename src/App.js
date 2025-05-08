@@ -14,7 +14,7 @@ import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import SplashScreen from './components/SplashScreen';
 import ProductPage from './pages/ProductPage';
-import SubscriptionModal from './components/SubscriptionModal';
+// import SubscriptionModal from './components/SubscriptionModal';
 import MenuDetails from './pages/MenuDetails';
 
 
@@ -53,10 +53,10 @@ const HomePage = () => {
       <Box sx={{ mt: 12 }}>
         <NewsletterSection />
       </Box>
-      <SubscriptionModal 
+      {/* <SubscriptionModal 
         open={showModal} 
         onClose={() => setShowModal(false)} 
-      />
+      /> */}
     </Box>
   );
 };
@@ -82,7 +82,8 @@ const AppContent = () => {
         } />
         <Route path="/kitchen" element={<MenuPage />} />
         <Route path="/product" element={<ProductPage />} />
-        <Route path="/menu-details" element={<MenuDetails />} />
+        <Route path="/menu-details" element={<MenuDetails onSubscription={() => window.location.assign('/subscription')} />} />
+        <Route path="/subscription" element={<SubscriptionSection />} />
         <Route 
           path="/profile" 
           element={
