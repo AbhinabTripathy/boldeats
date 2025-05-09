@@ -284,20 +284,49 @@ const SubscriptionPage = () => {
     setEditingAddressIdx(null);
   };
 
-  const handleAddressModalSave = () => {
+  const handleAddressModalSave = async () => {
     if (!address.address1 || !address.pincode) {
       setAddressError('Address 1 and Pincode are required.');
       return;
     }
-    if (editingAddressIdx === null) {
-      setAddresses(prev => [...prev, address]);
-    } else {
-      setAddresses(prev => prev.map((a, i) => i === editingAddressIdx ? address : a));
+    // Prepare payload for API
+    const payload = {
+      addressLine1: address.address1,
+      addressLine2: address.address2,
+      city: address.city,
+      state: address.state,
+      pincode: address.pincode
+    };
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://3.108.237.86:3333/api/addresses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        setAddressError(errorData.message || 'Failed to save address.');
+        return;
+      }
+      const data = await response.json();
+      // Add to local state only if POST is successful
+      if (editingAddressIdx === null) {
+        setAddresses(prev => [...prev, address]);
+      } else {
+        setAddresses(prev => prev.map((a, i) => i === editingAddressIdx ? address : a));
+      }
+      setShowForm(false);
+      setEditingAddressIdx(null);
+      setAddress({ address1: '', address2: '', city: '', state: '', pincode: '' });
+      setAddressError('');
+      setAddressModalOpen(false);
+    } catch (err) {
+      setAddressError('Failed to save address.');
     }
-    setShowForm(false);
-    setEditingAddressIdx(null);
-    setAddress({ address1: '', address2: '', city: '', state: '', pincode: '' });
-    setAddressError('');
   };
 
   const handleShowAddForm = () => {
