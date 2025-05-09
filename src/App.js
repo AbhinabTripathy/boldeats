@@ -7,14 +7,14 @@ import SubscriptionSection from './components/SubscriptionSection';
 import ReviewsSection from './components/ReviewsSection';
 import NewsletterSection from './components/NewsletterSection';
 import Footer from './components/Footer';
-// import SubscriptionPage from './pages/SubscriptionPage';
+import SubscriptionPage from './pages/SubscriptionPage';
+// import SubscriptionModal from './components/SubscriptionModal';
 import MenuPage from './pages/MenuPage';
 import CartPage from './pages/CartPage';
 import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import SplashScreen from './components/SplashScreen';
 import ProductPage from './pages/ProductPage';
-// import SubscriptionModal from './components/SubscriptionModal';
 import MenuDetails from './pages/MenuDetails';
 
 
@@ -83,7 +83,7 @@ const AppContent = () => {
         <Route path="/kitchen" element={<MenuPage />} />
         <Route path="/product" element={<ProductPage />} />
         <Route path="/menu-details" element={<MenuDetails onSubscription={() => window.location.assign('/subscription')} />} />
-        <Route path="/subscription" element={<SubscriptionSection />} />
+        <Route path="/subscription" element={<SubscriptionPage />} />
         <Route 
           path="/profile" 
           element={
@@ -92,14 +92,6 @@ const AppContent = () => {
             </ProtectedRoute>
           } 
         />
-        {/* <Route 
-          path="/subscription" 
-          element={
-            <ProtectedRoute>
-              <SubscriptionPage />
-            </ProtectedRoute>
-          } 
-        /> */}
         <Route 
           path="/cart" 
           element={

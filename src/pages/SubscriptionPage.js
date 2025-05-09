@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { Box, Typography, TextField, Button, styled } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, TextField, Button, styled, Drawer, Radio, RadioGroup, FormControlLabel, IconButton } from '@mui/material';
+import { Close } from '@mui/icons-material';
+import axios from 'axios';
 
 const PageContainer = styled(Box)({
   minHeight: '100vh',
@@ -27,9 +29,9 @@ const RedSection = styled(Box)({
   backgroundColor: '#C4362A',
   padding: '20px',
   color: 'white',
-  height: '200px',
+  height: '300px',
   position: 'relative',
-  marginBottom: '300px',
+  marginBottom: '700px',
   width: '100%'
 });
 
@@ -38,13 +40,12 @@ const SubscriptionCard = styled(Box)({
   borderRadius: '25px',
   padding: '40px',
   width: '1165px',
-  height: '395px',
   margin: '0 auto',
   boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
   border: '2px solid #E0E0E0',
   position: 'absolute',
   top: '150px',
-  left: '50%',
+  left: '52%',
   transform: 'translateX(-50%)',
   zIndex: 2,
   '@media (max-width: 1200px)': {
@@ -52,7 +53,7 @@ const SubscriptionCard = styled(Box)({
     height: 'auto',
     minHeight: '395px'
   },
-  marginTop: '120px'
+  marginTop: '30px'
 });
 
 const AmountButton = styled(Button)(({ selected }) => ({
@@ -95,13 +96,131 @@ const CustomTextField = styled(TextField)({
   },
 });
 
+const PaymentDrawerContent = styled(Box)({
+  width: 400,
+  maxWidth: '100vw',
+  padding: '32px 24px',
+  display: 'flex',
+  flexDirection: 'column',
+  height: '100%',
+  boxSizing: 'border-box',
+  position: 'relative',
+});
+
+const PaymentCard = styled(Box)({
+  background: '#fff',
+  borderRadius: '8px',
+  boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+  padding: '24px',
+  marginBottom: '32px',
+  display: 'flex',
+  alignItems: 'center',
+});
+
+const PayNowButton = styled(Button)({
+  background: '#C4362A',
+  color: '#fff',
+  borderRadius: '20px',
+  fontWeight: 600,
+  fontSize: '1.2rem',
+  textTransform: 'none',
+  width: '100%',
+  height: '48px',
+  marginTop: '24px',
+  boxShadow: 'none',
+  '&:hover': {
+    background: '#a82a1a',
+  },
+  '&.Mui-disabled': {
+    background: '#bdbdbd',
+    color: '#fff',
+  },
+});
+
 const SubscriptionPage = () => {
   const [customAmount, setCustomAmount] = useState('');
-  const amounts = [1000, 1500, 1700, 2000];
+  const [amountError, setAmountError] = useState('');
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('razorpay');
+  const amounts = [1400, 1500, 1700, 2000];
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setLoading(false);
+      setUser(null);
+      return;
+    }
+    axios.get('http://3.108.237.86:3333/api/users/profile', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .then(res => {
+        setUser(res.data?.data?.user || null);
+        setLoading(false);
+      })
+      .catch(() => {
+        setUser(null);
+        setLoading(false);
+      });
+  }, []);
 
   const handleAmountSelect = (amount) => {
     setCustomAmount(amount.toString());
+    if (amount < 1400) {
+      setAmountError('The minimum Subscription Price is 1400 per 15 days and 2400 per 30 days.');
+    } else {
+      setAmountError('');
+    }
   };
+
+  const handleAmountChange = (e) => {
+    const value = e.target.value;
+    setCustomAmount(value);
+    if (value && Number(value) < 1400) {
+      setAmountError('The minimum Subscription Price is 1400 per 15 days and 2400 per 30 days.');
+    } else {
+      setAmountError('');
+    }
+  };
+
+  const handleLoginClick = () => {
+    if (typeof window.openLoginModalFromHeader === 'function') {
+      window.openLoginModalFromHeader();
+    }
+  };
+
+  const handleSubscribe = () => {
+    if (!customAmount || Number(customAmount) < 1400) {
+      setAmountError('The minimum Subscription Price is 1400 per 15 days and 2400 per 30 days.');
+      return;
+    }
+    setDrawerOpen(true);
+  };
+
+  if (loading) {
+    return null;
+  }
+
+  if (!user) {
+    return (
+      <PageContainer>
+        <RedSection>
+          <Box sx={{ maxWidth: '1200px', margin: '0 auto', paddingTop: '40px' }}>
+            <Typography variant="h4" sx={{ fontWeight: 'normal', mb: 1 }}>
+              For subscription, please login
+            </Typography>
+            <SubscribeButton variant="contained" onClick={handleLoginClick} sx={{ width: 300, mt: 4 }}>
+              Login
+            </SubscribeButton>
+          </Box>
+        </RedSection>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer>
@@ -109,10 +228,10 @@ const SubscriptionPage = () => {
         <RedSection>
           <Box sx={{ maxWidth: '1200px', margin: '0 auto', paddingTop: '40px' }}>
             <Typography variant="h4" sx={{ fontWeight: 'normal', mb: 1 }}>
-              Nikita
+              {user.name}
             </Typography>
-            <Typography variant="body1">
-              5464984568489
+            <Typography variant="body2" sx={{ opacity: 0.8, fontSize: '1rem' }}>
+              {user._id}
             </Typography>
           </Box>
         </RedSection>
@@ -126,9 +245,15 @@ const SubscriptionPage = () => {
             fullWidth
             placeholder="Please enter an amount"
             value={customAmount}
-            onChange={(e) => setCustomAmount(e.target.value)}
+            onChange={handleAmountChange}
             sx={{ mb: 4 }}
           />
+
+          {amountError && (
+            <Typography color="error" sx={{ mb: 2, fontWeight: 500, fontSize: '1.1rem' }}>
+              {amountError}
+            </Typography>
+          )}
 
           <Box sx={{ display: 'flex', gap: 2, mb: 6, flexWrap: 'wrap' }}>
             {amounts.map((amount) => (
@@ -141,13 +266,49 @@ const SubscriptionPage = () => {
             ))}
           </Box>
 
-          <Box>
-            <SubscribeButton variant="contained">
-              subscribe
-            </SubscribeButton>
-          </Box>
+          <SubscribeButton variant="contained" onClick={handleSubscribe}>
+            subscribe
+          </SubscribeButton>
         </SubscriptionCard>
       </MainContent>
+
+      <Drawer
+        anchor="right"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        PaperProps={{ sx: { borderTopLeftRadius: 12, borderBottomLeftRadius: 12, width: 420 } }}
+      >
+        <IconButton
+          aria-label="close"
+          onClick={() => setDrawerOpen(false)}
+          sx={{ position: 'absolute', top: 8, right: 8, zIndex: 10 }}
+        >
+          <Close />
+        </IconButton>
+        <PaymentDrawerContent>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+            Choose payment method
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 3, fontWeight: 500 }}>
+            Add: ₹{customAmount}
+          </Typography>
+          <PaymentCard>
+            <RadioGroup
+              value={paymentMethod}
+              onChange={e => setPaymentMethod(e.target.value)}
+            >
+              <FormControlLabel
+                value="razorpay"
+                control={<Radio />}
+                label={<Typography sx={{ fontWeight: 500 }}>Debit/ Credit card, Net banking, UPI (Razorpay)</Typography>}
+              />
+            </RadioGroup>
+          </PaymentCard>
+          <PayNowButton>
+            Pay now
+          </PayNowButton>
+        </PaymentDrawerContent>
+      </Drawer>
     </PageContainer>
   );
 };

@@ -80,7 +80,7 @@ const NavbarSection = styled(Box)(({ theme }) => ({
   width: '800px',
   height: '70px',
   marginLeft: '0',
-  marginRight: '290px',
+  marginRight: '300px',
   backgroundColor: '#FFFFFF',
   [theme.breakpoints.down('md')]: {
     width: '100%',
@@ -169,9 +169,9 @@ const AccountSection = styled(Box)({
   alignItems: 'center',
   gap: '30px',
   position: 'absolute',
-  right: '-30px',
-  marginLeft: '40px',
-  marginRight: '40px',
+  right: '-6px',
+  marginLeft: '70px',
+  // marginRight: '100px',
 });
 
 const IconContainer = styled(Box)({
@@ -743,7 +743,7 @@ const Header = () => {
         localStorage.setItem('isLoggedIn', 'true');
         
         // Clear any existing cart data for the new user
-        localStorage.removeItem('cart');
+        // localStorage.removeItem('cart');
         localStorage.removeItem('addresses');
         localStorage.removeItem('transactions');
         
@@ -824,9 +824,14 @@ const Header = () => {
           </MobileNavLink>
         </MobileNavItem>
         <MobileNavItem>
-          <MobileNavLink to="/cart" isActive={location === '/cart'} onClick={handleDrawerToggle}>
-            Cart
+          <MobileNavLink to="/subscription" isActive={location === '/subscription'} onClick={handleDrawerToggle}>
+            Subscription
           </MobileNavLink>
+        </MobileNavItem>
+        <MobileNavItem>
+          {/* <MobileNavLink to="/cart" isActive={location === '/cart'} onClick={handleDrawerToggle}>
+            Cart
+          </MobileNavLink> */}
         </MobileNavItem>
       </MobileNavList>
       <Box sx={{ 
@@ -941,7 +946,7 @@ const Header = () => {
     <StyledAppBar>
       <HeaderContainer>
         {/* Logo on the left, vertically centered */}
-        <Box sx={{ display: 'flex', alignItems: 'center', height: '100%', pl: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', height: '100%', pl: 2, ml: -3 }}>
           <RouterLink to="/" style={{ display: 'block', cursor: 'pointer' }}>
             <Logo src={logo} alt="BoldEats" />
           </RouterLink>
@@ -962,7 +967,8 @@ const Header = () => {
             <NavigationLinks>
               <NavLink to="/" isActive={location === '/'}>Home</NavLink>
               <NavLink to="/kitchen" isActive={location === '/kitchen'}>Kitchen</NavLink>
-              <NavLink to="/cart" isActive={location === '/cart'}>Cart</NavLink>
+              <NavLink to="/subscription" isActive={location === '/subscription'}>Subscription</NavLink>
+              {/* <NavLink to="/cart" isActive={location === '/cart'}>Cart</NavLink> */}
             </NavigationLinks>
           )}
         </NavbarSection>

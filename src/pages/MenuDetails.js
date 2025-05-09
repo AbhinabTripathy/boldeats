@@ -249,6 +249,48 @@ const DiagonalRibbon = styled(Box)(({ bgcolor }) => ({
   textShadow: '0 1px 4px rgba(0,0,0,0.10)'
 }));
 
+const PaymentSummaryBar = styled(Box)({
+  border: '1.5px solid #8bc34a',
+  borderRadius: '6px',
+  display: 'flex',
+  alignItems: 'center',
+  padding: '10px 16px',
+  marginTop: 18,
+  background: '#fff',
+  boxShadow: '0 1px 4px rgba(76,175,80,0.08)',
+  gap: 18,
+  minHeight: 56,
+  position: 'relative',
+});
+
+const PayButton = styled(Button)({
+  background: '#4caf50',
+  color: '#fff',
+  fontWeight: 600,
+  fontSize: '1.1rem',
+  borderRadius: '6px',
+  minWidth: '120px',
+  padding: '10px 0',
+  textTransform: 'none',
+  '&:hover': {
+    background: '#388e3c',
+  },
+});
+
+const QtyBox = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  border: '1px solid #bbb',
+  borderRadius: 6,
+  background: '#fff',
+  minWidth: 80,
+  justifyContent: 'center',
+  gap: 8,
+  fontWeight: 600,
+  fontSize: 18,
+  padding: '2px 8px',
+});
+
 const menuTypes = [
   { key: 'lunchMenu', label: 'Lunch' },
   { key: 'dinnerMenu', label: 'Dinner' },
@@ -339,8 +381,12 @@ const MenuDetails = () => {
   const navigate = useNavigate();
   const caterer = location.state?.caterer;
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [subs15Count, setSubs15Count] = useState(0);
+  const [subs30Count, setSubs30Count] = useState(0);
+  const [showSummary, setShowSummary] = useState(false);
+  const [summaryMsg, setSummaryMsg] = useState('');
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [selectedPrice, setSelectedPrice] = useState(1500);
+  const [selectedPrice, setSelectedPrice] = useState(0);
   // Menu slider state
   const [menuIdx, setMenuIdx] = useState(0); // 0: Lunch, 1: Dinner, 2: Breakfast
   const [fadeIn, setFadeIn] = useState(true);
@@ -383,6 +429,19 @@ const MenuDetails = () => {
       setFadeIn(true);
     }, 180);
   };
+
+  // Calculate total
+  const total = subs15Count * 1500 + subs30Count * 2400;
+
+  // Message for summary
+  let msg = '';
+  if (subs15Count > 0 && subs30Count > 0) {
+    msg = `You have added ${subs15Count} x 15 days and ${subs30Count} x monthly subscription.`;
+  } else if (subs15Count > 0) {
+    msg = `You have added ${subs15Count} x 15 days subscription.`;
+  } else if (subs30Count > 0) {
+    msg = `You have added ${subs30Count} x monthly subscription.`;
+  }
 
   return (
     <>
@@ -515,8 +574,11 @@ const MenuDetails = () => {
                   if (localStorage.getItem('isLoggedIn') !== 'true') {
                     setShowLoginPrompt(true);
                   } else {
-                    setSelectedPrice(1500);
-                    setPaymentModalOpen(true);
+                    setSubs15Count(c => {
+                      setShowSummary(true);
+                      setSummaryMsg('');
+                      return c + 1;
+                    });
                   }
                 }}>
                   Subscription @ ₹1500 / 15 Days
@@ -525,14 +587,59 @@ const MenuDetails = () => {
                   if (localStorage.getItem('isLoggedIn') !== 'true') {
                     setShowLoginPrompt(true);
                   } else {
-                    setSelectedPrice(2400);
-                    setPaymentModalOpen(true);
+                    setSubs30Count(c => {
+                      setShowSummary(true);
+                      setSummaryMsg('');
+                      return c + 1;
+                    });
                   }
                 }}>
                   Subscription @ ₹2400 / Month
                 </SubscriptionButton>
               </SubscriptionButtons>
             </MenuCard>
+            {/* Inline Payment Summary Bar and message OUTSIDE the card */}
+            {(showSummary && (subs15Count > 0 || subs30Count > 0)) && (
+              <PaymentSummaryBar>
+                {subs15Count > 0 && (
+                  <>
+                    <Typography sx={{ fontWeight: 600, mr: 1 }}>15 days</Typography>
+                    <QtyBox>
+                      <IconButton size="small" onClick={() => setSubs15Count(c => Math.max(0, c - 1))}>
+                        -
+                      </IconButton>
+                      <span>{subs15Count}</span>
+                      <IconButton size="small" onClick={() => setSubs15Count(c => c + 1)}>
+                        +
+                      </IconButton>
+                    </QtyBox>
+                  </>
+                )}
+                {subs30Count > 0 && (
+                  <>
+                    <Typography sx={{ fontWeight: 600, ml: 2, mr: 1 }}>Monthly</Typography>
+                    <QtyBox>
+                      <IconButton size="small" onClick={() => setSubs30Count(c => Math.max(0, c - 1))}>
+                        -
+                      </IconButton>
+                      <span>{subs30Count}</span>
+                      <IconButton size="small" onClick={() => setSubs30Count(c => c + 1)}>
+                        +
+                      </IconButton>
+                    </QtyBox>
+                  </>
+                )}
+                <PayButton sx={{ ml: 'auto', px: 3 }} onClick={() => {
+                  setSelectedPrice(total);
+                  setPaymentModalOpen(true);
+                }}>
+                  Pay ₹ {total}
+                </PayButton>
+              </PaymentSummaryBar>
+            )}
+            {msg && showSummary && (
+              <Typography sx={{ color: '#388e3c', fontWeight: 500, mt: 1, mb: 0, fontSize: 15 }}>{msg}</Typography>
+            )}
           </div>
         </Fade>
       </Box>
@@ -553,6 +660,7 @@ const MenuDetails = () => {
           }} color="primary" variant="contained">Login</Button>
         </DialogActions>
       </Dialog>
+
       <PaymentModal open={paymentModalOpen} onClose={() => setPaymentModalOpen(false)} price={selectedPrice} />
     </>
   );
