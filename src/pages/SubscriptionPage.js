@@ -201,6 +201,25 @@ const SubscriptionPage = () => {
     setDrawerOpen(true);
   };
 
+  // Helper to determine days and message
+  const getSubscriptionMessage = () => {
+    const amt = Number(customAmount);
+    if (!amt || amt < 1400) return '';
+    if (amt === 1400) return 'Thanks for choosing Subscription of 15 days for ₹1400';
+    if (amt === 2400) return 'Thanks for choosing Subscription of 30 days for ₹2400';
+    if (amt % 2400 === 0) {
+      const months = amt / 2400;
+      return `Thanks for choosing Subscription of ${months * 30} days for ₹${amt}`;
+    }
+    if (amt % 1400 === 0) {
+      const blocks = amt / 1400;
+      return `Thanks for choosing Subscription of ${blocks * 15} days for ₹${amt}`;
+    }
+    // For any other amount, show proportional days (rounded to 1 decimal)
+    const days = ((amt / 1400) * 15).toFixed(1);
+    return `Thanks for choosing Subscription of ${days} days for ₹${amt}`;
+  };
+
   if (loading) {
     return null;
   }
@@ -267,7 +286,7 @@ const SubscriptionPage = () => {
           </Box>
 
           <SubscribeButton variant="contained" onClick={handleSubscribe}>
-            subscribe
+            Subscribe
           </SubscribeButton>
         </SubscriptionCard>
       </MainContent>
@@ -290,7 +309,7 @@ const SubscriptionPage = () => {
             Choose payment method
           </Typography>
           <Typography variant="body1" sx={{ mb: 3, fontWeight: 500 }}>
-            Add: ₹{customAmount}
+            {getSubscriptionMessage()}
           </Typography>
           <PaymentCard>
             <RadioGroup

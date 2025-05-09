@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import organic from '../assets/images/organic.png';
 import fresh from '../assets/images/fresh.png';
 import chef from '../assets/images/shop.png';
-import SubscriptionModal from './SubscriptionModal';
 
 const StyledSection = styled(Box)(({ theme }) => ({
   padding: theme.spacing(10, 0),
@@ -36,10 +35,8 @@ const SubscriptionButton = styled(Button)(({ theme }) => ({
 const SubscriptionSection = () => {
   const navigate = useNavigate();
 
-  const [openModal, setOpenModal] = React.useState(false);
-
   const handleSubscriptionClick = () => {
-    setOpenModal(true);
+    navigate('/subscription');
   };
 
   return (
@@ -182,7 +179,6 @@ const SubscriptionSection = () => {
           }}
         />
       </Box>
-      <SubscriptionModal open={openModal} onClose={() => setOpenModal(false)} />
     </StyledSection>
   );
 };

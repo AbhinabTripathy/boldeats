@@ -289,7 +289,7 @@ const HeroSection = () => {
   }, []);
 
   const handleExplore = () => {
-    navigate('/menu');
+    navigate('/kitchen');
   };
 
   const currentSlide = heroConfigs[activeIndex];
