@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, styled, Collapse, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Modal } from '@mui/material';
-import { Edit, KeyboardArrowDown, KeyboardArrowUp, AccountBalanceWallet } from '@mui/icons-material';
+import { Box, Typography, styled, Collapse, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Modal, TextField, Button, IconButton } from '@mui/material';
+import { Edit, KeyboardArrowDown, KeyboardArrowUp, AccountBalanceWallet, Close } from '@mui/icons-material';
 import axios from 'axios';
+import { useTheme } from '@mui/material/styles';
+import { useMediaQuery } from '@mui/material';
+import logo from '../assets/BoldTribe Logo-7.svg';
 
 const ProfileCard = styled(Box)({
   backgroundColor: '#f5f5f5',
@@ -163,13 +166,39 @@ const WalletAmount = styled(Box)({
   }
 });
 
+const EditModal = styled(Modal)({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center'
+});
+
+const EditCard = styled(Box)({
+  backgroundColor: 'white',
+  borderRadius: '20px',
+  padding: '40px',
+  width: '90%',
+  maxWidth: '600px',
+  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+  position: 'relative',
+  '& h1': {
+    fontSize: '32px',
+    fontWeight: 600,
+    marginBottom: '40px',
+    textAlign: 'center'
+  }
+});
+
 const ProfilePage = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [isTransactionOpen, setIsTransactionOpen] = useState(false);
   const [isWalletOpen, setIsWalletOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [userData, setUserData] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editData, setEditData] = useState({ name: '', email: '', phone: '', address: '' });
 
   // Fetch user data from API on component mount
   useEffect(() => {
@@ -195,12 +224,18 @@ const ProfilePage = () => {
         console.log('User profile response:', response?.data?.data);
         
         if (response?.data?.data?.user) {
+          const user = response?.data?.data?.user;
           setUserData({
-            name: response?.data?.data?.user?.name,
-            email: response?.data?.data?.user?.email,
-            phone: response?.data?.data?.user?.phone_number,
-            address: response?.data?.data?.user?.address || 'Not Available',
-            // walletBalance: response?.data?.data?.user?.wallet_balance || 0
+            name: user?.name,
+            email: user?.email,
+            phone: user?.phone_number,
+            address: user?.address || 'Not Available',
+          });
+          setEditData({
+            name: user?.name,
+            email: user?.email,
+            phone: user?.phone_number,
+            address: user?.address || 'Not Available',
           });
         }
         
@@ -221,8 +256,75 @@ const ProfilePage = () => {
     fetchUserData();
   }, []);
 
+  // Fetch wallet balance for modal (simulate same as WalletModal.js)
+  const [walletLoading, setWalletLoading] = useState(true);
+  const [walletUser, setWalletUser] = useState(null);
+  const [walletBalance, setWalletBalance] = useState(0);
+  useEffect(() => {
+    if (!isWalletOpen) return;
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setWalletUser(null);
+      setWalletLoading(false);
+      return;
+    }
+    axios.get('http://3.108.237.86:3333/api/users/profile', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .then(res => {
+        setWalletUser(res.data?.data?.user || null);
+        // setWalletBalance(res.data?.data?.user?.walletBalance || 0); // If you have wallet balance in user data
+        setWalletLoading(false);
+      })
+      .catch(() => {
+        setWalletUser(null);
+        setWalletLoading(false);
+      });
+  }, [isWalletOpen]);
+
   const handleWalletOpen = () => setIsWalletOpen(true);
   const handleWalletClose = () => setIsWalletOpen(false);
+  const handleEditOpen = () => setIsEditOpen(true);
+  const handleEditClose = () => setIsEditOpen(false);
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      // Only send allowed fields
+      const payload = {
+        name: editData.name,
+        phone_number: editData.phone,
+        address: editData.address
+      };
+      const response = await axios.put('http://3.108.237.86:3333/api/users/profile', payload, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response?.data?.data?.user) {
+        setUserData({
+          name: response?.data?.data?.user?.name,
+          email: response?.data?.data?.user?.email,
+          phone: response?.data?.data?.user?.phone_number,
+          address: response?.data?.data?.user?.address || 'Not Available',
+        });
+        handleEditClose();
+      }
+    } catch (err) {
+      console.error('Error updating user data:', err);
+      if (err.response) {
+        console.error('Server response:', err.response.data);
+      }
+      setError('Failed to update user data. Please try again later.');
+    }
+  };
 
   return (
     <Box sx={{ 
@@ -247,7 +349,7 @@ const ProfilePage = () => {
         <Typography color="error">{error}</Typography>
       ) : (
         <ProfileCard>
-          <EditButton>
+          <EditButton onClick={handleEditOpen}>
             <Edit sx={{ fontSize: 24 }} />
           </EditButton>
 
@@ -378,22 +480,171 @@ const ProfilePage = () => {
             onClose={handleWalletClose}
             aria-labelledby="wallet-modal"
           >
-            <WalletCard>
-              <Typography variant="h1">Your wallet</Typography>
-              
-              <WalletInfo>
-                <WalletAmount>
-                  <Typography variant="h3">Balance : ₹{userData && userData.walletBalance ? userData.walletBalance.toFixed(2) : '0.00'}</Typography>
-                  <Typography variant="h3">Last Payment : No payments yet</Typography>
-                </WalletAmount>
-                
-                <Box>
-                  <Typography sx={{ textAlign: 'right', mb: 2 }}>Month : {new Date().toLocaleString('default', { month: 'long' })}</Typography>
-                  <Typography sx={{ textAlign: 'right' }}>Recharged : ₹0</Typography>
+            <Box
+              sx={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: isMobile ? '90%' : 900,
+                minHeight: isMobile ? 400 : 350,
+                bgcolor: 'transparent',
+                borderRadius: '25px',
+                boxShadow: 24,
+                p: 0,
+                color: 'white',
+              }}
+            >
+              {/* Gradient Background */}
+              <Box sx={{
+                width: '100%',
+                height: '100%',
+                borderRadius: '25px',
+                background: 'linear-gradient(135deg, #6a82fb 0%, #fc5c7d 100%)',
+                p: isMobile ? 2 : 4,
+                position: 'relative',
+              }}>
+                {/* Close Button */}
+                <IconButton 
+                  onClick={handleWalletClose}
+                  sx={{ 
+                    color: 'white',
+                    position: 'absolute',
+                    right: 16,
+                    top: 16,
+                    zIndex: 2,
+                    '&:hover': {
+                      bgcolor: 'rgba(255, 255, 255, 0.1)'
+                    }
+                  }}
+                >
+                  <Close />
+                </IconButton>
+
+                {/* Content Container */}
+                <Box sx={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  pt: isMobile ? 5 : 2,
+                  pb: 2
+                }}>
+                  {/* Logo and Title */}
+                  <Box sx={{ mb: 2 }}>
+                    <img 
+                      src={logo} 
+                      alt="BoldEats" 
+                      style={{ 
+                        height: isMobile ? '40px' : '60px',
+                        display: 'block',
+                        margin: '0 auto',
+                        marginBottom: '8px',
+                        filter: 'brightness(0) invert(1)'
+                      }} 
+                    />
+                    <Typography
+                      variant="h4"
+                      component="h2"
+                      sx={{
+                        fontWeight: 500,
+                        textAlign: 'center',
+                        fontSize: isMobile ? '20px' : '24px',
+                        letterSpacing: 1
+                      }}
+                    >
+                      Wallet
+                    </Typography>
+                  </Box>
+
+                  {/* Hi, User */}
+                  {!walletLoading && walletUser && (
+                    <Typography variant="h6" sx={{ fontWeight: 400, fontSize: isMobile ? '18px' : '20px', mb: 2 }}>
+                      Hi {walletUser.name}, welcome to BoldEats Wallet
+                    </Typography>
+                  )}
+
+                  {/* Total Balance */}
+                  <Box sx={{
+                    background: 'rgba(255,255,255,0.15)',
+                    borderRadius: 3,
+                    px: 4,
+                    py: 2,
+                    mb: 3,
+                    minWidth: 220,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    fontSize: isMobile ? 22 : 28,
+                    letterSpacing: 1
+                  }}>
+                    <span style={{ fontSize: 28, marginRight: 8 }}>₹</span>
+                    {walletBalance}
+                  </Box>
                 </Box>
-              </WalletInfo>
-            </WalletCard>
+              </Box>
+            </Box>
           </WalletModal>
+
+          <EditModal
+            open={isEditOpen}
+            onClose={handleEditClose}
+            aria-labelledby="edit-modal"
+          >
+            <EditCard>
+              <IconButton 
+                onClick={handleEditClose}
+                sx={{ 
+                  color: '#333', 
+                  position: 'absolute', 
+                  right: 16, 
+                  top: 16, 
+                  zIndex: 2,
+                  '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
+                }}
+                aria-label="close"
+              >
+                <Close />
+              </IconButton>
+              <Typography variant="h1">Edit Profile</Typography>
+              <TextField
+                fullWidth
+                label="Name"
+                name="name"
+                value={editData.name}
+                onChange={handleEditChange}
+                margin="normal"
+              />
+              <TextField
+                fullWidth
+                label="Email"
+                name="email"
+                value={editData.email}
+                margin="normal"
+                InputProps={{ readOnly: true }}
+              />
+              <TextField
+                fullWidth
+                label="Mobile Number"
+                name="phone"
+                value={editData.phone}
+                onChange={handleEditChange}
+                margin="normal"
+              />
+              <TextField
+                fullWidth
+                label="Address"
+                name="address"
+                value={editData.address}
+                onChange={handleEditChange}
+                margin="normal"
+              />
+              <Button variant="contained" color="primary" onClick={handleUpdate} sx={{ mt: 2 }}>
+                Update
+              </Button>
+            </EditCard>
+          </EditModal>
         </ProfileCard>
       )}
     </Box>
