@@ -261,6 +261,13 @@ const PaymentSummaryBar = styled(Box)({
   gap: 18,
   minHeight: 56,
   position: 'relative',
+  flexWrap: 'wrap',
+  justifyContent: 'space-between',
+  '@media (max-width: 600px)': {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
 });
 
 const PayButton = styled(Button)({
@@ -289,6 +296,10 @@ const QtyBox = styled(Box)({
   fontWeight: 600,
   fontSize: 18,
   padding: '2px 8px',
+  '@media (max-width: 600px)': {
+    minWidth: 60,
+    fontSize: 16,
+  },
 });
 
 const menuTypes = [

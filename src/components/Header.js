@@ -41,7 +41,7 @@ import {
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import logo from '../assets/images/BoldTribe Logo-2.svg';
+import logo from '../assets/BoldTribe Logo-7.svg';
 import axios from 'axios';
 import WalletModal from './WalletModal';
 
@@ -482,6 +482,7 @@ const Header = () => {
   const [phone, setPhone] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
   const location = window.location.pathname;
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
   
   // Close mobile drawer when switching to desktop view
   React.useEffect(() => {
@@ -807,6 +808,16 @@ const Header = () => {
               }} 
             />
           </IconWrapper>
+          <IconWrapper>
+            <AccountBalanceWallet 
+              sx={{ 
+                color: '#ff0000', 
+                fontSize: 26,
+                ml: 1
+              }} 
+              onClick={() => setWalletModalOpen(true)}
+            />
+          </IconWrapper>
         </Box>
         <IconButton onClick={handleDrawerToggle}>
           <Close />
@@ -946,139 +957,137 @@ const Header = () => {
     <StyledAppBar>
       <HeaderContainer>
         {/* Logo on the left, vertically centered */}
-        <Box sx={{ display: 'flex', alignItems: 'center', height: '100%', pl: 2, ml: -3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', height: '100%', pl: 2, ml: -3, flex: 1 }}>
           <RouterLink to="/" style={{ display: 'block', cursor: 'pointer' }}>
             <Logo src={logo} alt="BoldEats" />
           </RouterLink>
         </Box>
-        {/* Navbar in the middle */}
-        <NavbarSection>
-          {isMobile && (
-            <MobileMenuButton
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              onClick={handleDrawerToggle}
-            >
-              <MenuIcon />
-            </MobileMenuButton>
-          )}
-          {!isMobile && (
+        {/* Navbar in the middle (desktop only) */}
+        {!isMobile && (
+          <NavbarSection>
             <NavigationLinks>
               <NavLink to="/" isActive={location === '/'}>Home</NavLink>
               <NavLink to="/kitchen" isActive={location === '/kitchen'}>Kitchen</NavLink>
               <NavLink to="/subscription" isActive={location === '/subscription'}>Subscription</NavLink>
               {/* <NavLink to="/cart" isActive={location === '/cart'}>Cart</NavLink> */}
             </NavigationLinks>
-          )}
-        </NavbarSection>
-        {/* Account icon on the right */}
-        {!isMobile && (
-          <AccountSection>
-            {/* Wallet Icon */}
-            <IconContainer>
-              <IconWrapper>
-                <AccountBalanceWallet 
-                  sx={{ 
-                    color: '#ff0000', 
-                    fontSize: 26,
-                    mr: 1
-                  }} 
-                  onClick={() => {
-                    // Future: open wallet modal or navigate
-                    if (typeof window.openWalletModal === 'function') {
-                      window.openWalletModal();
-                    }
-                  }}
-                />
-              </IconWrapper>
-            </IconContainer>
-            <IconContainer>
-              <IconWrapper>
-                <AccountCircle 
-                  sx={{ 
-                    color: '#ff0000', 
-                    fontSize: 28
-                  }} 
-                  onClick={handleClick}
-                />
-              </IconWrapper>
-            </IconContainer>
-            <Popper 
-              open={open} 
-              anchorEl={anchorEl} 
-              placement="bottom-end" 
-              transition
-              style={{ zIndex: 1500 }}
-            >
-              {({ TransitionProps }) => (
-                <Grow {...TransitionProps}>
-                  <DropdownPaper>
-                    {!isLoggedIn ? (
-                      <>
-                        <AccountButton
-                          startIcon={<Login />}
-                          onClick={handleOpenLoginModal}
-                          component="button"
-                        >
-                          Login
-                        </AccountButton>
-                        <AccountButton
-                          startIcon={<PersonAdd />}
-                          onClick={handleOpenRegisterModal}
-                          component="button"
-                          sx={{ 
-                            backgroundColor: '#C4362A',
-                            color: 'white',
-                            '&:hover': {
-                              backgroundColor: '#b02d23',
-                            }
-                          }}
-                        >
-                          Register
-                        </AccountButton>
-                      </>
-                    ) : (
-                      <>
-                        <AccountMenuItem
-                            onClick={() => {
-                            handleClose();
-                            navigate('/profile');
-                          }}
-                        >
-                          <ListItemIcon>
-                            <Person fontSize="small" />
-                          </ListItemIcon>
-                          <ListItemText primary="Profile" />
-                        </AccountMenuItem>
-                        <AccountMenuItem>
-                          <ListItemIcon>
-                            <Settings fontSize="small" />
-                          </ListItemIcon>
-                          <ListItemText primary="Settings" />
-                        </AccountMenuItem>
-                        <AccountMenuItem
-                          onClick={handleLogout}
-                          sx={{
-                            color: '#C4362A',
-                            '& .MuiListItemIcon-root': {
-                              color: '#C4362A'
-                            }
-                          }}
-                        >
-                          <ListItemIcon>
-                            <Logout fontSize="small" />
-                          </ListItemIcon>
-                          <ListItemText primary="Logout" />
-                        </AccountMenuItem>
-                      </>
-                    )}
-                  </DropdownPaper>
-                </Grow>
-              )}
-            </Popper>
-          </AccountSection>
+          </NavbarSection>
         )}
+        {/* Account icon and hamburger on the right */}
+        <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+          {!isMobile && (
+            <AccountSection>
+              {/* Wallet Icon */}
+              <IconContainer>
+                <IconWrapper>
+                  <AccountBalanceWallet 
+                    sx={{ 
+                      color: '#ff0000', 
+                      fontSize: 26,
+                      mr: 1
+                    }} 
+                    onClick={() => setWalletModalOpen(true)}
+                  />
+                </IconWrapper>
+              </IconContainer>
+              <IconContainer>
+                <IconWrapper>
+                  <AccountCircle 
+                    sx={{ 
+                      color: '#ff0000', 
+                      fontSize: 28
+                    }} 
+                    onClick={handleClick}
+                  />
+                </IconWrapper>
+              </IconContainer>
+              <Popper 
+                open={open} 
+                anchorEl={anchorEl} 
+                placement="bottom-end" 
+                transition
+                style={{ zIndex: 1500 }}
+              >
+                {({ TransitionProps }) => (
+                  <Grow {...TransitionProps}>
+                    <DropdownPaper>
+                      {!isLoggedIn ? (
+                        <>
+                          <AccountButton
+                            startIcon={<Login />}
+                            onClick={handleOpenLoginModal}
+                            component="button"
+                          >
+                            Login
+                          </AccountButton>
+                          <AccountButton
+                            startIcon={<PersonAdd />}
+                            onClick={handleOpenRegisterModal}
+                            component="button"
+                            sx={{ 
+                              backgroundColor: '#C4362A',
+                              color: 'white',
+                              '&:hover': {
+                                backgroundColor: '#b02d23',
+                              }
+                            }}
+                          >
+                            Register
+                          </AccountButton>
+                        </>
+                      ) : (
+                        <>
+                          <AccountMenuItem
+                              onClick={() => {
+                              handleClose();
+                              navigate('/profile');
+                            }}
+                          >
+                            <ListItemIcon>
+                              <Person fontSize="small" />
+                            </ListItemIcon>
+                            <ListItemText primary="Profile" />
+                          </AccountMenuItem>
+                          <AccountMenuItem>
+                            <ListItemIcon>
+                              <Settings fontSize="small" />
+                            </ListItemIcon>
+                            <ListItemText primary="Settings" />
+                          </AccountMenuItem>
+                          <AccountMenuItem
+                            onClick={handleLogout}
+                            sx={{
+                              color: '#C4362A',
+                              '& .MuiListItemIcon-root': {
+                                color: '#C4362A'
+                              }
+                            }}
+                          >
+                            <ListItemIcon>
+                              <Logout fontSize="small" />
+                            </ListItemIcon>
+                            <ListItemText primary="Logout" />
+                          </AccountMenuItem>
+                        </>
+                      )}
+                    </DropdownPaper>
+                  </Grow>
+                )}
+              </Popper>
+            </AccountSection>
+          )}
+          {isMobile && (
+            <MobileMenuButton
+              edge="end"
+              color="inherit"
+              aria-label="menu"
+              onClick={handleDrawerToggle}
+              sx={{ ml: 1 }}
+            >
+              <MenuIcon />
+            </MobileMenuButton>
+          )}
+        </Box>
       </HeaderContainer>
     </StyledAppBar>
 
@@ -1362,6 +1371,9 @@ const Header = () => {
         </ModalContainer>
       </ModalOverlay>
     </Modal>
+
+    {/* Wallet Modal */}
+    <WalletModal open={walletModalOpen} onClose={() => setWalletModalOpen(false)} />
 
     </>
   );
