@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, TextField, Button, styled, Drawer, Radio, RadioGroup, FormControlLabel, IconButton } from '@mui/material';
-import { Close } from '@mui/icons-material';
+import { Box, Typography, TextField, Button, styled, Drawer, Radio, RadioGroup, FormControlLabel, IconButton, Modal } from '@mui/material';
+import { Close, AddLocationAlt, Edit as EditIcon, Delete as DeleteIcon, RadioButtonChecked, RadioButtonUnchecked } from '@mui/icons-material';
 import axios from 'axios';
 
 const PageContainer = styled(Box)({
@@ -145,6 +145,13 @@ const SubscriptionPage = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('razorpay');
   const amounts = [1400, 1500, 1700, 2000];
+  const [addressModalOpen, setAddressModalOpen] = useState(false);
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddressIdx, setSelectedAddressIdx] = useState(null);
+  const [editingAddressIdx, setEditingAddressIdx] = useState(null);
+  const [address, setAddress] = useState({ address1: '', address2: '', city: '', state: '', pincode: '' });
+  const [addressError, setAddressError] = useState('');
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -218,6 +225,85 @@ const SubscriptionPage = () => {
     // For any other amount, show proportional days (rounded to 1 decimal)
     const days = ((amt / 1400) * 15).toFixed(1);
     return `Thanks for choosing Subscription of ${days} days for ₹${amt}`;
+  };
+
+  // Fetch city/state from pincode
+  const fetchCityState = async (pincode) => {
+    if (pincode.length !== 6) return;
+    try {
+      const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+      const data = await res.json();
+      if (data[0].Status === 'Success') {
+        const postOffice = data[0].PostOffice[0];
+        setAddress(prev => ({
+          ...prev,
+          city: postOffice.District,
+          state: postOffice.State
+        }));
+      }
+    } catch (e) {
+      // Optionally handle error
+    }
+  };
+
+  const handleAddressChange = (field, value) => {
+    setAddress(prev => ({ ...prev, [field]: value }));
+    if (field === 'pincode' && value.length === 6) {
+      fetchCityState(value);
+    }
+  };
+
+  // Open modal for address management
+  const handleAddAddress = () => {
+    setAddress({ address1: '', address2: '', city: '', state: '', pincode: '' });
+    setEditingAddressIdx(null);
+    setShowForm(true);
+    setAddressModalOpen(true);
+  };
+
+  const handleEditAddress = (idx) => {
+    setAddress(addresses[idx]);
+    setEditingAddressIdx(idx);
+    setShowForm(true);
+    setAddressModalOpen(true);
+  };
+
+  const handleDeleteAddress = (idx) => {
+    setAddresses(prev => prev.filter((_, i) => i !== idx));
+    // If editing the same address, close the form
+    if (editingAddressIdx === idx) {
+      setShowForm(false);
+      setEditingAddressIdx(null);
+    }
+  };
+
+  const handleAddressModalClose = () => {
+    setAddressModalOpen(false);
+    setAddressError('');
+    setShowForm(false);
+    setEditingAddressIdx(null);
+  };
+
+  const handleAddressModalSave = () => {
+    if (!address.address1 || !address.pincode) {
+      setAddressError('Address 1 and Pincode are required.');
+      return;
+    }
+    if (editingAddressIdx === null) {
+      setAddresses(prev => [...prev, address]);
+    } else {
+      setAddresses(prev => prev.map((a, i) => i === editingAddressIdx ? address : a));
+    }
+    setShowForm(false);
+    setEditingAddressIdx(null);
+    setAddress({ address1: '', address2: '', city: '', state: '', pincode: '' });
+    setAddressError('');
+  };
+
+  const handleShowAddForm = () => {
+    setAddress({ address1: '', address2: '', city: '', state: '', pincode: '' });
+    setEditingAddressIdx(null);
+    setShowForm(true);
   };
 
   if (loading) {
@@ -326,7 +412,179 @@ const SubscriptionPage = () => {
           <PayNowButton>
             Pay now
           </PayNowButton>
+          <Button
+            variant="outlined"
+            startIcon={<AddLocationAlt />}
+            sx={{ mt: 2, borderRadius: 2, fontWeight: 600 }}
+            onClick={handleAddAddress}
+          >
+            Add Address
+          </Button>
+          {addresses.length > 0 && addresses.map((addr, idx) => (
+            <Box
+              key={idx}
+              sx={{
+                mt: 2,
+                mb: 1,
+                p: 2,
+                border: selectedAddressIdx === idx ? '2px solid #C4362A' : '1px solid #eee',
+                borderRadius: 2,
+                background: selectedAddressIdx === idx ? '#fff5f5' : '#fafafa',
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'flex-start',
+                cursor: 'pointer',
+              }}
+              onClick={() => setSelectedAddressIdx(idx)}
+            >
+              <Box sx={{ mr: 1, mt: 0.5 }}>
+                {selectedAddressIdx === idx ? (
+                  <RadioButtonChecked sx={{ color: '#C4362A' }} />
+                ) : (
+                  <RadioButtonUnchecked sx={{ color: '#bbb' }} />
+                )}
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, display: 'flex', alignItems: 'center' }}>
+                  Delivery Address {idx + 1}
+                  <IconButton size="small" sx={{ ml: 1 }} onClick={e => { e.stopPropagation(); handleEditAddress(idx); }}><EditIcon fontSize="small" /></IconButton>
+                  <IconButton size="small" sx={{ ml: 1 }} onClick={e => { e.stopPropagation(); handleDeleteAddress(idx); }}><DeleteIcon fontSize="small" /></IconButton>
+                </Typography>
+                {addr.address1 && <Typography sx={{ fontSize: 15 }}>{addr.address1}</Typography>}
+                {addr.address2 && <Typography sx={{ fontSize: 15 }}>{addr.address2}</Typography>}
+                {(addr.city || addr.state || addr.pincode) && (
+                  <Typography sx={{ fontSize: 15, mt: 0.5 }}>
+                    {[addr.city, addr.state, addr.pincode].filter(Boolean).join(', ')}
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+          ))}
         </PaymentDrawerContent>
+        <Modal
+          open={addressModalOpen}
+          onClose={handleAddressModalClose}
+          aria-labelledby="add-address-modal"
+        >
+          <Box sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            bgcolor: 'background.paper',
+            borderRadius: 3,
+            boxShadow: 24,
+            p: 4,
+            minWidth: 340,
+            maxWidth: 480,
+            width: '90vw',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+          }}>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Manage Addresses</Typography>
+            {/* Address form for add/edit */}
+            {showForm && (
+              <Box sx={{ mb: 3, border: '1px solid #eee', borderRadius: 2, p: 2 }}>
+                <TextField
+                  label="Address 1"
+                  fullWidth
+                  value={address.address1}
+                  onChange={e => handleAddressChange('address1', e.target.value)}
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  label="Address 2"
+                  fullWidth
+                  value={address.address2}
+                  onChange={e => handleAddressChange('address2', e.target.value)}
+                  sx={{ mb: 2 }}
+                />
+                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                  <TextField
+                    label="Pincode"
+                    value={address.pincode}
+                    onChange={e => handleAddressChange('pincode', e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                    sx={{ flex: 1 }}
+                  />
+                  <TextField
+                    label="City"
+                    value={address.city}
+                    InputProps={{ readOnly: true }}
+                    sx={{ flex: 1 }}
+                  />
+                  <TextField
+                    label="State"
+                    value={address.state}
+                    InputProps={{ readOnly: true }}
+                    sx={{ flex: 1 }}
+                  />
+                </Box>
+                {addressError && (
+                  <Typography color="error" sx={{ mt: 2 }}>{addressError}</Typography>
+                )}
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+                  <Button onClick={handleAddressModalSave} color="primary" variant="contained" sx={{ borderRadius: 2 }}>
+                    {editingAddressIdx !== null ? 'Update' : 'Save'}
+                  </Button>
+                </Box>
+              </Box>
+            )}
+            {/* List all addresses as cards with edit/delete */}
+            {addresses.length > 0 && addresses.map((addr, idx) => (
+              <Box
+                key={idx}
+                sx={{
+                  mt: 2,
+                  mb: 1,
+                  p: 2,
+                  border: selectedAddressIdx === idx ? '2px solid #C4362A' : '1px solid #eee',
+                  borderRadius: 2,
+                  background: selectedAddressIdx === idx ? '#fff5f5' : '#fafafa',
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  cursor: 'pointer',
+                }}
+                onClick={() => setSelectedAddressIdx(idx)}
+              >
+                <Box sx={{ mr: 1, mt: 0.5 }}>
+                  {selectedAddressIdx === idx ? (
+                    <RadioButtonChecked sx={{ color: '#C4362A' }} />
+                  ) : (
+                    <RadioButtonUnchecked sx={{ color: '#bbb' }} />
+                  )}
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, display: 'flex', alignItems: 'center' }}>
+                    Delivery Address {idx + 1}
+                    <IconButton size="small" sx={{ ml: 1 }} onClick={e => { e.stopPropagation(); handleEditAddress(idx); }}><EditIcon fontSize="small" /></IconButton>
+                    <IconButton size="small" sx={{ ml: 1 }} onClick={e => { e.stopPropagation(); handleDeleteAddress(idx); }}><DeleteIcon fontSize="small" /></IconButton>
+                  </Typography>
+                  {addr.address1 && <Typography sx={{ fontSize: 15 }}>{addr.address1}</Typography>}
+                  {addr.address2 && <Typography sx={{ fontSize: 15 }}>{addr.address2}</Typography>}
+                  {(addr.city || addr.state || addr.pincode) && (
+                    <Typography sx={{ fontSize: 15, mt: 0.5 }}>
+                      {[addr.city, addr.state, addr.pincode].filter(Boolean).join(', ')}
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            ))}
+            <Button
+              variant="outlined"
+              startIcon={<AddLocationAlt />}
+              sx={{ mt: 2, borderRadius: 2, fontWeight: 600 }}
+              onClick={handleShowAddForm}
+            >
+              Add New Address
+            </Button>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+              <Button onClick={handleAddressModalClose} color="primary" variant="contained" sx={{ borderRadius: 2 }}>
+                Done
+              </Button>
+            </Box>
+          </Box>
+        </Modal>
       </Drawer>
     </PageContainer>
   );
