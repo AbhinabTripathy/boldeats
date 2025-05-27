@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   AppBar, 
   Box, 
@@ -477,6 +477,7 @@ const Header = () => {
     return localStorage.getItem('isLoggedIn') === 'true' && !!localStorage.getItem('token');
   });
   const [hasToken, setHasToken] = useState(() => !!localStorage.getItem('token'));
+  const [walletBalance, setWalletBalance] = useState(0);
   // Register form states
   const [name, setName] = useState('');
   const [countryCode, setCountryCode] = useState('+91');
@@ -587,6 +588,30 @@ const Header = () => {
       clearInterval(interval);
     };
   }, []);
+
+  // Add useEffect to fetch wallet balance when user is logged in
+  useEffect(() => {
+    const fetchWalletBalance = async () => {
+      if (isLoggedIn && hasToken) {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await axios.get('https://api.boldeats.in/api/wallet/balance', {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          if (response.data && response.data.data) {
+            setWalletBalance(response.data.data.balance || 0);
+          }
+        } catch (error) {
+          console.error('Error fetching wallet balance:', error);
+          setWalletBalance(0);
+        }
+      }
+    };
+
+    fetchWalletBalance();
+  }, [isLoggedIn, hasToken]);
 
   const open = Boolean(anchorEl);
 
@@ -776,9 +801,8 @@ const Header = () => {
         
         setIsLoggedIn(true);
         localStorage.setItem('isLoggedIn', 'true');
+        setWalletBalance(0); // Set initial wallet balance to 0 for new users
         
-        // Clear any existing cart data for the new user
-        // localStorage.removeItem('cart');
         localStorage.removeItem('addresses');
         localStorage.removeItem('transactions');
         
@@ -987,6 +1011,57 @@ const Header = () => {
     }
   };
 
+  // Update the wallet icon section in the desktop view
+  const renderWalletSection = () => (
+    <IconContainer>
+      <IconWrapper>
+        <AccountBalanceWallet 
+          sx={{ color: '#ff0000', fontSize: 26, mr: 1 }} 
+          onClick={handleWalletClick}
+        />
+      </IconWrapper>
+      {isLoggedIn && hasToken && (
+        <Typography 
+          sx={{ 
+            color: '#333',
+            fontSize: '14px',
+            fontWeight: 600,
+            ml: 1,
+            mr: 1
+          }}
+        >
+          ₹{walletBalance}
+        </Typography>
+      )}
+    </IconContainer>
+  );
+
+  // Update the wallet icon section in the mobile view
+  const renderMobileWalletSection = () => (
+    <IconWrapper>
+      <AccountBalanceWallet 
+        sx={{ 
+          color: '#ff0000', 
+          fontSize: 26,
+          ml: 1
+        }} 
+        onClick={() => setWalletModalOpen(true)}
+      />
+      {isLoggedIn && hasToken && (
+        <Typography 
+          sx={{ 
+            color: '#333',
+            fontSize: '14px',
+            fontWeight: 600,
+            ml: 1
+          }}
+        >
+          ₹{walletBalance}
+        </Typography>
+      )}
+    </IconWrapper>
+  );
+
   return (
     <>
     <StyledAppBar>
@@ -1011,17 +1086,7 @@ const Header = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
           {!isMobile && (
             <AccountSection>
-              {/* Wallet Icon - Only show if user is logged in AND has token */}
-              {isLoggedIn && hasToken && (
-                <IconContainer>
-                  <IconWrapper>
-                    <AccountBalanceWallet 
-                      sx={{ color: '#ff0000', fontSize: 26, mr: 1 }} 
-                      onClick={handleWalletClick}
-                    />
-                  </IconWrapper>
-                </IconContainer>
-              )}
+              {isLoggedIn && hasToken && renderWalletSection()}
               <IconContainer>
                 <IconWrapper>
                   <AccountCircle 
@@ -1150,19 +1215,7 @@ const Header = () => {
                   }} 
                 />
               </IconWrapper>
-              {/* Wallet Icon in mobile - Only show if user is logged in AND has token */}
-              {isLoggedIn && hasToken && (
-                <IconWrapper>
-                  <AccountBalanceWallet 
-                    sx={{ 
-                      color: '#ff0000', 
-                      fontSize: 26,
-                      ml: 1
-                    }} 
-                    onClick={() => setWalletModalOpen(true)}
-                  />
-                </IconWrapper>
-              )}
+              {isLoggedIn && hasToken && renderMobileWalletSection()}
             </Box>
             <IconButton onClick={handleDrawerToggle}>
               <Close />
