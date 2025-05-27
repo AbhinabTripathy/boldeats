@@ -215,7 +215,7 @@ const ProfilePage = () => {
           return;
         }
 
-        const response = await axios.get('http://3.108.237.86:3333/api/users/profile', {
+        const response = await axios.get('https://api.boldeats.in/api/users/profile', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -268,7 +268,7 @@ const ProfilePage = () => {
       setWalletLoading(false);
       return;
     }
-    axios.get('http://3.108.237.86:3333/api/users/profile', {
+    axios.get('api.boldeats.in/api/users/profile', {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -303,7 +303,7 @@ const ProfilePage = () => {
         phone_number: editData.phone,
         address: editData.address
       };
-      const response = await axios.put('http://3.108.237.86:3333/api/users/profile', payload, {
+      const response = await axios.put('https://api.boldeats.in/api/users/profile', payload, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

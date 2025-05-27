@@ -20,7 +20,7 @@ const WalletModal = ({ open, onClose }) => {
       setLoading(false);
       return;
     }
-    axios.get('http://3.108.237.86:3333/api/users/profile', {
+    axios.get('http://api.boldeats.in/api/users/profile', {
       headers: {
         Authorization: `Bearer ${token}`
       }

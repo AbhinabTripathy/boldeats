@@ -300,7 +300,7 @@ const SubscriptionPage = () => {
     };
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://3.108.237.86:3333/api/addresses', {
+      const response = await fetch('http://api.boldeats.in/api/addresses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

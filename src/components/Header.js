@@ -642,18 +642,12 @@ const Header = () => {
         // Store token if provided
         if (response?.data?.data?.token) {
             localStorage.setItem('token', response?.data?.data?.token);
-          }
+        }
         
         handleCloseLoginModal();
         
-        // Check if there's a redirect URL after login
-        const redirectUrl = localStorage.getItem('loginRedirectUrl');
-        if (redirectUrl) {
-          localStorage.removeItem('loginRedirectUrl');
-          navigate(redirectUrl);
-        } else {
-          navigate('/');
-        }
+        // Always navigate to home page after successful login
+        navigate('/');
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -763,14 +757,8 @@ const Header = () => {
         
         handleCloseRegisterModal();
         
-        // Check if there's a redirect URL after registration
-        const redirectUrl = localStorage.getItem('loginRedirectUrl');
-        if (redirectUrl) {
-          localStorage.removeItem('loginRedirectUrl');
-          navigate(redirectUrl);
-        } else {
-          navigate('/profile');
-        }
+        // Always navigate to home page after successful registration
+        navigate('/');
       }
     } catch (error) {
       console.error('Registration error:', error);
