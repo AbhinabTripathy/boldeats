@@ -474,7 +474,7 @@ const Header = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem('isLoggedIn') === 'true';
+    return localStorage.getItem('isLoggedIn') === 'true' && !!localStorage.getItem('token');
   });
   const [hasToken, setHasToken] = useState(() => !!localStorage.getItem('token'));
   // Register form states
@@ -560,6 +560,30 @@ const Header = () => {
     const interval = setInterval(checkToken, 500);
     return () => {
       window.removeEventListener('storage', checkToken);
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Update both states when token changes
+  React.useEffect(() => {
+    const token = localStorage.getItem('token');
+    const isLoggedInStatus = localStorage.getItem('isLoggedIn') === 'true';
+    setHasToken(!!token);
+    setIsLoggedIn(!!token && isLoggedInStatus);
+  }, []);
+
+  // Keep hasToken and isLoggedIn in sync with localStorage
+  React.useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem('token');
+      const isLoggedInStatus = localStorage.getItem('isLoggedIn') === 'true';
+      setHasToken(!!token);
+      setIsLoggedIn(!!token && isLoggedInStatus);
+    };
+    window.addEventListener('storage', checkAuth);
+    const interval = setInterval(checkAuth, 500);
+    return () => {
+      window.removeEventListener('storage', checkAuth);
       clearInterval(interval);
     };
   }, []);
@@ -678,7 +702,10 @@ const Header = () => {
 
   const handleLogout = () => {
     setIsLoggedIn(false);
+    setHasToken(false);
     localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('token');
+    localStorage.removeItem('userData');
     handleClose();
     navigate('/');
     setOpenLoginModal(true);
@@ -809,7 +836,8 @@ const Header = () => {
               }} 
             />
           </IconWrapper>
-          {localStorage.getItem('token') && (
+          {/* Wallet Icon in mobile - Only show if user is logged in AND has token */}
+          {isLoggedIn && hasToken && (
             <IconWrapper>
               <AccountBalanceWallet 
                 sx={{ 
@@ -983,8 +1011,8 @@ const Header = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
           {!isMobile && (
             <AccountSection>
-              {/* Wallet Icon - Only show if token exists */}
-              {localStorage.getItem('token') && (
+              {/* Wallet Icon - Only show if user is logged in AND has token */}
+              {isLoggedIn && hasToken && (
                 <IconContainer>
                   <IconWrapper>
                     <AccountBalanceWallet 
@@ -1105,7 +1133,157 @@ const Header = () => {
           keepMounted: true,
         }}
       >
-        {mobileMenuContent}
+        <Box>
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            mb: 2,
+            px: 2
+          }}>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <IconWrapper onClick={handleClick}>
+                <AccountCircle 
+                  sx={{ 
+                    color: '#ff0000', 
+                    fontSize: 28
+                  }} 
+                />
+              </IconWrapper>
+              {/* Wallet Icon in mobile - Only show if user is logged in AND has token */}
+              {isLoggedIn && hasToken && (
+                <IconWrapper>
+                  <AccountBalanceWallet 
+                    sx={{ 
+                      color: '#ff0000', 
+                      fontSize: 26,
+                      ml: 1
+                    }} 
+                    onClick={() => setWalletModalOpen(true)}
+                  />
+                </IconWrapper>
+              )}
+            </Box>
+            <IconButton onClick={handleDrawerToggle}>
+              <Close />
+            </IconButton>
+          </Box>
+          <MobileNavList>
+            <MobileNavItem>
+              <MobileNavLink to="/" isActive={location === '/'} onClick={handleDrawerToggle}>
+                Home
+              </MobileNavLink>
+            </MobileNavItem>
+            <MobileNavItem>
+              <MobileNavLink to="/kitchen" isActive={location === '/kitchen'} onClick={handleDrawerToggle}>
+                Kitchen
+              </MobileNavLink>
+            </MobileNavItem>
+            <MobileNavItem>
+              <MobileNavLink to="/subscription" isActive={location === '/subscription'} onClick={handleDrawerToggle}>
+                Subscription
+              </MobileNavLink>
+            </MobileNavItem>
+          </MobileNavList>
+          <Box sx={{ 
+            position: 'relative',
+            width: '100%',
+            mt: 2,
+            borderTop: '1px solid #eee',
+            pt: 2
+          }}>
+            <Popper 
+              open={open} 
+              anchorEl={anchorEl} 
+              placement="bottom-start" 
+              transition
+              style={{ 
+                width: '100%',
+                zIndex: 1500 
+              }}
+            >
+              {({ TransitionProps }) => (
+                <Grow {...TransitionProps}>
+                  <DropdownPaper sx={{ 
+                    width: '100%',
+                    borderRadius: '0',
+                    boxShadow: 'none',
+                    borderTop: '1px solid #eee',
+                    backgroundColor: '#f8f8f8'
+                  }}>
+                    {!isLoggedIn ? (
+                      <>
+                        <AccountButton
+                          startIcon={<Login />}
+                          onClick={() => {
+                            handleClose();
+                            handleOpenLoginModal();
+                            handleDrawerToggle();
+                          }}
+                          component="button"
+                        >
+                          Login
+                        </AccountButton>
+                        <AccountButton
+                          startIcon={<PersonAdd />}
+                          onClick={() => {
+                            handleClose();
+                            handleOpenRegisterModal();
+                            handleDrawerToggle();
+                          }}
+                          component="button"
+                          sx={{ 
+                            backgroundColor: '#C4362A',
+                            color: 'white',
+                            '&:hover': {
+                              backgroundColor: '#b02d23',
+                            }
+                          }}
+                        >
+                          Register
+                        </AccountButton>
+                      </>
+                    ) : (
+                      <>
+                        <AccountMenuItem
+                            onClick={() => {
+                            handleClose();
+                            navigate('/profile');
+                          }}
+                        >
+                          <ListItemIcon>
+                            <Person fontSize="small" />
+                          </ListItemIcon>
+                          <ListItemText primary="Profile" />
+                        </AccountMenuItem>
+                        <AccountMenuItem>
+                          <ListItemIcon>
+                            <Settings fontSize="small" />
+                          </ListItemIcon>
+                          <ListItemText primary="Settings" />
+                        </AccountMenuItem>
+                        <AccountMenuItem
+                          onClick={handleLogout}
+                          sx={{
+                            color: '#C4362A',
+                            '& .MuiListItemIcon-root': {
+                              color: '#C4362A'
+                            }
+                          }}
+                        >
+                          <ListItemIcon>
+                            <Logout fontSize="small" />
+                          </ListItemIcon>
+                          <ListItemText primary="Logout" />
+                        </AccountMenuItem>
+                      </>
+                    )}
+                  </DropdownPaper>
+                </Grow>
+              )}
+            </Popper>
+          </Box>
+        </Box>
       </MobileDrawer>
     )}
 

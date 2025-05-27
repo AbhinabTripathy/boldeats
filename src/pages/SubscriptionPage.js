@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, TextField, Button, styled, Drawer, Radio, RadioGroup, FormControlLabel, IconButton, Modal } from '@mui/material';
-import { Close, AddLocationAlt, Edit as EditIcon, Delete as DeleteIcon, RadioButtonChecked, RadioButtonUnchecked } from '@mui/icons-material';
+import { Box, Typography, TextField, Button, styled, Drawer, Radio, RadioGroup, FormControlLabel, IconButton, Modal, Dialog, DialogContent, FormControl } from '@mui/material';
+import { Close, AddLocationAlt, Edit as EditIcon, Delete as DeleteIcon, RadioButtonChecked, RadioButtonUnchecked, PaymentIcon, CreditCardIcon, QrCode2Icon, CurrencyRupeeIcon, Close as CloseIcon } from '@mui/icons-material';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import axios from 'axios';
 import Lock from '@mui/icons-material/Lock';
+import phonepe from "../assets/phonepe.png";
+import gpay from "../assets/gpay.png";
+import amazon_pay from "../assets/amazon_pay.png";
+import rupay from "../assets/rupay.png";
+import qrCodeAsset from '../assets/QR Code .png';
 
 const PageContainer = styled(Box)({
   minHeight: '100vh',
@@ -119,7 +125,7 @@ const PaymentCard = styled(Box)({
 });
 
 const PayNowButton = styled(Button)({
-  background: '#C4362A',
+  backgroundColor: '#C4362A',
   color: '#fff',
   borderRadius: '20px',
   fontWeight: 600,
@@ -138,6 +144,82 @@ const PayNowButton = styled(Button)({
   },
 });
 
+function PaymentModal({ open, onClose, price }) {
+  const [method, setMethod] = useState('upi');
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" PaperProps={{ sx: { borderRadius: 4, p: 2, position: 'relative' } }} disableScrollLock>
+      <IconButton onClick={onClose} sx={{ position: 'absolute', top: 12, right: 12, zIndex: 10, color: '#333' }}>
+        <CloseIcon fontSize="medium" />
+      </IconButton>
+      <DialogContent sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'center', gap: 4, minWidth: { xs: 320, sm: 600 } }}>
+        {/* Left: Payment Methods */}
+        <Box sx={{ flex: 1, minWidth: 260 }}>
+          <Typography variant="h5" sx={{ mb: 2, fontWeight: 600, textAlign: 'center' }}>Payment</Typography>
+          <FormControl component="fieldset" sx={{ width: '100%' }}>
+            <RadioGroup value={method} onChange={e => setMethod(e.target.value)}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, border: '1.5px solid #eee', borderRadius: 5, px: 2, py: 1, background: method==='upi' ? '#fafafa' : '#fff' }}>
+                <FormControlLabel 
+                  value="upi" 
+                  control={<Radio />} 
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '170px' }}>
+                      <span>UPI</span>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <img src={phonepe} alt="PhonePe" style={{height:18}} />
+                        <img src={amazon_pay} alt="Amazon Pay" style={{height:18}} />
+                        <img src={gpay} alt="GPay" style={{height:18}} />
+                      </Box>
+                    </Box>
+                  }
+                />
+                {method === 'upi' && (
+                  <Box sx={{ ml: 'auto', background: '#c6ef9c', color: '#222', borderRadius: 2.5, px: 3, py: 1, fontWeight: 700, fontSize: 20, boxShadow: 1 }}>
+                    ₹{price}
+                  </Box>
+                )}
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, border: '1.5px solid #eee', borderRadius: 5, px: 2, py: 1, background: method==='netbanking' ? '#fafafa' : '#fff' }}>
+                <FormControlLabel value="netbanking" control={<Radio />} label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>NET BANKING <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa" style={{height:18}} /> <img src={rupay} alt="RuPay" style={{height:18}} /> <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="Mastercard" style={{height:18}} /></Box>} />
+                {method === 'netbanking' && (
+                  <Box sx={{ ml: 'auto', background: '#c6ef9c', color: '#222', borderRadius: 2.5, px: 3, py: 1, fontWeight: 700, fontSize: 20, boxShadow: 1 }}>
+                    ₹{price}
+                  </Box>
+                )}
+              </Box>
+            </RadioGroup>
+          </FormControl>
+          <Button variant="outlined" sx={{ mt: 2, width: '100%', borderRadius: 5, fontWeight: 600, fontSize: 18, py: 1.2 }} color="primary">Proceed to Pay</Button>
+        </Box>
+        {/* Right: QR or Account Details */}
+        <Box sx={{ flex: 1, minWidth: 220, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+          {method === 'upi' && (
+            <>
+              <Typography sx={{ fontWeight: 500, mb: 1 }}>Scan QR</Typography>
+              <img src={qrCodeAsset} alt="UPI QR Code" style={{ width: 300, height: 300, marginBottom: 8, borderRadius: 8, border: '2px solid #222' }} />
+              <Typography sx={{ fontSize: 16, fontWeight: 600, color: '#222', mt: 1 }}>UPI ID: boldtribe1234@idfcbank</Typography>
+              <Typography sx={{ fontSize: 16, color: '#888', mt: 1 }}>or</Typography>
+              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                <img src={phonepe} alt="PhonePe" style={{height:22}} />
+                <img src={gpay} alt="GPay" style={{height:22}} />
+                <img src={amazon_pay} alt="Paytm" style={{height:22}} />
+              </Box>
+            </>
+          )}
+          {method === 'netbanking' && (
+            <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', mt: 2 }}>
+              <Typography sx={{ fontWeight: 600, fontSize: 16, mb: 1, textAlign: 'center' }}>Account Details</Typography>
+              <Typography sx={{ fontSize: 14, mb: 0.5, textAlign: 'center' }}>Account Number: 1234567890</Typography>
+              <Typography sx={{ fontSize: 14, mb: 0.5, textAlign: 'center' }}>Account Holder Name: BoldTribe</Typography>
+              <Typography sx={{ fontSize: 14, mb: 0.5, textAlign: 'center' }}>IFSC Code: IDFC0001234</Typography>
+              <Typography sx={{ fontSize: 14, mb: 0.5, textAlign: 'center' }}>Branch Name: Main Branch</Typography>
+            </Box>
+          )}
+        </Box>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 const SubscriptionPage = () => {
   const [customAmount, setCustomAmount] = useState('');
   const [amountError, setAmountError] = useState('');
@@ -153,6 +235,7 @@ const SubscriptionPage = () => {
   const [address, setAddress] = useState({ address1: '', address2: '', city: '', state: '', pincode: '' });
   const [addressError, setAddressError] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -300,7 +383,7 @@ const SubscriptionPage = () => {
     };
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://api.boldeats.in/api/addresses', {
+      const response = await fetch('https://api.boldeats.in/api/addresses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -334,6 +417,11 @@ const SubscriptionPage = () => {
     setAddress({ address1: '', address2: '', city: '', state: '', pincode: '' });
     setEditingAddressIdx(null);
     setShowForm(true);
+  };
+
+  // Update PayNowButton click handler
+  const handlePayNow = () => {
+    setPaymentModalOpen(true);
   };
 
   if (loading) {
@@ -458,7 +546,7 @@ const SubscriptionPage = () => {
               />
             </RadioGroup>
           </PaymentCard>
-          <PayNowButton>
+          <PayNowButton onClick={handlePayNow}>
             Pay now
           </PayNowButton>
           <Button
@@ -635,6 +723,13 @@ const SubscriptionPage = () => {
           </Box>
         </Modal>
       </Drawer>
+
+      {/* Add PaymentModal */}
+      <PaymentModal 
+        open={paymentModalOpen} 
+        onClose={() => setPaymentModalOpen(false)} 
+        price={customAmount} 
+      />
     </PageContainer>
   );
 };

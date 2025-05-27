@@ -323,8 +323,42 @@ const qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data
 const foodImg = 'https://img.freepik.com/free-photo/indian-food_23-2148001642.jpg?w=360';
 
 function PaymentModal({ open, onClose, price }) {
-  const [method, setMethod] = useState('wallet');
   const walletBalance = 2000;
+  const remainingAmount = Math.max(0, price - walletBalance);
+  const hasSufficientBalance = walletBalance >= price;
+  const [selectedMethods, setSelectedMethods] = useState(['wallet']); // Initialize with wallet selected
+
+  const handleMethodSelect = (method) => {
+    // If wallet has sufficient balance, only allow wallet selection
+    if (hasSufficientBalance && method !== 'wallet') {
+      return;
+    }
+
+    setSelectedMethods(prev => {
+      // If selecting wallet and it has sufficient balance, clear other methods
+      if (method === 'wallet' && hasSufficientBalance) {
+        return ['wallet'];
+      }
+
+      // If deselecting wallet and there's remaining amount, require another method
+      if (method === 'wallet' && !hasSufficientBalance && prev.includes('wallet')) {
+        const otherMethods = prev.filter(m => m !== 'wallet');
+        return otherMethods.length > 0 ? otherMethods : ['wallet']; // Keep wallet selected if no other methods
+      }
+
+      // Normal toggle behavior
+      if (prev.includes(method)) {
+        const newMethods = prev.filter(m => m !== method);
+        // If removing the last method, keep wallet selected
+        return newMethods.length > 0 ? newMethods : ['wallet'];
+      } else {
+        return [...prev, method];
+      }
+    });
+  };
+
+  const isMethodSelected = (method) => selectedMethods.includes(method);
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" PaperProps={{ sx: { borderRadius: 4, p: 2, position: 'relative' } }} disableScrollLock>
       <IconButton onClick={onClose} sx={{ position: 'absolute', top: 12, right: 12, zIndex: 10, color: '#333' }}>
@@ -335,54 +369,102 @@ function PaymentModal({ open, onClose, price }) {
         <Box sx={{ flex: 1, minWidth: 260 }}>
           <Typography variant="h5" sx={{ mb: 2, fontWeight: 600, textAlign: 'center' }}>Payment</Typography>
           <FormControl component="fieldset" sx={{ width: '100%' }}>
-            <RadioGroup value={method} onChange={e => setMethod(e.target.value)}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, border: '1.5px solid #eee', borderRadius: 5, px: 2, py: 1, background: method==='wallet' ? '#fafafa' : '#fff' }}>
-                <FormControlLabel value="wallet" control={<Radio />} label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><AccountBalanceWalletIcon sx={{ color: '#43a047' }} />WALLET</Box>} />
-                {method === 'wallet' && (
-                  <Box sx={{ ml: 'auto', background: '#c6ef9c', color: '#222', borderRadius: 2.5, px: 3, py: 1, fontWeight: 700, fontSize: 20, boxShadow: 1 }}>
-                    ₹{price}
-                  </Box>
-                )}
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, border: '1.5px solid #eee', borderRadius: 5, px: 2, py: 1, background: method==='upi' ? '#fafafa' : '#fff' }}>
+            <Box sx={{ mb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, border: '1.5px solid #eee', borderRadius: 5, px: 2, py: 1, background: isMethodSelected('wallet') ? '#fafafa' : '#fff' }}>
                 <FormControlLabel 
-                  value="upi" 
-                  control={<Radio />} 
-                  label={
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '170px' }}>
-                      <span>UPI</span>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <img src={phonepe} alt="PhonePe" style={{height:18}} />
-                        <img src={amazon_pay} alt="Amazon Pay" style={{height:18}} />
-                        <img src={gpay} alt="GPay" style={{height:18}} />
-                      </Box>
-                    </Box>
-                  }
+                  value="wallet" 
+                  control={<Radio checked={isMethodSelected('wallet')} onChange={() => handleMethodSelect('wallet')} />} 
+                  label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><AccountBalanceWalletIcon sx={{ color: '#43a047' }} />WALLET</Box>} 
                 />
-                {method === 'upi' && (
+                {isMethodSelected('wallet') && (
                   <Box sx={{ ml: 'auto', background: '#c6ef9c', color: '#222', borderRadius: 2.5, px: 3, py: 1, fontWeight: 700, fontSize: 20, boxShadow: 1 }}>
-                    ₹{price}
+                    ₹{Math.min(walletBalance, price)}
                   </Box>
                 )}
               </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, border: '1.5px solid #eee', borderRadius: 5, px: 2, py: 1, background: method==='netbanking' ? '#fafafa' : '#fff' }}>
-                <FormControlLabel value="netbanking" control={<Radio />} label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>NET BANKING <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa" style={{height:18}} /> <img src={rupay} alt="RuPay" style={{height:18}} /> <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="Mastercard" style={{height:18}} /></Box>} />
-                {method === 'netbanking' && (
-                  <Box sx={{ ml: 'auto', background: '#c6ef9c', color: '#222', borderRadius: 2.5, px: 3, py: 1, fontWeight: 700, fontSize: 20, boxShadow: 1 }}>
-                    ₹{price}
+              {isMethodSelected('wallet') && remainingAmount > 0 && (
+                <Typography sx={{ color: '#666', fontSize: 14, mb: 2, textAlign: 'center' }}>
+                  Additional ₹{remainingAmount} needed
+                </Typography>
+              )}
+            </Box>
+
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              mb: 2, 
+              border: '1.5px solid #eee', 
+              borderRadius: 5, 
+              px: 2, 
+              py: 1, 
+              background: isMethodSelected('upi') ? '#fafafa' : '#fff',
+              opacity: hasSufficientBalance ? 0.5 : 1,
+              pointerEvents: hasSufficientBalance ? 'none' : 'auto'
+            }}>
+              <FormControlLabel 
+                value="upi" 
+                control={<Radio checked={isMethodSelected('upi')} onChange={() => handleMethodSelect('upi')} />} 
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '170px' }}>
+                    <span>UPI</span>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <img src={phonepe} alt="PhonePe" style={{height:18}} />
+                      <img src={amazon_pay} alt="Amazon Pay" style={{height:18}} />
+                      <img src={gpay} alt="GPay" style={{height:18}} />
+                    </Box>
                   </Box>
-                )}
-              </Box>
-            </RadioGroup>
+                }
+              />
+              {isMethodSelected('upi') && (
+                <Box sx={{ ml: 'auto', background: '#c6ef9c', color: '#222', borderRadius: 2.5, px: 3, py: 1, fontWeight: 700, fontSize: 20, boxShadow: 1 }}>
+                  ₹{isMethodSelected('wallet') ? remainingAmount : price}
+                </Box>
+              )}
+            </Box>
+
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              mb: 2, 
+              border: '1.5px solid #eee', 
+              borderRadius: 5, 
+              px: 2, 
+              py: 1, 
+              background: isMethodSelected('netbanking') ? '#fafafa' : '#fff',
+              opacity: hasSufficientBalance ? 0.5 : 1,
+              pointerEvents: hasSufficientBalance ? 'none' : 'auto'
+            }}>
+              <FormControlLabel 
+                value="netbanking" 
+                control={<Radio checked={isMethodSelected('netbanking')} onChange={() => handleMethodSelect('netbanking')} />} 
+                label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>NET BANKING <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa" style={{height:18}} /> <img src={rupay} alt="RuPay" style={{height:18}} /> <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="Mastercard" style={{height:18}} /></Box>} 
+              />
+              {isMethodSelected('netbanking') && (
+                <Box sx={{ ml: 'auto', background: '#c6ef9c', color: '#222', borderRadius: 2.5, px: 3, py: 1, fontWeight: 700, fontSize: 20, boxShadow: 1 }}>
+                  ₹{isMethodSelected('wallet') ? remainingAmount : price}
+                </Box>
+              )}
+            </Box>
           </FormControl>
-          <Button variant="outlined" sx={{ mt: 2, width: '100%', borderRadius: 5, fontWeight: 600, fontSize: 18, py: 1.2 }} color="primary">Proceed to Pay</Button>
+          <Button 
+            variant="outlined" 
+            sx={{ mt: 2, width: '100%', borderRadius: 5, fontWeight: 600, fontSize: 18, py: 1.2 }} 
+            color="primary"
+            disabled={selectedMethods.length === 0 || (isMethodSelected('wallet') && remainingAmount > 0 && selectedMethods.length === 1)}
+          >
+            Proceed to Pay
+          </Button>
         </Box>
-        {/* Right: Wallet Bal & QR */}
+
+        {/* Right: Payment Details */}
         <Box sx={{ flex: 1, minWidth: 220, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-          <Box sx={{ background: 'linear-gradient(180deg, #aee571 0%, #43a047 100%)', color: '#222', borderRadius: 3, px: 4, py: 2, fontWeight: 700, fontSize: 20, mb: 2, boxShadow: 2, textAlign: 'center' }}>
-            Wallet Bal.<br />₹{walletBalance}
-          </Box>
-          {method === 'upi' && (
+          {isMethodSelected('wallet') && (
+            <Box sx={{ background: 'linear-gradient(180deg, #aee571 0%, #43a047 100%)', color: '#222', borderRadius: 3, px: 4, py: 2, fontWeight: 700, fontSize: 20, mb: 2, boxShadow: 2, textAlign: 'center' }}>
+              Wallet Bal.<br />₹{walletBalance}
+            </Box>
+          )}
+          
+          {isMethodSelected('upi') && (
             <>
               <Typography sx={{ fontWeight: 500, mb: 1 }}>Scan QR</Typography>
               <img src={qrCodeAsset} alt="UPI QR Code" style={{ width: 300, height: 300, marginBottom: 8, borderRadius: 8, border: '2px solid #222' }} />
@@ -395,7 +477,8 @@ function PaymentModal({ open, onClose, price }) {
               </Box>
             </>
           )}
-          {method === 'netbanking' && (
+
+          {isMethodSelected('netbanking') && (
             <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', mt: 2 }}>
               <Typography sx={{ fontWeight: 600, fontSize: 16, mb: 1, textAlign: 'center' }}>Account Details</Typography>
               <Typography sx={{ fontSize: 14, mb: 0.5, textAlign: 'center' }}>Account Number: 1234567890</Typography>
