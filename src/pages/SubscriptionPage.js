@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, TextField, Button, styled, Drawer, Radio, RadioGroup, FormControlLabel, IconButton, Modal } from '@mui/material';
 import { Close, AddLocationAlt, Edit as EditIcon, Delete as DeleteIcon, RadioButtonChecked, RadioButtonUnchecked } from '@mui/icons-material';
 import axios from 'axios';
+import Lock from '@mui/icons-material/Lock';
 
 const PageContainer = styled(Box)({
   minHeight: '100vh',
@@ -160,7 +161,7 @@ const SubscriptionPage = () => {
       setUser(null);
       return;
     }
-    axios.get('http://3.108.237.86:3333/api/users/profile', {
+    axios.get('https://api.boldeats.in/api/users/profile', {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -339,6 +340,25 @@ const SubscriptionPage = () => {
     return null;
   }
 
+  if (!localStorage.getItem('token')) {
+    return (
+      <PageContainer>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: 3 }}>
+          <Lock sx={{ fontSize: 60, color: '#C4362A', mb: 1 }} />
+          <Typography variant="h4" sx={{ fontWeight: 600, color: '#C4362A', mb: 1, textAlign: 'center' }}>
+            For subscription, please login
+          </Typography>
+          <Typography variant="body1" sx={{ color: '#555', mb: 2, textAlign: 'center' }}>
+            You need to be logged in to access subscription features.
+          </Typography>
+          <SubscribeButton variant="contained" onClick={() => typeof window.openLoginModalFromHeader === 'function' && window.openLoginModalFromHeader()} sx={{ width: 220, fontSize: 18 }}>
+            Login
+          </SubscribeButton>
+        </Box>
+      </PageContainer>
+    );
+  }
+
   if (!user) {
     return (
       <PageContainer>
@@ -402,7 +422,7 @@ const SubscriptionPage = () => {
 
           <SubscribeButton variant="contained" onClick={handleSubscribe}>
             Subscribe
-          </SubscribeButton>
+            </SubscribeButton>
         </SubscriptionCard>
       </MainContent>
 

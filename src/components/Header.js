@@ -476,6 +476,7 @@ const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     return localStorage.getItem('isLoggedIn') === 'true';
   });
+  const [hasToken, setHasToken] = useState(() => !!localStorage.getItem('token'));
   // Register form states
   const [name, setName] = useState('');
   const [countryCode, setCountryCode] = useState('+91');
@@ -483,6 +484,7 @@ const Header = () => {
   const [registerPassword, setRegisterPassword] = useState('');
   const location = window.location.pathname;
   const [walletModalOpen, setWalletModalOpen] = useState(false);
+  const [showWalletLoginPrompt, setShowWalletLoginPrompt] = useState(false);
   
   // Close mobile drawer when switching to desktop view
   React.useEffect(() => {
@@ -551,6 +553,17 @@ const Header = () => {
     }
   }, [isLoggedIn, navigate]);
 
+  // Keep hasToken in sync with localStorage
+  React.useEffect(() => {
+    const checkToken = () => setHasToken(!!localStorage.getItem('token'));
+    window.addEventListener('storage', checkToken);
+    const interval = setInterval(checkToken, 500);
+    return () => {
+      window.removeEventListener('storage', checkToken);
+      clearInterval(interval);
+    };
+  }, []);
+
   const open = Boolean(anchorEl);
 
   const handleClick = (event) => {
@@ -612,7 +625,7 @@ const Header = () => {
         }
       };
       
-      const response = await axios.post('http://3.108.237.86:3333/api/users/login', loginData, config);
+      const response = await axios.post('https://api.boldeats.in/api/users/login', loginData, config);
       
       console.log('Login response:', response.data);
       
@@ -725,7 +738,7 @@ const Header = () => {
         }
       };
       
-      const response = await axios.post('http://3.108.237.86:3333/api/users/register', userData, config);
+      const response = await axios.post('https://api.boldeats.in/api/users/register', userData, config);
       
       console.log('Registration response:', response.data);
       
@@ -808,16 +821,18 @@ const Header = () => {
               }} 
             />
           </IconWrapper>
-          <IconWrapper>
-            <AccountBalanceWallet 
-              sx={{ 
-                color: '#ff0000', 
-                fontSize: 26,
-                ml: 1
-              }} 
-              onClick={() => setWalletModalOpen(true)}
-            />
-          </IconWrapper>
+          {localStorage.getItem('token') && (
+            <IconWrapper>
+              <AccountBalanceWallet 
+                sx={{ 
+                  color: '#ff0000', 
+                  fontSize: 26,
+                  ml: 1
+                }} 
+                onClick={() => setWalletModalOpen(true)}
+              />
+            </IconWrapper>
+          )}
         </Box>
         <IconButton onClick={handleDrawerToggle}>
           <Close />
@@ -838,11 +853,6 @@ const Header = () => {
           <MobileNavLink to="/subscription" isActive={location === '/subscription'} onClick={handleDrawerToggle}>
             Subscription
           </MobileNavLink>
-        </MobileNavItem>
-        <MobileNavItem>
-          {/* <MobileNavLink to="/cart" isActive={location === '/cart'} onClick={handleDrawerToggle}>
-            Cart
-          </MobileNavLink> */}
         </MobileNavItem>
       </MobileNavList>
       <Box sx={{ 
@@ -952,6 +962,15 @@ const Header = () => {
     </Box>
   );
 
+  // Wallet icon click handler
+  const handleWalletClick = () => {
+    if (localStorage.getItem('token')) {
+      setWalletModalOpen(true);
+    } else {
+      setShowWalletLoginPrompt(true);
+    }
+  };
+
   return (
     <>
     <StyledAppBar>
@@ -969,7 +988,6 @@ const Header = () => {
               <NavLink to="/" isActive={location === '/'}>Home</NavLink>
               <NavLink to="/kitchen" isActive={location === '/kitchen'}>Kitchen</NavLink>
               <NavLink to="/subscription" isActive={location === '/subscription'}>Subscription</NavLink>
-              {/* <NavLink to="/cart" isActive={location === '/cart'}>Cart</NavLink> */}
             </NavigationLinks>
           </NavbarSection>
         )}
@@ -977,19 +995,17 @@ const Header = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
           {!isMobile && (
             <AccountSection>
-              {/* Wallet Icon */}
-              <IconContainer>
-                <IconWrapper>
-                  <AccountBalanceWallet 
-                    sx={{ 
-                      color: '#ff0000', 
-                      fontSize: 26,
-                      mr: 1
-                    }} 
-                    onClick={() => setWalletModalOpen(true)}
-                  />
-                </IconWrapper>
-              </IconContainer>
+              {/* Wallet Icon - Only show if token exists */}
+              {localStorage.getItem('token') && (
+                <IconContainer>
+                  <IconWrapper>
+                    <AccountBalanceWallet 
+                      sx={{ color: '#ff0000', fontSize: 26, mr: 1 }} 
+                      onClick={handleWalletClick}
+                    />
+                  </IconWrapper>
+                </IconContainer>
+              )}
               <IconContainer>
                 <IconWrapper>
                   <AccountCircle 
@@ -1374,6 +1390,35 @@ const Header = () => {
 
     {/* Wallet Modal */}
     <WalletModal open={walletModalOpen} onClose={() => setWalletModalOpen(false)} />
+
+    {/* Wallet Login Prompt Modal */}
+    <Modal
+      open={showWalletLoginPrompt}
+      onClose={() => setShowWalletLoginPrompt(false)}
+      aria-labelledby="wallet-login-modal"
+      sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}
+    >
+      <ModalOverlay onClick={() => setShowWalletLoginPrompt(false)}>
+        <ModalContainer onClick={e => e.stopPropagation()}>
+          <CloseButton onClick={() => setShowWalletLoginPrompt(false)}>
+            <Close />
+          </CloseButton>
+          <Typography variant="h5" sx={{ fontWeight: 700, color: '#C4362A', mb: 2, textAlign: 'center' }}>
+            To see your wallet balance, please login.
+          </Typography>
+          <LoginButton
+            variant="contained"
+            onClick={() => {
+              setShowWalletLoginPrompt(false);
+              setOpenLoginModal(true);
+            }}
+            sx={{ mt: 2 }}
+          >
+            Login
+          </LoginButton>
+        </ModalContainer>
+      </ModalOverlay>
+    </Modal>
 
     </>
   );

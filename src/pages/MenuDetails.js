@@ -22,6 +22,10 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 import CloseIcon from '@mui/icons-material/Close';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import { caterers } from './MenuPage';
 import phonepe from "../assets/phonepe.png";
 import gpay from "../assets/gpay.png";
@@ -30,6 +34,10 @@ import sbi from "../assets/SBI.png";
 import axis from "../assets/Axis.png";
 import bob from "../assets/BOB.png";
 import rupay from "../assets/rupay.png"
+import Header from '../components/Header';
+import qrCodeAsset from '../assets/QR Code .png';
+import RemoveIcon from '@mui/icons-material/Remove';
+import AddIcon from '@mui/icons-material/Add';
 
 const WaveHeader = styled(Box)({
   width: '100vw',
@@ -311,6 +319,9 @@ const menuTypes = [
 // Dummy QR code image (replace with your own if needed)
 const qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay';
 
+// Add a veg icon and a placeholder food image
+const foodImg = 'https://img.freepik.com/free-photo/indian-food_23-2148001642.jpg?w=360';
+
 function PaymentModal({ open, onClose, price }) {
   const [method, setMethod] = useState('wallet');
   const walletBalance = 2000;
@@ -327,7 +338,11 @@ function PaymentModal({ open, onClose, price }) {
             <RadioGroup value={method} onChange={e => setMethod(e.target.value)}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, border: '1.5px solid #eee', borderRadius: 5, px: 2, py: 1, background: method==='wallet' ? '#fafafa' : '#fff' }}>
                 <FormControlLabel value="wallet" control={<Radio />} label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><AccountBalanceWalletIcon sx={{ color: '#43a047' }} />WALLET</Box>} />
-                <Box sx={{ ml: 'auto', background: '#aee571', color: '#222', borderRadius: 2, px: 2, py: 0.5, fontWeight: 600, fontSize: 16 }}>₹{price}</Box>
+                {method === 'wallet' && (
+                  <Box sx={{ ml: 'auto', background: '#c6ef9c', color: '#222', borderRadius: 2.5, px: 3, py: 1, fontWeight: 700, fontSize: 20, boxShadow: 1 }}>
+                    ₹{price}
+                  </Box>
+                )}
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, border: '1.5px solid #eee', borderRadius: 5, px: 2, py: 1, background: method==='upi' ? '#fafafa' : '#fff' }}>
                 <FormControlLabel 
@@ -344,25 +359,19 @@ function PaymentModal({ open, onClose, price }) {
                     </Box>
                   }
                 />
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, border: '1.5px solid #eee', borderRadius: 5, px: 2, py: 1, background: method==='card' ? '#fafafa' : '#fff' }}>
-                <FormControlLabel 
-                  value="card" 
-                  control={<Radio />} 
-                  label={
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '170px' }}>
-                      <span>CARD</span>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <img src={axis} alt="Axis" style={{height:18}} />
-                        <img src={bob} alt="BOB" style={{height:18}} />
-                        <img src={sbi} alt="SBI" style={{height:18}} />
-                      </Box>
-                    </Box>
-                  }
-                />
+                {method === 'upi' && (
+                  <Box sx={{ ml: 'auto', background: '#c6ef9c', color: '#222', borderRadius: 2.5, px: 3, py: 1, fontWeight: 700, fontSize: 20, boxShadow: 1 }}>
+                    ₹{price}
+                  </Box>
+                )}
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, border: '1.5px solid #eee', borderRadius: 5, px: 2, py: 1, background: method==='netbanking' ? '#fafafa' : '#fff' }}>
                 <FormControlLabel value="netbanking" control={<Radio />} label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>NET BANKING <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa" style={{height:18}} /> <img src={rupay} alt="RuPay" style={{height:18}} /> <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="Mastercard" style={{height:18}} /></Box>} />
+                {method === 'netbanking' && (
+                  <Box sx={{ ml: 'auto', background: '#c6ef9c', color: '#222', borderRadius: 2.5, px: 3, py: 1, fontWeight: 700, fontSize: 20, boxShadow: 1 }}>
+                    ₹{price}
+                  </Box>
+                )}
               </Box>
             </RadioGroup>
           </FormControl>
@@ -373,16 +382,191 @@ function PaymentModal({ open, onClose, price }) {
           <Box sx={{ background: 'linear-gradient(180deg, #aee571 0%, #43a047 100%)', color: '#222', borderRadius: 3, px: 4, py: 2, fontWeight: 700, fontSize: 20, mb: 2, boxShadow: 2, textAlign: 'center' }}>
             Wallet Bal.<br />₹{walletBalance}
           </Box>
-          <Typography sx={{ fontWeight: 500, mb: 1 }}>Scan QR</Typography>
-          <img src={qrCodeUrl} alt="QR Code" style={{ width: 140, height: 140, marginBottom: 8, borderRadius: 8, border: '2px solid #222' }} />
-          <Typography sx={{ fontSize: 16, color: '#888', mt: 1 }}>or</Typography>
-          <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-            <img src={phonepe} alt="PhonePe" style={{height:22}} />
-            <img src={gpay} alt="GPay" style={{height:22}} />
-            <img src={amazon_pay} alt="Paytm" style={{height:22}} />
-          </Box>
+          {method === 'upi' && (
+            <>
+              <Typography sx={{ fontWeight: 500, mb: 1 }}>Scan QR</Typography>
+              <img src={qrCodeAsset} alt="UPI QR Code" style={{ width: 300, height: 300, marginBottom: 8, borderRadius: 8, border: '2px solid #222' }} />
+              <Typography sx={{ fontSize: 16, fontWeight: 600, color: '#222', mt: 1 }}>UPI ID: boldtribe1234@idfcbank</Typography>
+              <Typography sx={{ fontSize: 16, color: '#888', mt: 1 }}>or</Typography>
+              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                <img src={phonepe} alt="PhonePe" style={{height:22}} />
+                <img src={gpay} alt="GPay" style={{height:22}} />
+                <img src={amazon_pay} alt="Paytm" style={{height:22}} />
+              </Box>
+            </>
+          )}
+          {method === 'netbanking' && (
+            <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', mt: 2 }}>
+              <Typography sx={{ fontWeight: 600, fontSize: 16, mb: 1, textAlign: 'center' }}>Account Details</Typography>
+              <Typography sx={{ fontSize: 14, mb: 0.5, textAlign: 'center' }}>Account Number: 1234567890</Typography>
+              <Typography sx={{ fontSize: 14, mb: 0.5, textAlign: 'center' }}>Account Holder Name: BoldTribe</Typography>
+              <Typography sx={{ fontSize: 14, mb: 0.5, textAlign: 'center' }}>IFSC Code: IDFC0001234</Typography>
+              <Typography sx={{ fontSize: 14, mb: 0.5, textAlign: 'center' }}>Branch Name: Main Branch</Typography>
+            </Box>
+          )}
         </Box>
       </DialogContent>
+    </Dialog>
+  );
+}
+
+function SubscriptionModal({ open, onClose, onAdd }) {
+  const [quantities, setQuantities] = useState({ 15: 0, 30: 0 });
+
+  const plans = [
+    { days: 15, price: 1500, label: '15 Days Subscription' },
+    { days: 30, price: 2400, label: '30 Days Subscription' }
+  ];
+
+  const handleAdd = () => {
+    // Add both plans if they have quantities
+    plans.forEach(plan => {
+      if (quantities[plan.days] > 0) {
+        onAdd({
+          days: plan.days,
+          price: plan.price,
+          quantity: quantities[plan.days]
+        });
+      }
+    });
+    setQuantities({ 15: 0, 30: 0 });
+    onClose();
+  };
+
+  const updateQuantity = (days, delta) => {
+    setQuantities(prev => ({
+      ...prev,
+      [days]: Math.max(0, prev[days] + delta)
+    }));
+  };
+
+  const totalAmount = plans.reduce((sum, plan) => 
+    sum + (plan.price * quantities[plan.days]), 0
+  );
+
+  return (
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="sm" 
+      fullWidth
+      PaperProps={{ 
+        sx: { 
+          borderRadius: 3,
+          p: 2
+        } 
+      }}
+    >
+      <DialogTitle sx={{ 
+        textAlign: 'center',
+        fontWeight: 700,
+        fontSize: '1.5rem',
+        color: '#222'
+      }}>
+        Choose Subscription Plan
+        <IconButton
+          onClick={onClose}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+          {plans.map((plan) => (
+            <Box
+              key={plan.days}
+              sx={{
+                border: '2px solid',
+                borderColor: quantities[plan.days] > 0 ? '#C4362A' : '#e0e0e0',
+                borderRadius: 2,
+                p: 2,
+                transition: 'all 0.3s ease',
+                background: quantities[plan.days] > 0 ? '#fff3f0' : '#fff',
+              }}
+            >
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Box>
+                  <Typography sx={{ fontWeight: 600, fontSize: '1.1rem' }}>
+                    {plan.label}
+                  </Typography>
+                  <Typography sx={{ color: '#666', mt: 0.5 }}>
+                    Valid for {plan.days} days
+                  </Typography>
+                </Box>
+                <Typography sx={{ 
+                  fontWeight: 700, 
+                  fontSize: '1.3rem',
+                  color: '#C4362A'
+                }}>
+                  ₹{plan.price}
+                </Typography>
+              </Box>
+              
+              <Box sx={{ 
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: '#f5f5f5',
+                p: 2,
+                borderRadius: 2
+              }}>
+                <Typography sx={{ fontWeight: 600 }}>Quantity:</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <IconButton 
+                    size="small"
+                    onClick={() => updateQuantity(plan.days, -1)}
+                    sx={{ 
+                      border: '1px solid #bbb',
+                      '&:hover': { background: '#eee' }
+                    }}
+                  >
+                    <RemoveIcon />
+                  </IconButton>
+                  <Typography sx={{ mx: 2, fontWeight: 600 }}>{quantities[plan.days]}</Typography>
+                  <IconButton 
+                    size="small"
+                    onClick={() => updateQuantity(plan.days, 1)}
+                    sx={{ 
+                      border: '1px solid #bbb',
+                      '&:hover': { background: '#eee' }
+                    }}
+                  >
+                    <AddIcon />
+                  </IconButton>
+                </Box>
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      </DialogContent>
+      <DialogActions sx={{ p: 2, pt: 0 }}>
+        <Button
+          fullWidth
+          variant="contained"
+          disabled={totalAmount === 0}
+          onClick={handleAdd}
+          sx={{
+            background: '#C4362A',
+            color: '#fff',
+            py: 1.5,
+            fontWeight: 600,
+            '&:hover': {
+              background: '#a82a1f'
+            },
+            '&.Mui-disabled': {
+              background: '#eee',
+              color: '#999'
+            }
+          }}
+        >
+          Add to Cart - ₹{totalAmount}
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 }
@@ -391,16 +575,11 @@ const MenuDetails = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const caterer = location.state?.caterer;
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const [subs15Count, setSubs15Count] = useState(0);
-  const [subs30Count, setSubs30Count] = useState(0);
-  const [showSummary, setShowSummary] = useState(false);
-  const [summaryMsg, setSummaryMsg] = useState('');
+  const [activeTab, setActiveTab] = useState(0);
+  const [cartQty, setCartQty] = useState(0);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [selectedPrice, setSelectedPrice] = useState(0);
-  // Menu slider state
-  const [menuIdx, setMenuIdx] = useState(0); // 0: Lunch, 1: Dinner, 2: Breakfast
-  const [fadeIn, setFadeIn] = useState(true);
+  const [subscriptionModalOpen, setSubscriptionModalOpen] = useState(false);
+  const [cartItems, setCartItems] = useState([]);
 
   if (!caterer) {
     return (
@@ -413,266 +592,297 @@ const MenuDetails = () => {
     );
   }
 
-  // Find the caterer from the imported caterers array using name
-  const foundCaterer = caterers.find(c => c.name === caterer.name);
+  // Determine which menu to show based on activeTab
+  let menu = [];
+  if (activeTab === 0 && caterer.lunchMenu) menu = caterer.lunchMenu;
+  if (activeTab === 1 && caterer.dinnerMenu) menu = caterer.dinnerMenu;
+  if (activeTab === 2 && caterer.breakfastMenu) menu = caterer.breakfastMenu;
 
-  // Get available menu types for this caterer
-  const availableMenus = menuTypes.filter(mt => foundCaterer && foundCaterer[mt.key]);
-  // Clamp menuIdx if needed
-  const safeMenuIdx = Math.min(menuIdx, availableMenus.length - 1);
-  const currentMenuType = availableMenus[safeMenuIdx]?.key || 'lunchMenu';
-  const currentMenuLabel = availableMenus[safeMenuIdx]?.label || 'Lunch';
-  const menu = foundCaterer && foundCaterer[currentMenuType] ? foundCaterer[currentMenuType] : [];
-  const leftDays = menu.slice(0, 3);
-  const rightDays = menu.slice(3, 6);
-
-  // Animation handler
-  const handleMenuChange = (dir) => {
-    setFadeIn(false);
-    setTimeout(() => {
-      setMenuIdx(idx => {
-        if (dir === 'next') {
-          return (idx + 1) % availableMenus.length;
-        } else {
-          return (idx - 1 + availableMenus.length) % availableMenus.length;
-        }
-      });
-      setFadeIn(true);
-    }, 180);
+  // Update the cart items handling
+  const handleAddToCart = (newItem) => {
+    setCartItems(prev => {
+      // Check if this subscription type already exists
+      const existingItemIndex = prev.findIndex(item => item.days === newItem.days);
+      
+      if (existingItemIndex >= 0) {
+        // Update existing item
+        const updatedItems = [...prev];
+        updatedItems[existingItemIndex] = {
+          ...updatedItems[existingItemIndex],
+          quantity: updatedItems[existingItemIndex].quantity + newItem.quantity
+        };
+        return updatedItems;
+      } else {
+        // Add new item
+        return [...prev, newItem];
+      }
+    });
+    setCartQty(prev => prev + newItem.quantity);
   };
 
-  // Calculate total
-  const total = subs15Count * 1500 + subs30Count * 2400;
+  // Add function to update quantity in cart
+  const updateCartItemQuantity = (index, delta) => {
+    setCartItems(prev => {
+      const updatedItems = [...prev];
+      const newQuantity = Math.max(0, updatedItems[index].quantity + delta);
+      
+      if (newQuantity === 0) {
+        // Remove item if quantity becomes 0
+        updatedItems.splice(index, 1);
+      } else {
+        updatedItems[index] = {
+          ...updatedItems[index],
+          quantity: newQuantity
+        };
+      }
+      
+      // Update total cart quantity
+      const newTotalQty = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
+      setCartQty(newTotalQty);
+      
+      return updatedItems;
+    });
+  };
 
-  // Message for summary
-  let msg = '';
-  if (subs15Count > 0 && subs30Count > 0) {
-    msg = `You have added ${subs15Count} x 15 days and ${subs30Count} x monthly subscription.`;
-  } else if (subs15Count > 0) {
-    msg = `You have added ${subs15Count} x 15 days subscription.`;
-  } else if (subs30Count > 0) {
-    msg = `You have added ${subs30Count} x monthly subscription.`;
-  }
+  // Calculate total price
+  const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  // Update the cart section JSX
+  const cartSection = cartItems.length === 0 ? (
+    <>
+      <ShoppingCartOutlinedIcon sx={{ fontSize: 50, color: '#bdbdbd', mb: 1, mt: 2 }} />
+      <Typography sx={{ fontWeight: 700, fontSize: 18, mb: 0.5, mt: 2 }}>OOPS! your cart is EMPTY</Typography>
+      <Typography sx={{ color: '#888', fontSize: 13 }}>Looks like you haven't added to your cart yet.</Typography>
+    </>
+  ) : (
+    <Box sx={{ width: '100%', mt: 2 }}>
+      <Box sx={{ background: '#ffe7d6', borderRadius: 1, py: 0.5, mb: 1.5, textAlign: 'center', fontWeight: 600, fontSize: 15, letterSpacing: 1, color: '#222' }}>CART</Box>
+      <Typography sx={{ fontWeight: 600, fontSize: 11, mb: 1, color: '#222' }}>{cartItems.length} ITEM(S)</Typography>
+      {cartItems.map((item, index) => (
+        <Box key={index} sx={{ 
+          border: '1.2px solid #e0e0e0', 
+          borderRadius: 2, 
+          p: 2,
+          display: 'flex', 
+          flexDirection: 'column',
+          mb: 2,
+          background: item.days === 30 ? '#fff3f0' : '#f5f9ff',
+          borderColor: item.days === 30 ? '#ffcdc3' : '#b3d4ff'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+            <Typography sx={{ 
+              fontWeight: 600, 
+              fontSize: 13,
+              color: item.days === 30 ? '#C4362A' : '#1976d2'
+            }}>
+              {item.days} Days Subscription
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <IconButton 
+                size="small"
+                onClick={() => updateCartItemQuantity(index, -1)}
+                sx={{ 
+                  border: '1px solid #bbb',
+                  '&:hover': { background: '#eee' }
+                }}
+              >
+                <RemoveIcon />
+              </IconButton>
+              <Typography sx={{ mx: 1, fontWeight: 600 }}>{item.quantity}</Typography>
+              <IconButton 
+                size="small"
+                onClick={() => updateCartItemQuantity(index, 1)}
+                sx={{ 
+                  border: '1px solid #bbb',
+                  '&:hover': { background: '#eee' }
+                }}
+              >
+                <AddIcon />
+              </IconButton>
+            </Box>
+          </Box>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mt: 0.5
+          }}>
+            <Typography sx={{ 
+              fontWeight: 700, 
+              fontSize: 14,
+              color: '#222'
+            }}>
+              ₹{item.price * item.quantity}
+            </Typography>
+          </Box>
+        </Box>
+      ))}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography sx={{ fontWeight: 600, fontSize: 12, color: '#222' }}>SUBTOTAL</Typography>
+        <Typography sx={{ fontWeight: 600, fontSize: 13, color: '#222' }}>₹ {totalPrice}</Typography>
+      </Box>
+      <Button 
+        fullWidth 
+        sx={{ 
+          background: '#d98a7e', 
+          color: '#fff', 
+          fontWeight: 700, 
+          fontSize: 15, 
+          borderRadius: 2, 
+          py: 1, 
+          mt: 1, 
+          boxShadow: 'none', 
+          '&:hover': { 
+            background: '#c4362a' 
+          } 
+        }}
+        onClick={() => setPaymentModalOpen(true)}
+      >
+        CHECKOUT
+      </Button>
+    </Box>
+  );
+
+  // Update the ADD button click handler
+  const handleAddButtonClick = () => {
+    setSubscriptionModalOpen(true);
+  };
 
   return (
     <>
-      {/* Attractive Back Header */}
-      <WaveHeader>
-        <IconButton onClick={() => navigate('/kitchen')} sx={{ mr: 1, color: '#fff' }}>
-          <ArrowBackIosNewIcon sx={{ fontSize: 28, color: '#fff' }} />
-        </IconButton>
-        <Typography onClick={() => navigate('/kitchen')} sx={{ fontWeight: 500, color: '#fff', cursor: 'pointer', fontSize: '1.18rem', letterSpacing: 0.5 }}>
-          Back to Home Page
-        </Typography>
-        <WaveSVG>
-          <svg viewBox="0 0 500 20" preserveAspectRatio="none" style={{ width: '100%', height: 20, display: 'block' }}>
-            <path d="M0,10 Q250,30 500,10 L500,20 L0,20 Z" fill="#fff" fillOpacity="0.3" />
-          </svg>
-        </WaveSVG>
-      </WaveHeader>
-
-      <Box sx={{ maxWidth: 800, mx: 'auto', mt: 0, mb: 6, p: 2, pt: { xs: '80px', sm: '90px' } }}>
-        {/* Caterer Details Header - OUTSIDE CARD */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, p: 2, background: '#f8fafc', borderRadius: '14px', boxShadow: '0 2px 8px rgba(25,118,210,0.06)' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar src={foundCaterer?.image} alt={foundCaterer?.name} sx={{ width: 70, height: 70, border: '2px solid #eee', mr: 2 }} />
+      <Header />
+      <Box sx={{ background: '#fff', minHeight: '100vh', pb: 6, mt: 4 }}>
+        {/* Top Vendor Info */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', maxWidth: 1200, mx: 'auto', mt: 14, px: 4 }}>
+          {/* Left: Image & Info */}
+          <Box sx={{ display: 'flex', gap: 3 }}>
+            <img src={caterer.image} alt={caterer.name} style={{ width: 180, height: 120, borderRadius: 12, objectFit: 'cover', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }} />
             <Box>
-              <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.15rem', mb: 0.5 }}>{foundCaterer?.name}</Typography>
-              <Typography sx={{ color: '#666', fontSize: '1rem', mb: 0.5 }}>{foundCaterer?.address}</Typography>
-              <Typography sx={{ color: '#666', fontSize: '0.95rem', mb: 0.5 }}>{foundCaterer?.phone}</Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+              <Typography variant="h5" sx={{ fontWeight: 600 }}>{caterer.name}</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
                 {[...Array(5)].map((_, i) => (
-                  <span key={i} style={{ color: '#FFD600', fontSize: 20 }}>★</span>
+                  <span key={i} style={{ color: '#FFD600', fontSize: 18 }}>★</span>
                 ))}
-                <Chip label={foundCaterer?.years + ' years'} size="small" sx={{ ml: 1, bgcolor: '#43a047', color: '#fff', fontWeight: 600 }} />
               </Box>
+              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                <Chip label="Non-veg" color="error" size="small" icon={<CancelIcon sx={{ color: '#fff' }} />} />
+                <Chip label="Veg" color="success" size="small" icon={<CheckCircleIcon sx={{ color: '#fff' }} />} />
+              </Box>
+              <Typography sx={{ mt: 1, fontSize: 15 }}>{caterer.years} years in business · {caterer.address} · {caterer.phone}</Typography>
+              <Typography sx={{ fontSize: 15 }}>Open 24 hours</Typography>
+              <Typography sx={{ fontSize: 15 }}>On-site services·Online appointments</Typography>
             </Box>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <img src={require('../assets/FSSAI_logo.png')} alt="FSSAI Logo" style={{ width: 38, height: 38, objectFit: 'contain' }} />
-            <Typography sx={{ fontSize: '0.9rem', color: '#666', textAlign: 'right', ml: 2 }}>{foundCaterer?.fssaiNumber}</Typography>
+          {/* Right: Info */}
+          <Box sx={{ minWidth: 320, textAlign: 'right', mt: 1 }}>
+            <Typography sx={{ fontSize: 15 }}>Lunch and Dinner can be ordered from the site.</Typography>
+            <Typography sx={{ fontSize: 15, mt: 2 }}>
+              For breakfast please call on<br />
+              <span style={{ fontWeight: 600 }}>{caterer.phone}</span>
+            </Typography>
           </Box>
         </Box>
-        {/* Menu Type Slider Controls */}
-        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <IconButton
-              onClick={() => handleMenuChange('prev')}
-              disabled={availableMenus.length < 2}
-              sx={{ bgcolor: '#f0f4fa', borderRadius: '50%' }}
-              size="small"
+
+        {/* Meal Tabs */}
+        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 4 }}>
+          {["Lunch", "Dinner", "Breakfast"].map((label, idx) => (
+            <Button
+              key={label}
+              variant={activeTab === idx ? 'contained' : 'outlined'}
+              sx={{
+                borderRadius: 2,
+                minWidth: 120,
+                fontWeight: 600,
+                fontSize: 16,
+                background: activeTab === idx ? '#e9b7b2' : '#fff',
+                color: activeTab === idx ? '#C4362A' : '#333',
+                borderColor: '#e9b7b2',
+                boxShadow: activeTab === idx ? '0 2px 8px rgba(196,54,42,0.08)' : 'none',
+                '&:hover': {
+                  background: '#f5e0de',
+                  color: '#C4362A',
+                },
+              }}
+              onClick={() => setActiveTab(idx)}
             >
-              <ArrowBackIosNewIcon fontSize="small" />
-            </IconButton>
-            <MenuTypePill>{currentMenuLabel}</MenuTypePill>
-            <IconButton
-              onClick={() => handleMenuChange('next')}
-              disabled={availableMenus.length < 2}
-              sx={{ bgcolor: '#f0f4fa', borderRadius: '50%' }}
-              size="small"
-            >
-              <ArrowForwardIosIcon fontSize="small" />
-            </IconButton>
-          </Box>
+              {label}
+            </Button>
+          ))}
         </Box>
-        {/* Animated Menu Card */}
-        <Fade in={fadeIn} timeout={300}>
-          <div>
-            <MenuCard>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2, position: 'relative' }}>
-                <img 
-                  src={foundCaterer?.image} 
-                  alt={foundCaterer?.name} 
-                  style={{ 
-                    width: 80, 
-                    height: 80, 
-                    borderRadius: '50%',
-                    objectFit: 'cover',
-                    border: '3px solid #fff',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                  }} 
-                />
+
+        {/* Main Content: Menu + Cart */}
+        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 6, mt: 5, maxWidth: 1200, mx: 'auto' }}>
+          {/* Left: Weekly Menu */}
+          <Box sx={{ background: 'linear-gradient(180deg, #ffe0d3 0%, #fbeee6 100%)', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', p: 2, minWidth: 300, maxWidth: 400, flex: 1, mx: 'auto' }}>
+            <Typography sx={{ fontWeight: 600, fontSize: 22, mb: 3, textAlign: 'center', color: '#222' }}>Choose your weekly menu</Typography>
+            {menu.map((item, idx) => (
+              <Box key={idx} sx={{
+                background: '#fff',
+                borderRadius: 3,
+                border: '1.5px solid #e0e0e0',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+                display: 'flex',
+                alignItems: 'center',
+                px: 2,
+                py: 1,
+                mb: 2.5,
+                minHeight: 60,
+                justifyContent: 'space-between',
+              }}>
+                {/* Left: Menu Info */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                  <Typography sx={{ fontSize: 11, color: '#888', fontWeight: 500, mb: 0.2 }}>MENU 1</Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.2 }}>
+                    <FiberManualRecordIcon sx={{ color: '#43a047', fontSize: 15, mr: 0.5 }} />
+                    <Typography sx={{ fontWeight: 700, fontSize: 15, color: '#222', mr: 1 }}>{item.day}</Typography>
+                  </Box>
+                  {item.items && item.items.map((i, j) => (
+                    <Typography key={j} sx={{ fontSize: 11, color: '#222', textTransform: 'uppercase', fontWeight: 500, letterSpacing: 0.15 }}>{i.desc}</Typography>
+                  ))}
+                </Box>
+                {/* Right: Food Image */}
+                <Box sx={{ ml: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Avatar src={foodImg} alt="food" sx={{ width: 36, height: 36, borderRadius: '50%', border: '1.5px solid #e0e0e0', objectFit: 'cover' }} />
+                </Box>
               </Box>
-              <MenuSubHeading>
-                <RestaurantIcon />
-                {foundCaterer?.name}
-              </MenuSubHeading>
-              <MenuHeading>
-                <AccessTimeIcon />
-                WEEKLY FOOD MENU
-              </MenuHeading>
-              <MenuDivider />
-              <MenuGrid>
-                <MenuCol>
-                  {leftDays.map(day => (
-                    <Box key={day.day}>
-                      <MenuDayTitle>
-                        <CalendarTodayIcon />
-                        {day.day}
-                      </MenuDayTitle>
-                      {day.items.map((item, idx) => (
-                        <MenuItemRow key={idx}>
-                          <MenuItemText>
-                            <RestaurantIcon />
-                            {item.desc}
-                          </MenuItemText>
-                        </MenuItemRow>
-                      ))}
-                    </Box>
-                  ))}
-                </MenuCol>
-                <MenuCol>
-                  {rightDays.map(day => (
-                    <Box key={day.day}>
-                      <MenuDayTitle>
-                        <CalendarTodayIcon />
-                        {day.day}
-                      </MenuDayTitle>
-                      {day.items.map((item, idx) => (
-                        <MenuItemRow key={idx}>
-                          <MenuItemText>
-                            <RestaurantIcon />
-                            {item.desc}
-                          </MenuItemText>
-                        </MenuItemRow>
-                      ))}
-                    </Box>
-                  ))}
-                </MenuCol>
-              </MenuGrid>
-              <SubscriptionButtons>
-                <SubscriptionButton onClick={() => {
-                  if (localStorage.getItem('isLoggedIn') !== 'true') {
-                    setShowLoginPrompt(true);
-                  } else {
-                    setSubs15Count(c => {
-                      setShowSummary(true);
-                      setSummaryMsg('');
-                      return c + 1;
-                    });
-                  }
-                }}>
-                  Subscription @ ₹1500 / 15 Days
-                </SubscriptionButton>
-                <SubscriptionButton onClick={() => {
-                  if (localStorage.getItem('isLoggedIn') !== 'true') {
-                    setShowLoginPrompt(true);
-                  } else {
-                    setSubs30Count(c => {
-                      setShowSummary(true);
-                      setSummaryMsg('');
-                      return c + 1;
-                    });
-                  }
-                }}>
-                  Subscription @ ₹2400 / Month
-                </SubscriptionButton>
-              </SubscriptionButtons>
-            </MenuCard>
-            {/* Inline Payment Summary Bar and message OUTSIDE the card */}
-            {(showSummary && (subs15Count > 0 || subs30Count > 0)) && (
-              <PaymentSummaryBar>
-                {subs15Count > 0 && (
-                  <>
-                    <Typography sx={{ fontWeight: 600, mr: 1 }}>15 days</Typography>
-                    <QtyBox>
-                      <IconButton size="small" onClick={() => setSubs15Count(c => Math.max(0, c - 1))}>
-                        -
-                      </IconButton>
-                      <span>{subs15Count}</span>
-                      <IconButton size="small" onClick={() => setSubs15Count(c => c + 1)}>
-                        +
-                      </IconButton>
-                    </QtyBox>
-                  </>
-                )}
-                {subs30Count > 0 && (
-                  <>
-                    <Typography sx={{ fontWeight: 600, ml: 2, mr: 1 }}>Monthly</Typography>
-                    <QtyBox>
-                      <IconButton size="small" onClick={() => setSubs30Count(c => Math.max(0, c - 1))}>
-                        -
-                      </IconButton>
-                      <span>{subs30Count}</span>
-                      <IconButton size="small" onClick={() => setSubs30Count(c => c + 1)}>
-                        +
-                      </IconButton>
-                    </QtyBox>
-                  </>
-                )}
-                <PayButton sx={{ ml: 'auto', px: 3 }} onClick={() => {
-                  setSelectedPrice(total);
-                  setPaymentModalOpen(true);
-                }}>
-                  Pay ₹ {total}
-                </PayButton>
-              </PaymentSummaryBar>
-            )}
-            {msg && showSummary && (
-              <Typography sx={{ color: '#388e3c', fontWeight: 500, mt: 1, mb: 0, fontSize: 15 }}>{msg}</Typography>
-            )}
-          </div>
-        </Fade>
+            ))}
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <Button 
+                sx={{
+                  background: '#fff',
+                  color: '#C4362A',
+                  fontWeight: 700,
+                  fontSize: 24,
+                  borderRadius: 6,
+                  px: 4,
+                  py: 1,
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+                  border: '1.5px solid #e0e0e0',
+                  '&:hover': {
+                    background: '#f5f5f5',
+                    color: '#C4362A',
+                  },
+                }}
+                onClick={handleAddButtonClick}
+              >
+                ADD +
+              </Button>
+            </Box>
+          </Box>
+          {/* Right: Cart Section */}
+          <Box sx={{ background: '#fff', borderRadius: 10, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', minWidth: 280, maxWidth: 340, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', p: 1.5 }}>
+            {cartSection}
+          </Box>
+        </Box>
       </Box>
-
-      {/* Login Prompt Modal */}
-      <Dialog open={showLoginPrompt} onClose={() => setShowLoginPrompt(false)}>
-        <DialogTitle>You are not logged in.</DialogTitle>
-        <DialogContent>
-          <Typography>Please login to continue.</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowLoginPrompt(false)} color="inherit">Cancel</Button>
-          <Button onClick={() => {
-            setShowLoginPrompt(false);
-            if (typeof window.openLoginModalFromHeader === 'function') {
-              window.openLoginModalFromHeader();
-            }
-          }} color="primary" variant="contained">Login</Button>
-        </DialogActions>
-      </Dialog>
-
-      <PaymentModal open={paymentModalOpen} onClose={() => setPaymentModalOpen(false)} price={selectedPrice} />
+      {cartQty > 0 && (
+        <PaymentModal open={paymentModalOpen} onClose={() => setPaymentModalOpen(false)} price={cartQty * 1500} />
+      )}
+      <SubscriptionModal 
+        open={subscriptionModalOpen}
+        onClose={() => setSubscriptionModalOpen(false)}
+        onAdd={handleAddToCart}
+      />
     </>
   );
 };
