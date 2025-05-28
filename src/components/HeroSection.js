@@ -1,278 +1,175 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Container, useTheme } from '@mui/material';
-import { styled, keyframes } from '@mui/material/styles';
+import { Box, Typography, Button, useTheme, Link } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
-import thaliImage from '../assets/images/thali1.png';
-import thali2 from '../assets/images/thali2.png';
-import thali3 from '../assets/images/thali3.png';
-import thali4 from '../assets/images/thali4.png';
-import backgroundImage from '../assets/images/hero1.png';
-import hero2 from '../assets/images/hero2.png';
-import hero3 from '../assets/images/hero3.png';
-import hero4 from '../assets/images/hero4.png';
+import heroImage1 from '../assets/image-2.png';
+import heroImage2 from '../assets/images/hero2.png';
+import heroImage3 from '../assets/images/hero3.png';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import PhoneIcon from '@mui/icons-material/Phone';
+import BehanceIcon from '@mui/icons-material/Brush'; // Placeholder for Behance
 
-const heroConfigs = [
+const slides = [
   {
-    background: '#312F2B',
-    image: backgroundImage,
-    thali: thaliImage,
-    title: [
-      { 
-        text: 'Order', 
-        color: '#ff0000',
-        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' }
-      },
-      { 
-        text: 'Your Favorite', 
-        color: 'white',
-        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' }
-      }
-    ],
-    subtitle: [
-      { 
-        text: 'Meals', 
-        color: '#ff0000',
-        fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
-      },
-      { 
-        text: 'in Just a Few', 
-        color: 'white',
-        fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
-      }
-    ],
-    endText: { 
-      text: 'Clicks!', 
-      color: '#ff0000',
-      fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
-    }
+    image: heroImage1,
+    title: (
+      <>
+        Fresh Flavors &<br />Creative Catering Services<br />provider
+      </>
+    ),
+    description: (
+      <>
+        Maria's Food Catering & Services offers an elegant fine dining experience, blending Filipino flavors with modern culinary techniques. From succulent lechon belly to gourmet seafood sinigang, each dish is beautifully plated and made with fresh, high-quality ingredients.<br />
+        Perfect for weddings, corporate events, and special celebrations, Maria's ensures impeccable service and a refined dining experience for every occasion.
+      </>
+    ),
   },
   {
-    background: '#D4A84B',
-    image: hero2,
-    thali: thali2,
-    title: [
-      { 
-        text: 'Satisfy', 
-        color: '#ff0000',
-        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' }
-      },
-      { 
-        text: 'Your Cravings', 
-        color: 'white',
-        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' }
-      }
-    ],
-    subtitle: [
-      { 
-        text: 'Meals', 
-        color: '#ff0000',
-        fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
-      },
-      { 
-        text: 'in Just a Few', 
-        color: 'white',
-        fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
-      }
-    ],
-    endText: { 
-      text: 'Minutes!', 
-      color: '#ff0000',
-      fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
-    }
+    image: heroImage2,
+    title: (
+      <>
+        Savor Every Bite<br />with Exquisite Presentation<br />and Taste
+      </>
+    ),
+    description: (
+      <>
+        Experience a fusion of tradition and innovation. Our chefs craft each dish with passion, ensuring a memorable dining experience for you and your guests.<br />
+        Book us for your next event and taste the difference!
+      </>
+    ),
   },
   {
-    background: 'linear-gradient(to right, #A6AC5A, #C5CF78)',
-    image: hero4,
-    thali: thali3,
-    title: [
-      { 
-        text: 'Delicious', 
-        color: '#ff0000',
-        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' }
-      },
-      { 
-        text: 'Keto Meals', 
-        color: 'white',
-        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' }
-      }
-    ],
-    subtitle: [
-      { 
-        text: 'Delivered', 
-        color: '#ff0000',
-        fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
-      },
-      { 
-        text: 'Fresh Daily', 
-        color: 'white',
-        fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
-      }
-    ],
-    endText: { 
-      text: 'For You!', 
-      color: '#ff0000',
-      fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
-    }
+    image: heroImage3,
+    title: (
+      <>
+        Celebrate Moments<br />with Gourmet Catering<br />Excellence
+      </>
+    ),
+    description: (
+      <>
+        From intimate gatherings to grand celebrations, we deliver culinary perfection and impeccable service every time.<br />
+        Discover our menu and let us make your event unforgettable.
+      </>
+    ),
   },
-  {
-    background: 'linear-gradient(to right, #D78704, #F6B629)',
-    image: hero3,
-    thali: thali4,
-    title: [
-      { 
-        text: 'Low-Carb', 
-        color: '#ff0000',
-        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' }
-      },
-      { 
-        text: 'High-Taste', 
-        color: 'white',
-        fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem', lg: '2.5rem', xl: '3rem' }
-      }
-    ],
-    subtitle: [
-      { 
-        text: 'Stay Fit', 
-        color: '#ff0000',
-        fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
-      },
-      { 
-        text: 'Every Bite', 
-        color: 'white',
-        fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
-      }
-    ],
-    endText: { 
-      text: 'Always!', 
-      color: '#ff0000',
-      fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem', lg: '2rem', xl: '2.5rem' }
-    }
-  }
 ];
 
-const StyledHeroSection = styled(Box)(({ activeIndex, theme }) => ({
-  position: 'relative',
+const SocialIcon = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  color: '#222',
+  fontSize: '1.2rem',
+  gap: 2,
+  '& svg': {
+    fontSize: '2rem',
+    marginBottom: 2,
+  },
+  '& a': {
+    color: '#222',
+    textDecoration: 'none',
+    fontSize: '0.9rem',
+    marginTop: 2,
+  },
+}));
+
+const HeroRoot = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
   display: 'flex',
-  alignItems: 'center',
-  overflow: 'hidden',
-  transition: 'all 0.5s ease-in-out',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    background: heroConfigs[activeIndex].background,
-    zIndex: 0,
-    transition: 'background 0.5s ease-in-out',
-    borderRadius: '0 300px 400px 0',
-    [theme.breakpoints.down('sm')]: {
-      borderRadius: '0 150px 200px 0'
-    }
+  alignItems: 'stretch',
+  background: '#fff',
+  marginTop: theme.spacing(10),
+  [theme.breakpoints.down('md')]: {
+    flexDirection: 'column',
+    minHeight: 'auto',
+    marginTop: theme.spacing(6),
   },
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    width: '65%',
-    height: '100%',
-    backgroundImage: `url(${heroConfigs[activeIndex].image})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    filter: 'brightness(0.4)',
-    zIndex: 1,
-    borderRadius: '300px 0 0 400px',
-    transition: 'all 0.5s ease-in-out',
-    [theme.breakpoints.down('sm')]: {
-      width: '100%',
-      borderRadius: '150px 0 0 200px'
-    }
-  }
+  position: 'relative',
 }));
 
-const ContentWrapper = styled(Box)({
-  position: 'relative',
-  zIndex: 2,
-  width: '100%'
-});
+const LeftCol = styled(Box)(({ theme }) => ({
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  padding: theme.spacing(8, 4, 4, 8),
+  [theme.breakpoints.down('md')]: {
+    padding: theme.spacing(4, 2, 2, 2),
+    alignItems: 'center',
+    textAlign: 'center',
+  },
+}));
 
-const ExploreButton = styled(Button)(({ theme }) => ({
-  backgroundColor: '#ff0000',
-  color: 'white',
-  padding: '15px 40px',
-  borderRadius: '30px',
-  fontSize: '20px',
-  fontWeight: 600,
+const RightCol = styled(Box)(({ theme }) => ({
+  flex: 1,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: '#fff',
+  [theme.breakpoints.down('md')]: {
+    minHeight: 300,
+    padding: theme.spacing(2, 0),
+  },
+}));
+
+const HeroImage = styled('img')(({ theme }) => ({
+  width: '100%',
+  maxWidth: 700,
+  height: 'auto',
+  borderRadius: 0,
+  boxShadow: 'none',
+  [theme.breakpoints.down('md')]: {
+    maxWidth: '100%',
+    borderRadius: 0,
+  },
+}));
+
+const OurMenuButton = styled(Button)(({ theme }) => ({
+  background: '#b71c1c',
+  color: '#fff',
+  fontWeight: 700,
+  fontSize: '1.1rem',
+  borderRadius: 10,
+  padding: theme.spacing(1.2, 4),
+  marginTop: theme.spacing(4),
+  boxShadow: 'none',
   textTransform: 'none',
   '&:hover': {
-    backgroundColor: '#cc0000',
+    background: '#b71c1c',
   },
-  marginTop: '-20px',
-  [theme.breakpoints.down('md')]: {
-    padding: '12px 30px',
-    fontSize: '16px',
-  },
-  [theme.breakpoints.down('sm')]: {
-    padding: '10px 25px',
-    fontSize: '14px',
-  }
 }));
 
-const rotate = keyframes`
-  from {
-    transform: rotate(0deg) scale(1.2);
-  }
-  to {
-    transform: rotate(360deg) scale(1.2);
-  }
-`;
-
-const ThaliImage = styled('img')(({ slideIndex, theme }) => ({
-  width: slideIndex === 0 ? '500px' : '400px',
-  height: slideIndex === 0 ? '500px' : '400px',
-  objectFit: 'contain',
-  filter: 'drop-shadow(0px 4px 20px rgba(0, 0, 0, 0.25))',
-  position: 'relative',
-  zIndex: 3,
-  marginLeft: slideIndex === 0 ? '-250px' : '-200px',
-  animation: `${rotate} 20s linear infinite`,
-  [theme.breakpoints.down('lg')]: {
-    width: slideIndex === 0 ? '400px' : '300px',
-    height: slideIndex === 0 ? '400px' : '300px',
-    marginLeft: slideIndex === 0 ? '-200px' : '-150px',
-  },
+const SocialsRow = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(4),
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginTop: theme.spacing(8),
   [theme.breakpoints.down('md')]: {
-    width: slideIndex === 0 ? '300px' : '250px',
-    height: slideIndex === 0 ? '300px' : '250px',
-    marginLeft: slideIndex === 0 ? '-150px' : '-125px',
+    justifyContent: 'center',
+    marginTop: theme.spacing(4),
   },
-  [theme.breakpoints.down('sm')]: {
-    width: slideIndex === 0 ? '250px' : '200px',
-    height: slideIndex === 0 ? '250px' : '200px',
-    marginLeft: slideIndex === 0 ? '-125px' : '-100px',
-  }
 }));
 
-const SliderDots = styled(Box)({
+const SliderDots = styled(Box)(({ theme }) => ({
   position: 'absolute',
-  bottom: '20px',
+  bottom: theme.spacing(1),
   left: '50%',
   transform: 'translateX(-50%)',
   display: 'flex',
-  gap: '10px',
-  zIndex: 5
-});
+  gap: theme.spacing(2),
+  zIndex: 10,
+}));
 
-const Dot = styled(Box)(({ active }) => ({
-  width: '12px',
-  height: '12px',
+const Dot = styled(Box)(({ active, theme }) => ({
+  width: 16,
+  height: 16,
   borderRadius: '50%',
-  backgroundColor: active ? '#ff0000' : 'white',
+  background: active ? '#b71c1c' : '#eee',
+  border: active ? '2px solid #b71c1c' : '2px solid #eee',
   cursor: 'pointer',
-  transition: 'background-color 0.3s ease'
+  transition: 'background 0.3s, border 0.3s',
 }));
 
 const HeroSection = () => {
@@ -280,159 +177,60 @@ const HeroSection = () => {
   const navigate = useNavigate();
   const theme = useTheme();
 
+  // Auto-slide logic
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % 4);
+      setActiveIndex((prev) => (prev + 1) % slides.length);
     }, 5000);
-
     return () => clearInterval(timer);
   }, []);
 
-  const handleExplore = () => {
-    navigate('/kitchen');
-  };
-
-  const currentSlide = heroConfigs[activeIndex];
+  const currentSlide = slides[activeIndex];
 
   return (
-    <StyledHeroSection activeIndex={activeIndex}>
-      <ContentWrapper>
-        <Container maxWidth="xl">
-          <Box sx={{ 
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            py: 8,
-            position: 'relative',
-            mt: 12,
-            [theme.breakpoints.down('sm')]: {
-              flexDirection: 'column',
-              textAlign: 'center',
-              py: 4,
-              mt: 6
-            }
-          }}>
-            <Box sx={{
-              flex: '0 1 50%',
-              position: 'relative',
-              zIndex: 3,
-              [theme.breakpoints.down('sm')]: {
-                flex: '0 1 100%',
-                mb: 4
-              }
-            }}>
-              <Box sx={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                gap: 9,
-                [theme.breakpoints.down('sm')]: {
-                  gap: 4
-                }
-              }}>
-                <Typography
-                  variant="h1"
-                  sx={{
-                    fontWeight: 'bold',
-                    fontSize: currentSlide.title[0].fontSize,
-                    lineHeight: 1.1,
-                    color: 'white',
-                  }}
-                >
-                  <Box sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center',
-                    flexDirection: 'row',
-                    gap: 0
-                  }}>
-                    <span style={{ color: currentSlide.title[0].color }}>{currentSlide.title[0].text}</span>
-                    <span style={{ 
-                      marginLeft: '20px', 
-                      color: currentSlide.title[1].color 
-                    }}>{currentSlide.title[1].text}</span>
-                  </Box>
-                </Typography>
-
-                <Typography
-                  variant="h1"
-                  sx={{
-                    fontWeight: 'bold',
-                    fontSize: currentSlide.subtitle[0].fontSize,
-                    lineHeight: 1.1,
-                    color: 'white',
-                  }}
-                >
-                  <Box sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center',
-                    flexDirection: 'row',
-                    gap: 0
-                  }}>
-                    <span style={{ color: currentSlide.subtitle[0].color }}>{currentSlide.subtitle[0].text}</span>
-                    <span style={{ 
-                      marginLeft: '20px', 
-                      color: currentSlide.subtitle[1].color 
-                    }}>{currentSlide.subtitle[1].text}</span>
-                  </Box>
-                </Typography>
-
-                {currentSlide.endText && (
-                  <Typography
-                    variant="h1"
-                    sx={{
-                      fontWeight: 'bold',
-                      fontSize: currentSlide.endText.fontSize,
-                      lineHeight: 1.1,
-                      color: 'white',
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <span style={{ color: currentSlide.endText.color }}>{currentSlide.endText.text}</span>
-                    </Box>
-                  </Typography>
-                )}
-
-                <Box sx={{ mt: 2 }}>
-                  <ExploreButton 
-                    variant="contained" 
-                    size="large"
-                    onClick={handleExplore}
-                  >
-                    EXPLORE MORE
-                  </ExploreButton>
-                </Box>
-              </Box>
-            </Box>
-            <Box sx={{
-              flex: '0 1 50%',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              position: 'relative',
-              zIndex: 3,
-              [theme.breakpoints.down('sm')]: {
-                flex: '0 1 100%',
-                mt: 2
-              }
-            }}>
-              <ThaliImage 
-                src={currentSlide.thali} 
-                alt="Indian Thali" 
-                slideIndex={activeIndex}
-              />
-            </Box>
-          </Box>
-        </Container>
-      </ContentWrapper>
+    <HeroRoot>
+      <LeftCol>
+        <Typography variant="h2" sx={{ fontWeight: 700, fontSize: { xs: '2rem', md: '3rem', lg: '3.5rem' }, mb: 2, lineHeight: 1.1 }}>
+          {currentSlide.title}
+        </Typography>
+        <Typography sx={{ color: '#222', fontSize: { xs: '1rem', md: '1.2rem' }, mb: 2, maxWidth: 540 }}>
+          {currentSlide.description}
+        </Typography>
+        <OurMenuButton onClick={() => navigate('/kitchen')}>
+          Our Menu&nbsp;&nbsp;{'>'}
+        </OurMenuButton>
+        <SocialsRow>
+          <SocialIcon>
+            <FacebookIcon />
+            <Link href="#" target="_blank">Fb</Link>
+          </SocialIcon>
+          <SocialIcon>
+            <BehanceIcon />
+            <Link href="#" target="_blank">Behance</Link>
+          </SocialIcon>
+          <SocialIcon>
+            <WhatsAppIcon />
+            <Link href="#" target="_blank">WhatsApp</Link>
+          </SocialIcon>
+          <SocialIcon>
+            <PhoneIcon />
+            <Link href="#" target="_blank">Phone</Link>
+          </SocialIcon>
+        </SocialsRow>
+      </LeftCol>
+      <RightCol>
+        <HeroImage src={currentSlide.image} alt="Catering" />
+      </RightCol>
       <SliderDots>
-        {[0, 1, 2, 3].map((index) => (
+        {slides.map((_, idx) => (
           <Dot
-            key={index}
-            active={index === activeIndex}
-            onClick={() => setActiveIndex(index)}
+            key={idx}
+            active={idx === activeIndex}
+            onClick={() => setActiveIndex(idx)}
           />
         ))}
       </SliderDots>
-    </StyledHeroSection>
+    </HeroRoot>
   );
 };
 

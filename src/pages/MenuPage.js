@@ -529,7 +529,7 @@ const MenuPage = () => {
       </Banner>
       {/* Info Note */}
       <Typography sx={{ textAlign: 'center', fontSize: '1.08rem', color: '#1976d2', mb: 3, fontWeight: 500 }}>
-        For Breakfast and Dinner, contact <span style={{fontWeight:'bold', color:'#C4362A'}}>support@boldeats.in</span>
+        For Breakfast and Dinner, contact <a href="mailto:support@boldeats.in" style={{fontWeight:'bold', color:'#C4362A', textDecoration: 'none'}}>support@boldeats.in</a>
       </Typography>
       {/* Caterer Cards */}
       {caterers.map((caterer, idx) => (
@@ -537,10 +537,10 @@ const MenuPage = () => {
           <CardImageLeft src={caterer.image} alt={caterer.name} />
           <CardContentRight>
             {/* Menu Type Label */}
-            {(() => {
+            {/* {(() => {
               const { label, color } = getMenuTypeLabel(caterer, idx);
               return <MenuTypePill color={color}>{label}</MenuTypePill>;
-            })()}
+            })()} */}
             <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>{caterer.name}</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               {[...Array(5)].map((_, i) => (

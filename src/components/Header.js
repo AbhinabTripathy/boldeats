@@ -48,13 +48,11 @@ import WalletModal from './WalletModal';
 const StyledAppBar = styled(AppBar)({
   backgroundColor: 'transparent',
   boxShadow: 'none',
-  position: 'fixed',
+  position: 'relative',
   height: '90px',
   display: 'flex',
   alignItems: 'center',
-  top: 0,
-  left: 0,
-  right: 0,
+  width: '100%',
   zIndex: 1000,
 });
 

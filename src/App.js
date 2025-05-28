@@ -69,39 +69,47 @@ const AppContent = () => {
 
   return (
     <Box sx={{ 
-      pt: isHomePage ? '90px' : isSubscriptionPage ? '0px' : '0px',
-      minHeight: '100vh'
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: '100vh',
+      width: '100%'
     }}>
       {!isMenuDetails && <Header />}
-      <Routes>
-        <Route path="/" element={
-          <>
-            <SplashScreen />
-            <HomePage />
-          </>
-        } />
-        <Route path="/kitchen" element={<MenuPage />} />
-        <Route path="/product" element={<ProductPage />} />
-        <Route path="/menu-details" element={<MenuDetails onSubscription={() => window.location.assign('/subscription')} />} />
-        <Route path="/subscription" element={<SubscriptionPage />} />
-        <Route 
-          path="/profile" 
-          element={
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/cart" 
-          element={
-            <ProtectedRoute>
-              <CartPage />
-            </ProtectedRoute>
-          } 
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <Box sx={{ 
+        flex: 1,
+        width: '100%',
+        pt: isHomePage ? '0' : '0',
+      }}>
+        <Routes>
+          <Route path="/" element={
+            <>
+              <SplashScreen />
+              <HomePage />
+            </>
+          } />
+          <Route path="/kitchen" element={<MenuPage />} />
+          <Route path="/product" element={<ProductPage />} />
+          <Route path="/menu-details" element={<MenuDetails onSubscription={() => window.location.assign('/subscription')} />} />
+          <Route path="/subscription" element={<SubscriptionPage />} />
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/cart" 
+            element={
+              <ProtectedRoute>
+                <CartPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Box>
     </Box>
   );
 };
