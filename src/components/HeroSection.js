@@ -2,56 +2,37 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, useTheme, Link } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
-import heroImage1 from '../assets/image-2.png';
-import heroImage2 from '../assets/images/hero2.png';
-import heroImage3 from '../assets/images/hero3.png';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import PhoneIcon from '@mui/icons-material/Phone';
-import BehanceIcon from '@mui/icons-material/Brush'; // Placeholder for Behance
+// import heroImage1 from '../assets/Hero 1.png';
+import heroImage2 from '../assets/Hero 2.png';
+import heroImage3 from '../assets/Hero3.png';
+// import chefImage from '../assets/images/HeroImage/Clip path group-3.png';
+// import biryani from '../assets/images/HeroImage/Biryani.png';
+// import bowl from '../assets/images/HeroImage/Bowl.png';
+// import bowl2 from '../assets/images/HeroImage/Bowl 2.png';
+// import biryani2 from '../assets/images/HeroImage/Biryani 2.png';
+// import halfBowl from '../assets/images/HeroImage/Half Bowl.png';
+import rightView from '../assets/images/HeroImage/Right View.png';
+import dottedArrow from '../assets/images/HeroImage/Group 1000002890.png';
+import cateringTableImg from '../assets/image-2.png';
+// import foodImg1 from '../assets/images/HeroImage/Drinks.png';
+import leftImage from '../assets/Left image.png';
+// import foodImg2 from '../assets/images/HeroImage/Food2.png';
+import chefImg from '../assets/images/HeroImage/Chef .png';
+import thaliImg from '../assets/images/HeroImage/Thali.png';
+import subscribeBtn from '../assets/images/HeroImage/Subscription Button.png';
 
 const slides = [
   {
-    image: heroImage1,
-    title: (
-      <>
-        Fresh Flavors &<br />Creative Catering Services<br />provider
-      </>
-    ),
-    description: (
-      <>
-        Maria's Food Catering & Services offers an elegant fine dining experience, blending Filipino flavors with modern culinary techniques. From succulent lechon belly to gourmet seafood sinigang, each dish is beautifully plated and made with fresh, high-quality ingredients.<br />
-        Perfect for weddings, corporate events, and special celebrations, Maria's ensures impeccable service and a refined dining experience for every occasion.
-      </>
-    ),
+    // image: heroImage1, // commented out, using custom layout
+    custom: true, // flag for custom rendering
   },
   {
-    image: heroImage2,
-    title: (
-      <>
-        Savor Every Bite<br />with Exquisite Presentation<br />and Taste
-      </>
-    ),
-    description: (
-      <>
-        Experience a fusion of tradition and innovation. Our chefs craft each dish with passion, ensuring a memorable dining experience for you and your guests.<br />
-        Book us for your next event and taste the difference!
-      </>
-    ),
+    // image: heroImage2, // commented out, using custom layout
+    custom: true, // flag for custom rendering
   },
   {
-    image: heroImage3,
-    title: (
-      <>
-        Celebrate Moments<br />with Gourmet Catering<br />Excellence
-      </>
-    ),
-    description: (
-      <>
-        From intimate gatherings to grand celebrations, we deliver culinary perfection and impeccable service every time.<br />
-        Discover our menu and let us make your event unforgettable.
-      </>
-    ),
+    // image: heroImage3, // commented out, using custom layout
+    custom: true, // flag for custom rendering
   },
 ];
 
@@ -78,14 +59,18 @@ const HeroRoot = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
   display: 'flex',
   alignItems: 'stretch',
-  background: '#fff',
-  marginTop: theme.spacing(10),
+  background: 'radial-gradient(circle at 80% 10%, #fbeaea 40%, #fff6f6 100%)',
+  marginTop: theme.spacing(16),
+  paddingBottom: theme.spacing(2),
   [theme.breakpoints.down('md')]: {
     flexDirection: 'column',
     minHeight: 'auto',
-    marginTop: theme.spacing(6),
+    marginTop: theme.spacing(10),
+    paddingBottom: theme.spacing(1),
   },
   position: 'relative',
+  overflow: 'hidden',
+  maxWidth: '100vw',
 }));
 
 const LeftCol = styled(Box)(({ theme }) => ({
@@ -162,14 +147,14 @@ const SliderDots = styled(Box)(({ theme }) => ({
   zIndex: 10,
 }));
 
-const Dot = styled(Box)(({ active, theme }) => ({
-  width: 16,
-  height: 16,
-  borderRadius: '50%',
+const LineIndicator = styled(Box)(({ active, theme }) => ({
+  width: active ? 40 : 24,
+  height: 6,
+  borderRadius: 3,
   background: active ? '#b71c1c' : '#eee',
-  border: active ? '2px solid #b71c1c' : '2px solid #eee',
-  cursor: 'pointer',
-  transition: 'background 0.3s, border 0.3s',
+  margin: '0 8px',
+  transition: 'background 0.3s, width 0.3s',
+  display: 'inline-block',
 }));
 
 const HeroSection = () => {
@@ -185,51 +170,168 @@ const HeroSection = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const currentSlide = slides[activeIndex];
+  const description = (
+    <>
+      Maria's Food Catering & Services offers an elegant fine dining experience, blending Filipino flavors with modern culinary techniques. From succulent lechon belly to gourmet seafood sinigang, each dish is beautifully plated and made with fresh, high-quality ingredients.<br />
+      Perfect for weddings, corporate events, and special celebrations, Maria's ensures impeccable service and a refined dining experience for every occasion.
+    </>
+  );
 
   return (
-    <HeroRoot>
-      <LeftCol>
-        <Typography variant="h2" sx={{ fontWeight: 700, fontSize: { xs: '2rem', md: '3rem', lg: '3.5rem' }, mb: 2, lineHeight: 1.1 }}>
-          {currentSlide.title}
-        </Typography>
-        <Typography sx={{ color: '#222', fontSize: { xs: '1rem', md: '1.2rem' }, mb: 2, maxWidth: 540 }}>
-          {currentSlide.description}
-        </Typography>
-        <OurMenuButton onClick={() => navigate('/kitchen')}>
-          Our Menu&nbsp;&nbsp;{'>'}
-        </OurMenuButton>
-        <SocialsRow>
-          <SocialIcon>
-            <FacebookIcon />
-            <Link href="#" target="_blank">Fb</Link>
-          </SocialIcon>
-          <SocialIcon>
-            <BehanceIcon />
-            <Link href="#" target="_blank">Behance</Link>
-          </SocialIcon>
-          <SocialIcon>
-            <WhatsAppIcon />
-            <Link href="#" target="_blank">WhatsApp</Link>
-          </SocialIcon>
-          <SocialIcon>
-            <PhoneIcon />
-            <Link href="#" target="_blank">Phone</Link>
-          </SocialIcon>
-        </SocialsRow>
-      </LeftCol>
-      <RightCol>
-        <HeroImage src={currentSlide.image} alt="Catering" />
-      </RightCol>
-      <SliderDots>
-        {slides.map((_, idx) => (
-          <Dot
-            key={idx}
-            active={idx === activeIndex}
-            onClick={() => setActiveIndex(idx)}
+    <HeroRoot sx={{ justifyContent: 'center', alignItems: 'center', position: 'relative', background: 'radial-gradient(circle at 80% 10%, #fbeaea 40%, #fff6f6 100%)', overflow: 'hidden' }}>
+      {activeIndex === 0 ? (
+        // --- Custom layout for the first hero slider (matches screenshot) ---
+        <Box sx={{ width: '100%', display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'flex-start', justifyContent: 'space-between', minHeight: 600, position: 'relative', px: { xs: 2, md: 8 }, pt: { xs: 4, md: 8 } }}>
+          {/* Left: Text and Button */}
+          <Box sx={{ flex: 1, minWidth: 320, zIndex: 2, pt: 2 }}>
+            <Typography variant="h2" sx={{ fontWeight: 700, fontSize: { xs: '2.2rem', md: '3.5rem', lg: '4rem' }, mb: 0, lineHeight: 1.1, color: '#111', textAlign: 'left' }}>
+              Choose Your<br />
+              <Box component="span" sx={{ color: '#e53935', fontWeight: 700 }}>Food</Box><br />
+              Plan With Us
+            </Typography>
+            {/* Dotted Arrow and Button Row */}
+            <Box sx={{ display: 'flex', alignItems: 'center', mt: 4, mb: 2, position: 'relative', height: 80 }}>
+              <Box component="img" src={dottedArrow} alt="Dotted Arrow" sx={{ height: 70, width: 140, mr: 2, position: 'relative', left: 0, top: 0 }} />
+              <Button
+                sx={{
+                  background: '#e53935',
+                  color: '#fff',
+                  fontWeight: 700,
+                  fontSize: '1.1rem',
+                  borderRadius: 2,
+                  px: 4,
+                  py: 1.5,
+                  boxShadow: '0 4px 16px #f8bfbf',
+                  textTransform: 'none',
+                  ml: 2,
+                  minWidth: 120,
+                  transition: 'background 0.2s',
+                  '&:hover': { background: '#b71c1c' },
+                }}
+                onClick={() => navigate('/kitchen')}
+              >
+                Our Menu&nbsp;&nbsp;{'>'}
+              </Button>
+            </Box>
+            {/* Description */}
+            <Typography sx={{ color: '#222', fontSize: { xs: '1rem', md: '1.2rem' }, mb: 2, maxWidth: 700, mt: 2, textAlign: 'left' }}>
+              {description}
+            </Typography>
+          </Box>
+          {/* Right: Only show Right View.png image, fully visible, no cropping, increased width, shifted right with fixed margin */}
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', minHeight: 400, mt: { xs: 4, md: 0 } }}>
+            <Box sx={{ position: 'relative', width: '100%', maxWidth: { xs: '100vw', md: 900 }, height: { xs: 400, md: 600 }, mx: 'auto', background: 'transparent', zIndex: 2, display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'visible', marginRight: '-65px' }}>
+              <img src={rightView} alt="Right View" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 0, boxShadow: 'none', border: 'none', display: 'block' }} />
+            </Box>
+          </Box>
+          {/* Line indicator overlapping the bottom of the hero image */}
+          <Box sx={{ position: 'absolute', left: 0, right: 0, bottom: 32, display: 'flex', justifyContent: 'center', zIndex: 2 }}>
+            <SliderDots sx={{ gap: 2 }}>
+              {slides.map((_, idx) => (
+                <LineIndicator
+                  key={idx}
+                  active={idx === activeIndex}
+                  onClick={() => setActiveIndex(idx)}
+                />
+              ))}
+            </SliderDots>
+          </Box>
+        </Box>
+      ) : activeIndex === 1 ? (
+        // --- Custom layout for the second hero slider (matches screenshot) ---
+        <Box sx={{ width: '100%', display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'flex-start', justifyContent: 'space-between', minHeight: 450, position: 'relative', px: { xs: 2, md: 8 }, pt: { xs: 4, md: 8 }, background: 'radial-gradient(circle at 80% 10%, #fbeaea 40%, #fff6f6 100%)' }}>
+          {/* Left: Title, Description, and Image below */}
+          <Box sx={{ flex: 1, minWidth: 320, zIndex: 2, pt: 2, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <Typography variant="h2" sx={{ fontWeight: 700, fontSize: { xs: '2rem', md: '2.5rem', lg: '2.8rem' }, mb: 4, lineHeight: 1.1, color: '#111', textAlign: 'left' }}>
+              Fresh Flavors &<br />Creative Catering Services provider
+            </Typography>
+            <Typography sx={{ color: '#222', fontSize: { xs: '1.2rem', md: '1.4rem' }, mb: 2, maxWidth: 700, textAlign: 'left' }}>
+              Maria's Food Catering & Services offers an elegant fine dining experience, blending Filipino flavors with modern culinary techniques. From succulent lechon belly to gourmet seafood sinigang, each dish is beautifully plated and made with fresh, high-quality ingredients.<br />
+              Perfect for weddings, corporate events, and special celebrations, Maria's ensures impeccable service and a refined dining experience for every occasion.
+            </Typography>
+            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-start', mt: 2 }}>
+              <img src={leftImage} alt="Left" style={{ width: 600, height: 600, objectFit: 'contain', borderRadius: 0, display: 'block', marginLeft: '-65px'}} />
+            </Box>
+          </Box>
+          {/* Right: Catering Table Image */}
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', minHeight: 400, mt: { xs: 4, md: 0 } }}>
+            <Box sx={{ position: 'relative', width: '100%', maxWidth: { xs: '100vw', md: 900 }, height: { xs: 400, md: 600 }, mx: 'auto', background: 'transparent', zIndex: 2, display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'visible', marginRight: '-65px' }}>
+              <img src={cateringTableImg} alt="Catering Table" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 0, boxShadow: 'none', border: 'none', display: 'block' }} />
+            </Box>
+          </Box>
+          {/* Line indicator overlapping the bottom of the hero image */}
+          <Box sx={{ position: 'absolute', left: 0, right: 0, bottom: 32, display: 'flex', justifyContent: 'center', zIndex: 2 }}>
+            <SliderDots sx={{ gap: 2 }}>
+              {slides.map((_, idx) => (
+                <LineIndicator
+                  key={idx}
+                  active={idx === activeIndex}
+                  onClick={() => setActiveIndex(idx)}
+                />
+              ))}
+            </SliderDots>
+          </Box>
+        </Box>
+      ) : activeIndex === 2 ? (
+        // --- Custom layout for the third hero slider (matches screenshot) ---
+        <Box sx={{ width: '100%', display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'center', justifyContent: 'space-between', minHeight: 450, position: 'relative', px: { xs: 2, md: 8 }, pt: { xs: 4, md: 8 }, background: 'radial-gradient(circle at 80% 10%, #fbeaea 40%, #fff6f6 100%)' }}>
+          {/* Left: Chef Image */}
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', minWidth: 320 }}>
+            <img src={chefImg} alt="Chef" style={{ width: 600, height: 900, objectFit: 'contain', borderRadius: 0, display: 'block', marginLeft: '-50px' }} />
+          </Box>
+          {/* Center: Title, Description, Subscribe Button */}
+          <Box sx={{ flex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 2, mb: 6, marginTop: '-80px' }}>
+            <Typography variant="h2" sx={{ fontWeight: 700, fontSize: { xs: '2rem', md: '2.5rem', lg: '2.8rem' }, mb: 2, lineHeight: 1.1, color: '#111', textAlign: 'center', marginTop: "-250px" }}>
+              Fresh Flavors &<br />Creative Catering Services provider
+            </Typography>
+            <Box sx={{ my: 2, marginTop: '-60px', cursor: 'pointer' }} onClick={() => navigate('/subscription')}>
+              <img src={subscribeBtn} alt="Subscribe" style={{ width: 300, height: 300, objectFit: 'contain', display: 'block', margin: '0 auto' }} />
+            </Box>
+            <Typography sx={{ color: '#222', fontSize: { xs: '1.2rem', md: '1.3rem' }, maxWidth: 540, textAlign: 'center', mt: 0, marginTop: "-60px" }}>
+              Maria's Food Catering & Services offers an elegant fine dining experience, blending Filipino flavors with modern culinary techniques. From succulent lechon belly to gourmet seafood sinigang, each dish is beautifully plated and made with fresh, high-quality ingredients.<br />
+              Perfect for weddings, corporate events, and special celebrations, Maria's ensures impeccable service and a refined dining experience for every occasion.
+            </Typography>
+          </Box>
+          {/* Right: Thali Image */}
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', minWidth: 320 }}>
+            <img src={thaliImg} alt="Thali" style={{ width: 600, height: 900, objectFit: 'contain', borderRadius: 0, display: 'block', marginRight: '-40px' }} />
+          </Box>
+          {/* Line indicator overlapping the bottom of the hero image */}
+          <Box sx={{ position: 'absolute', left: 0, right: 0, bottom: 32, display: 'flex', justifyContent: 'center', zIndex: 2 }}>
+            <SliderDots sx={{ gap: 2 }}>
+              {slides.map((_, idx) => (
+                <LineIndicator
+                  key={idx}
+                  active={idx === activeIndex}
+                  onClick={() => setActiveIndex(idx)}
+                />
+              ))}
+            </SliderDots>
+          </Box>
+        </Box>
+      ) : (
+        // --- Default layout for other hero sliders ---
+        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 600, position: 'relative' }}>
+          <HeroImage
+            src={slides[activeIndex].image}
+            alt={slides[activeIndex].alt}
+            onClick={slides[activeIndex].onClick ? () => slides[activeIndex].onClick(navigate) : undefined}
+            style={{ cursor: slides[activeIndex].onClick ? 'pointer' : 'default', width: '100%', height: 'auto', maxWidth: '100%', maxHeight: '700px', borderRadius: 24, boxShadow: '0 8px 32px #e0e0e0', objectFit: 'cover' }}
           />
-        ))}
-      </SliderDots>
+          {/* Line indicator overlapping the image at the bottom center */}
+          <Box sx={{ position: 'absolute', left: 0, right: 0, bottom: 32, display: 'flex', justifyContent: 'center', zIndex: 2 }}>
+            <SliderDots sx={{ gap: 2 }}>
+              {slides.map((_, idx) => (
+                <LineIndicator
+                  key={idx}
+                  active={idx === activeIndex}
+                  onClick={() => setActiveIndex(idx)}
+                />
+              ))}
+            </SliderDots>
+          </Box>
+        </Box>
+      )}
     </HeroRoot>
   );
 };
