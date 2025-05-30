@@ -151,7 +151,7 @@ const LineIndicator = styled(Box)(({ active, theme }) => ({
   width: active ? 40 : 24,
   height: 6,
   borderRadius: 3,
-  background: active ? '#b71c1c' : '#eee',
+  background: active ? '#b71c1c' : '#888',
   margin: '0 8px',
   transition: 'background 0.3s, width 0.3s',
   display: 'inline-block',
