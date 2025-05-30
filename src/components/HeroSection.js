@@ -281,13 +281,13 @@ const HeroSection = () => {
           </Box>
           {/* Center: Title, Description, Subscribe Button */}
           <Box sx={{ flex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 2, mb: 6, marginTop: '-80px' }}>
-            <Typography variant="h2" sx={{ fontWeight: 700, fontSize: { xs: '2rem', md: '2.5rem', lg: '2.8rem' }, mb: 2, lineHeight: 1.1, color: '#111', textAlign: 'center', marginTop: "-250px" }}>
+            <Typography variant="h2" sx={{ fontWeight: 700, fontSize: { xs: '2rem', md: '2.5rem', lg: '2.8rem' }, mb: 2, lineHeight: 1.1, color: '#111', textAlign: 'center', marginTop: "-100px" }}>
               Fresh Flavors &<br />Creative Catering Services provider
             </Typography>
             <Box sx={{ my: 2, marginTop: '-60px', cursor: 'pointer' }} onClick={() => navigate('/subscription')}>
               <img src={subscribeBtn} alt="Subscribe" style={{ width: 300, height: 300, objectFit: 'contain', display: 'block', margin: '0 auto' }} />
             </Box>
-            <Typography sx={{ color: '#222', fontSize: { xs: '1.2rem', md: '1.3rem' }, maxWidth: 540, textAlign: 'center', mt: 0, marginTop: "-60px" }}>
+            <Typography sx={{ color: '#222', fontSize: { xs: '1.2rem', md: '1.3rem' }, maxWidth: 540, textAlign: 'center', mt: 0, marginTop: "-80px" }}>
               Maria's Food Catering & Services offers an elegant fine dining experience, blending Filipino flavors with modern culinary techniques. From succulent lechon belly to gourmet seafood sinigang, each dish is beautifully plated and made with fresh, high-quality ingredients.<br />
               Perfect for weddings, corporate events, and special celebrations, Maria's ensures impeccable service and a refined dining experience for every occasion.
             </Typography>
