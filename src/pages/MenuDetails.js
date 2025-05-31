@@ -26,6 +26,7 @@ import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { caterers } from './MenuPage';
 import phonepe from "../assets/phonepe.png";
 import gpay from "../assets/gpay.png";
@@ -1002,6 +1003,15 @@ const MenuDetails = () => {
     setAddresses(prev => [...prev, newAddress]);
   };
 
+  const handleDeleteAddress = (indexToDelete) => {
+    setAddresses(prev => prev.filter((_, index) => index !== indexToDelete));
+    // If the deleted address was selected, select the first remaining address or null if none left
+    if (selectedAddress === addresses[indexToDelete]) {
+      const remainingAddresses = addresses.filter((_, index) => index !== indexToDelete);
+      setSelectedAddress(remainingAddresses.length > 0 ? remainingAddresses[0] : null);
+    }
+  };
+
   // Update the cart section JSX
   const cartSection = cartItems.length === 0 ? (
     <>
@@ -1089,17 +1099,21 @@ const MenuDetails = () => {
           boxShadow: 'none', 
           '&:hover': { 
             background: '#c4362a' 
-          } 
+          },
+          '&.Mui-disabled': {
+            background: '#e0e0e0',
+            color: '#999'
+          }
         }}
         onClick={() => setPaymentModalOpen(true)}
-        disabled={!selectedAddress}
+        disabled={!selectedAddress || addresses.length === 0}
       >
-        CHECKOUT
+        {!selectedAddress && addresses.length === 0 ? 'ADD ADDRESS TO CHECKOUT' : 'CHECKOUT'}
       </Button>
     </Box>
   );
 
-  // Add the address section JSX
+  // Update the address section JSX
   const addressSection = (
     <Box sx={{ 
       background: '#fff', 
@@ -1126,7 +1140,6 @@ const MenuDetails = () => {
           {addresses.map((address, index) => (
             <Box
               key={index}
-              onClick={() => setSelectedAddress(address)}
               sx={{
                 border: '1.5px solid',
                 borderColor: selectedAddress === address ? '#C4362A' : '#e0e0e0',
@@ -1138,13 +1151,42 @@ const MenuDetails = () => {
                 '&:hover': {
                   borderColor: '#C4362A',
                   background: '#fff3f0'
-                }
+                },
+                position: 'relative'
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+              <Box 
+                onClick={() => setSelectedAddress(address)}
+                sx={{ 
+                  display: 'flex', 
+                  alignItems: 'flex-start', 
+                  gap: 1,
+                  pr: 4 // Add padding for delete button
+                }}
+              >
                 <LocationOnIcon sx={{ color: selectedAddress === address ? '#C4362A' : '#666', mt: 0.5 }} />
                 <Typography sx={{ fontSize: 14, color: '#222' }}>{address}</Typography>
               </Box>
+              
+              {/* Delete Button */}
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent address selection when clicking delete
+                  handleDeleteAddress(index);
+                }}
+                sx={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  color: '#C4362A',
+                  '&:hover': {
+                    background: 'rgba(196, 54, 42, 0.1)'
+                  }
+                }}
+                size="small"
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
             </Box>
           ))}
         </Box>
