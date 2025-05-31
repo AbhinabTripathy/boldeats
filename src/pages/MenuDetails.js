@@ -38,6 +38,10 @@ import Header from '../components/Header';
 import qrCodeAsset from '../assets/QR Code .png';
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
+import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import TextField from '@mui/material/TextField';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const WaveHeader = styled(Box)({
   width: '100vw',
@@ -720,6 +724,194 @@ function SubscriptionModal({ open, onClose, onAdd }) {
   );
 }
 
+function AddressModal({ open, onClose, onAddAddress }) {
+  const [address1, setAddress1] = useState('');
+  const [address2, setAddress2] = useState('');
+  const [pincode, setPincode] = useState('');
+  const [district, setDistrict] = useState('');
+  const [state, setState] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const fetchLocationDetails = async (pincode) => {
+    if (pincode.length !== 6) return;
+    
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+      const data = await response.json();
+      
+      if (data[0].Status === "Success") {
+        const locationData = data[0].PostOffice[0];
+        setDistrict(locationData.District);
+        setState(locationData.State);
+      } else {
+        setError('Invalid Pincode');
+        setDistrict('');
+        setState('');
+      }
+    } catch (err) {
+      setError('Error fetching location details');
+      setDistrict('');
+      setState('');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePincodeChange = (e) => {
+    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+    setPincode(value);
+    if (value.length === 6) {
+      fetchLocationDetails(value);
+    } else {
+      setDistrict('');
+      setState('');
+    }
+  };
+
+  const handleSubmit = () => {
+    if (address1.trim() && pincode.length === 6) {
+      const fullAddress = `${address1.trim()}${address2.trim() ? `, ${address2.trim()}` : ''}, ${district}, ${state} - ${pincode}`;
+      onAddAddress(fullAddress);
+      // Reset form
+      setAddress1('');
+      setAddress2('');
+      setPincode('');
+      setDistrict('');
+      setState('');
+      setError('');
+      onClose();
+    }
+  };
+
+  return (
+    <Dialog 
+      open={open} 
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{ 
+        sx: { 
+          borderRadius: 3,
+          p: 2
+        } 
+      }}
+    >
+      <DialogTitle sx={{ 
+        textAlign: 'center',
+        fontWeight: 700,
+        fontSize: '1.5rem',
+        color: '#222'
+      }}>
+        Add New Address
+        <IconButton
+          onClick={onClose}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent>
+        <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <TextField
+            fullWidth
+            label="Address Line 1"
+            value={address1}
+            onChange={(e) => setAddress1(e.target.value)}
+            required
+            placeholder="House/Flat No., Building Name, Street"
+          />
+          
+          <TextField
+            fullWidth
+            label="Address Line 2"
+            value={address2}
+            onChange={(e) => setAddress2(e.target.value)}
+            placeholder="Area, Landmark (Optional)"
+          />
+          
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <TextField
+              fullWidth
+              label="Pincode"
+              value={pincode}
+              onChange={handlePincodeChange}
+              required
+              error={!!error}
+              helperText={error}
+              placeholder="6-digit pincode"
+              InputProps={{
+                endAdornment: loading && (
+                  <CircularProgress size={20} sx={{ color: '#C4362A' }} />
+                ),
+              }}
+            />
+          </Box>
+
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <TextField
+              fullWidth
+              label="District"
+              value={district}
+              InputProps={{
+                readOnly: true,
+              }}
+              sx={{ 
+                '& .MuiInputBase-input': {
+                  color: district ? '#222' : '#999'
+                }
+              }}
+            />
+            
+            <TextField
+              fullWidth
+              label="State"
+              value={state}
+              InputProps={{
+                readOnly: true,
+              }}
+              sx={{ 
+                '& .MuiInputBase-input': {
+                  color: state ? '#222' : '#999'
+                }
+              }}
+            />
+          </Box>
+        </Box>
+      </DialogContent>
+      <DialogActions sx={{ p: 2, pt: 0 }}>
+        <Button
+          fullWidth
+          variant="contained"
+          onClick={handleSubmit}
+          disabled={!address1.trim() || pincode.length !== 6 || loading}
+          sx={{
+            background: '#C4362A',
+            color: '#fff',
+            py: 1.5,
+            fontWeight: 600,
+            '&:hover': {
+              background: '#a82a1f'
+            },
+            '&.Mui-disabled': {
+              background: '#eee',
+              color: '#999'
+            }
+          }}
+        >
+          Add Address
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 const MenuDetails = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -729,6 +921,16 @@ const MenuDetails = () => {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [subscriptionModalOpen, setSubscriptionModalOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [addressModalOpen, setAddressModalOpen] = useState(false);
+
+  // Move useEffect before any conditional returns
+  useEffect(() => {
+    if (addresses.length > 0 && !selectedAddress) {
+      setSelectedAddress(addresses[0]);
+    }
+  }, [addresses]);
 
   if (!caterer) {
     return (
@@ -795,6 +997,10 @@ const MenuDetails = () => {
 
   // Calculate total price
   const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  const handleAddAddress = (newAddress) => {
+    setAddresses(prev => [...prev, newAddress]);
+  };
 
   // Update the cart section JSX
   const cartSection = cartItems.length === 0 ? (
@@ -886,16 +1092,83 @@ const MenuDetails = () => {
           } 
         }}
         onClick={() => setPaymentModalOpen(true)}
+        disabled={!selectedAddress}
       >
         CHECKOUT
       </Button>
     </Box>
   );
 
-  // Update the ADD button click handler
-  const handleAddButtonClick = () => {
-    setSubscriptionModalOpen(true);
-  };
+  // Add the address section JSX
+  const addressSection = (
+    <Box sx={{ 
+      background: '#fff', 
+      borderRadius: 10, 
+      boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
+      minWidth: 280, 
+      maxWidth: 340, 
+      flex: 1, 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'stretch', 
+      p: 1.5,
+      ml: 2
+    }}>
+      <Box sx={{ background: '#ffe7d6', borderRadius: 1, py: 0.5, mb: 1.5, textAlign: 'center', fontWeight: 600, fontSize: 15, letterSpacing: 1, color: '#222' }}>DELIVERY ADDRESS</Box>
+      
+      {addresses.length === 0 ? (
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+          <AddLocationAltIcon sx={{ fontSize: 40, color: '#bdbdbd', mb: 1 }} />
+          <Typography sx={{ color: '#888', fontSize: 14 }}>No addresses added yet</Typography>
+        </Box>
+      ) : (
+        <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
+          {addresses.map((address, index) => (
+            <Box
+              key={index}
+              onClick={() => setSelectedAddress(address)}
+              sx={{
+                border: '1.5px solid',
+                borderColor: selectedAddress === address ? '#C4362A' : '#e0e0e0',
+                borderRadius: 2,
+                p: 2,
+                mb: 2,
+                cursor: 'pointer',
+                background: selectedAddress === address ? '#fff3f0' : '#fff',
+                '&:hover': {
+                  borderColor: '#C4362A',
+                  background: '#fff3f0'
+                }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                <LocationOnIcon sx={{ color: selectedAddress === address ? '#C4362A' : '#666', mt: 0.5 }} />
+                <Typography sx={{ fontSize: 14, color: '#222' }}>{address}</Typography>
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      )}
+      
+      <Button
+        fullWidth
+        variant="outlined"
+        startIcon={<AddLocationAltIcon />}
+        onClick={() => setAddressModalOpen(true)}
+        sx={{
+          mt: 2,
+          borderColor: '#C4362A',
+          color: '#C4362A',
+          '&:hover': {
+            borderColor: '#C4362A',
+            background: '#fff3f0'
+          }
+        }}
+      >
+        Add New Address
+      </Button>
+    </Box>
+  );
 
   return (
     <>
@@ -959,8 +1232,8 @@ const MenuDetails = () => {
           ))}
         </Box>
 
-        {/* Main Content: Menu + Cart */}
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 6, mt: 5, maxWidth: 1200, mx: 'auto' }}>
+        {/* Main Content: Menu + Cart + Address */}
+        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4, mt: 5, maxWidth: 1200, mx: 'auto' }}>
           {/* Left: Weekly Menu */}
           <Box sx={{ background: 'linear-gradient(180deg, #ffe0d3 0%, #fbeee6 100%)', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', p: 2, minWidth: 300, maxWidth: 400, flex: 1, mx: 'auto' }}>
             <Typography sx={{ fontWeight: 600, fontSize: 22, mb: 3, textAlign: 'center', color: '#222' }}>Choose your weekly menu</Typography>
@@ -1012,25 +1285,43 @@ const MenuDetails = () => {
                     color: '#C4362A',
                   },
                 }}
-                onClick={handleAddButtonClick}
+                onClick={() => setSubscriptionModalOpen(true)}
               >
                 ADD +
               </Button>
             </Box>
           </Box>
-          {/* Right: Cart Section */}
-          <Box sx={{ background: '#fff', borderRadius: 10, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', minWidth: 280, maxWidth: 340, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', p: 1.5 }}>
-            {cartSection}
+          
+          {/* Right: Cart and Address Sections */}
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            {/* Cart Section */}
+            <Box sx={{ background: '#fff', borderRadius: 10, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', minWidth: 280, maxWidth: 340, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', p: 1.5 }}>
+              {cartSection}
+            </Box>
+            
+            {/* Address Section */}
+            {addressSection}
           </Box>
         </Box>
       </Box>
+
+      {/* Modals */}
       {cartQty > 0 && (
-        <PaymentModal open={paymentModalOpen} onClose={() => setPaymentModalOpen(false)} price={cartQty * 1500} />
+        <PaymentModal 
+          open={paymentModalOpen} 
+          onClose={() => setPaymentModalOpen(false)} 
+          price={totalPrice}
+        />
       )}
       <SubscriptionModal 
         open={subscriptionModalOpen}
         onClose={() => setSubscriptionModalOpen(false)}
         onAdd={handleAddToCart}
+      />
+      <AddressModal
+        open={addressModalOpen}
+        onClose={() => setAddressModalOpen(false)}
+        onAddAddress={handleAddAddress}
       />
     </>
   );
