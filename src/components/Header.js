@@ -593,11 +593,12 @@ const Header = () => {
       if (isLoggedIn && hasToken) {
         try {
           const token = localStorage.getItem('token');
-          const response = await axios.get('https://api.boldeats.in/api/wallet/balance', {
+          const response = await axios.get('https://api.boldeats.in/api/payment/wallet', {
             headers: {
               Authorization: `Bearer ${token}`
             }
           });
+          console.log('Wallet balance response:', response.data);
           if (response.data && response.data.data) {
             setWalletBalance(response.data.data.balance || 0);
           }

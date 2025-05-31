@@ -20,20 +20,39 @@ const WalletModal = ({ open, onClose }) => {
       setLoading(false);
       return;
     }
-    axios.get('http://api.boldeats.in/api/users/profile', {
+
+    // Fetch user profile
+    axios.get('https://api.boldeats.in/api/users/profile', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     })
       .then(res => {
         setUser(res.data?.data?.user || null);
-        // setBalance(res.data?.data?.user?.walletBalance || 0); // If you have wallet balance in user data
         setLoading(false);
       })
       .catch(() => {
         setUser(null);
         setLoading(false);
       });
+
+    // Fetch wallet balance
+    axios.get('https://api.boldeats.in/api/payment/wallet', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .then(res => {
+        console.log('Wallet balance response:', res.data);
+        if (res.data && res.data.data) {
+          setBalance(res.data.data.balance || 0);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching wallet balance:', error);
+        setBalance(0);
+      });
+
     // TODO: Fetch transaction history here if available
     // setTransactions([...]);
   }, [open]);

@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, styled, Chip, Card, CardContent, Grid } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import FSSAILogo from '../assets/FSSAI_logo.png';
 import TheGrandOdishaKitchen from '../assets/87CA09FD-3098-4E33-B005-3843ECA95446-Photoroom_11zon.png';
+import axios from 'axios';
 
 const PageContainer = styled(Box)({
   minHeight: 'calc(100vh - 90px)',
@@ -508,6 +509,56 @@ function getMenuTypeLabel(caterer, idx) {
 
 const MenuPage = () => {
   const navigate = useNavigate();
+  const [vendors, setVendors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchVendors = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('https://api.boldeats.in/api/users/vendors');
+        console.log('Vendors response:', response.data);
+        
+        if (response.data && response.data.data) {
+          setVendors(response.data.data);
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching vendors:', err);
+        setError('Failed to fetch vendors. Please try again later.');
+        setLoading(false);
+      }
+    };
+
+    fetchVendors();
+  }, []);
+
+  const getSubscriptionPrice = (vendor) => {
+    if (vendor.subscriptionPriceMonthly) {
+      return `₹${vendor.subscriptionPriceMonthly} / Month`;
+    } else if (vendor.subscriptionPrice15Days) {
+      return `₹${vendor.subscriptionPrice15Days} / 15 Days`;
+    }
+    return 'Contact for Price';
+  };
+
+  if (loading) {
+    return (
+      <PageContainer>
+        <Typography sx={{ textAlign: 'center', mt: 4 }}>Loading vendors...</Typography>
+      </PageContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageContainer>
+        <Typography sx={{ textAlign: 'center', mt: 4, color: 'error.main' }}>{error}</Typography>
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer>
       {/* Attractive Banner with Quote and Food Emojis */}
@@ -531,41 +582,55 @@ const MenuPage = () => {
       <Typography sx={{ textAlign: 'center', fontSize: '1.08rem', color: '#1976d2', mb: 3, fontWeight: 500 }}>
         For Breakfast and Dinner, contact <a href="mailto:support@boldeats.in" style={{fontWeight:'bold', color:'#C4362A', textDecoration: 'none'}}>support@boldeats.in</a>
       </Typography>
-      {/* Caterer Cards */}
-      {caterers.map((caterer, idx) => (
-        <CardRow key={idx} onClick={() => navigate('/menu-details', { state: { caterer, menuType: 'lunch' } })} style={{ cursor: 'pointer' }}>
-          <CardImageLeft src={caterer.image} alt={caterer.name} />
+      {/* Vendor Cards */}
+      {vendors.map((vendor, idx) => (
+        <CardRow 
+          key={idx} 
+          onClick={() => {
+            console.log('Selected vendor:', vendor);
+            console.log('Navigating to menu details with vendor ID:', vendor.id);
+            navigate('/menu-details', { 
+              state: { 
+                caterer: vendor,
+                menuType: 'lunch' 
+              } 
+            });
+          }} 
+          style={{ cursor: 'pointer' }}
+        >
+          <CardImageLeft 
+            src={vendor.logo ? `https://api.boldeats.in/${vendor.logo}` : 'https://via.placeholder.com/160?text=No+Image'} 
+            alt={vendor.name}
+            onError={(e) => {
+              e.target.src = 'https://via.placeholder.com/160?text=No+Image';
+            }}
+          />
           <CardContentRight>
-            {/* Menu Type Label */}
-            {/* {(() => {
-              const { label, color } = getMenuTypeLabel(caterer, idx);
-              return <MenuTypePill color={color}>{label}</MenuTypePill>;
-            })()} */}
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>{caterer.name}</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>{vendor.name}</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               {[...Array(5)].map((_, i) => (
                 <Star key={i}>★</Star>
               ))}
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              <img src={require('../assets/FSSAI_logo.png')} alt="FSSAI Logo" style={{ width: 28, height: 28, objectFit: 'contain' }} />
-              <Typography sx={{ fontSize: '0.8rem', color: '#666', textAlign: 'right', ml: 1 }}>{caterer.fssaiNumber}</Typography>
+              <img src={FSSAILogo} alt="FSSAI Logo" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+              <Typography sx={{ fontSize: '0.8rem', color: '#666', textAlign: 'right', ml: 1 }}>{vendor.fssaiNumber}</Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 2, mb: 1, alignItems: 'center' }}>
               <StaticPill color="red">Non-veg</StaticPill>
               <StaticPill color="green">Veg</StaticPill>
             </Box>
             <ContactText>
-              <span style={{ fontWeight: 500 }}> {caterer.years} years in business</span> · {caterer.address} · {caterer.phone}<br />
+              <span style={{ fontWeight: 500 }}>{vendor.yearsInBusiness} years in business</span> · {vendor.address}<br />
               Open 24 hours<br />
               On-site services·Online appointments
             </ContactText>
             <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
               <PriceButton
-                onClick={e => { e.stopPropagation(); navigate('/menu-details', { state: { caterer, menuType: 'lunch' } }); }}
+                onClick={e => { e.stopPropagation(); navigate('/menu-details', { state: { vendor, menuType: 'lunch' } }); }}
                 sx={{ ml: 'auto', mr: 2, fontSize: '0.98rem', py: 0.5, px: 2, minWidth: 120 }}
               >
-                ₹1500 / 15 Days Subscription
+                {getSubscriptionPrice(vendor)}
               </PriceButton>
             </Box>
           </CardContentRight>

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Box, Typography, Chip, Avatar, styled, IconButton, Button, Fade } from '@mui/material';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import RestaurantIcon from '@mui/icons-material/Restaurant';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+// import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+// import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+// import RestaurantIcon from '@mui/icons-material/Restaurant';
+// import AccessTimeIcon from '@mui/icons-material/AccessTime';
+// import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -14,26 +14,27 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
-import FormLabel from '@mui/material/FormLabel';
-import Divider from '@mui/material/Divider';
-import PaymentIcon from '@mui/icons-material/Payment';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import QrCode2Icon from '@mui/icons-material/QrCode2';
-import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
+// import FormLabel from '@mui/material/FormLabel';
+// import Divider from '@mui/material/Divider';
+// import PaymentIcon from '@mui/icons-material/Payment';
+// import CreditCardIcon from '@mui/icons-material/CreditCard';
+// import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+// import QrCode2Icon from '@mui/icons-material/QrCode2';
+// import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 import CloseIcon from '@mui/icons-material/Close';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { caterers } from './MenuPage';
+import EditIcon from '@mui/icons-material/Edit';
+// import { caterers } from './MenuPage';
 import phonepe from "../assets/phonepe.png";
 import gpay from "../assets/gpay.png";
 import amazon_pay from "../assets/amazon_pay.png";
-import sbi from "../assets/SBI.png";
-import axis from "../assets/Axis.png";
-import bob from "../assets/BOB.png";
+// import sbi from "../assets/SBI.png";
+// import axis from "../assets/Axis.png";
+// import bob from "../assets/BOB.png";
 import rupay from "../assets/rupay.png"
 import Header from '../components/Header';
 import qrCodeAsset from '../assets/QR Code .png';
@@ -43,6 +44,7 @@ import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import TextField from '@mui/material/TextField';
 import CircularProgress from '@mui/material/CircularProgress';
+import axios from 'axios';
 
 const WaveHeader = styled(Box)({
   width: '100vw',
@@ -564,27 +566,82 @@ function PaymentModal({ open, onClose, price }) {
   );
 }
 
-function SubscriptionModal({ open, onClose, onAdd }) {
+function SubscriptionModal({ open, onClose, onAdd, caterer }) {
   const [quantities, setQuantities] = useState({ 15: 0, 30: 0 });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
+  // Define available plans based on vendor data
   const plans = [
-    { days: 15, price: 1500, label: '15 Days Subscription' },
-    { days: 30, price: 2400, label: '30 Days Subscription' }
-  ];
+    caterer.subscriptionPrice15Days && {
+      days: 15,
+      price: parseFloat(caterer.subscriptionPrice15Days),
+      label: '15 Days Subscription',
+      planType: '15_days'
+    },
+    caterer.subscriptionPriceMonthly && {
+      days: 30,
+      price: parseFloat(caterer.subscriptionPriceMonthly),
+      label: '30 Days Subscription',
+      planType: '30_days'
+    }
+  ].filter(Boolean); // Remove null/undefined entries
 
-  const handleAdd = () => {
-    // Add both plans if they have quantities
-    plans.forEach(plan => {
-      if (quantities[plan.days] > 0) {
-        onAdd({
-          days: plan.days,
-          price: plan.price,
-          quantity: quantities[plan.days]
-        });
+  const handleAdd = async () => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
       }
-    });
-    setQuantities({ 15: 0, 30: 0 });
-    onClose();
+
+      // Create cart items for each selected plan
+      const cartPromises = plans.map(async (plan) => {
+        const quantity = quantities[plan.days];
+        if (quantity > 0) {
+          const cartData = {
+            vendorId: caterer.id,
+            planType: plan.planType,
+            quantity: quantity,
+            amount: plan.price * quantity
+          };
+
+          console.log('Adding to cart:', cartData);
+
+          return axios.post('https://api.boldeats.in/api/cart/add-to-cart', cartData, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+        }
+        return null;
+      }).filter(Boolean);
+
+      const responses = await Promise.all(cartPromises);
+      console.log('Cart responses:', responses);
+
+      // Update local cart state
+      plans.forEach(plan => {
+        if (quantities[plan.days] > 0) {
+          onAdd({
+            days: plan.days,
+            price: plan.price,
+            quantity: quantities[plan.days]
+          });
+        }
+      });
+
+      setQuantities({ 15: 0, 30: 0 });
+      onClose();
+    } catch (err) {
+      console.error('Error adding to cart:', err);
+      setError(err.response?.data?.message || 'Failed to add items to cart');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateQuantity = (days, delta) => {
@@ -630,6 +687,11 @@ function SubscriptionModal({ open, onClose, onAdd }) {
         </IconButton>
       </DialogTitle>
       <DialogContent>
+        {error && (
+          <Typography color="error" sx={{ mb: 2, textAlign: 'center' }}>
+            {error}
+          </Typography>
+        )}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
           {plans.map((plan) => (
             <Box
@@ -674,6 +736,7 @@ function SubscriptionModal({ open, onClose, onAdd }) {
                   <IconButton 
                     size="small"
                     onClick={() => updateQuantity(plan.days, -1)}
+                    disabled={loading}
                     sx={{ 
                       border: '1px solid #bbb',
                       '&:hover': { background: '#eee' }
@@ -685,6 +748,7 @@ function SubscriptionModal({ open, onClose, onAdd }) {
                   <IconButton 
                     size="small"
                     onClick={() => updateQuantity(plan.days, 1)}
+                    disabled={loading}
                     sx={{ 
                       border: '1px solid #bbb',
                       '&:hover': { background: '#eee' }
@@ -702,7 +766,7 @@ function SubscriptionModal({ open, onClose, onAdd }) {
         <Button
           fullWidth
           variant="contained"
-          disabled={totalAmount === 0}
+          disabled={totalAmount === 0 || loading}
           onClick={handleAdd}
           sx={{
             background: '#C4362A',
@@ -718,21 +782,45 @@ function SubscriptionModal({ open, onClose, onAdd }) {
             }
           }}
         >
-          Add to Cart - ₹{totalAmount}
+          {loading ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CircularProgress size={20} sx={{ color: '#fff' }} />
+              <span>Adding to Cart...</span>
+            </Box>
+          ) : (
+            `Add to Cart - ₹${totalAmount}`
+          )}
         </Button>
       </DialogActions>
     </Dialog>
   );
 }
 
-function AddressModal({ open, onClose, onAddAddress }) {
+function AddressModal({ open, onClose, onAddAddress, editAddress, isEditing }) {
   const [address1, setAddress1] = useState('');
   const [address2, setAddress2] = useState('');
   const [pincode, setPincode] = useState('');
-  const [district, setDistrict] = useState('');
+  const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Reset form when modal opens/closes or editAddress changes
+  useEffect(() => {
+    if (isEditing && editAddress) {
+      setAddress1(editAddress.addressLine1 || '');
+      setAddress2(editAddress.addressLine2 || '');
+      setPincode(editAddress.pincode || '');
+      setCity(editAddress.city || '');
+      setState(editAddress.state || '');
+    } else {
+      setAddress1('');
+      setAddress2('');
+      setPincode('');
+      setCity('');
+      setState('');
+    }
+  }, [open, editAddress, isEditing]);
 
   const fetchLocationDetails = async (pincode) => {
     if (pincode.length !== 6) return;
@@ -745,16 +833,16 @@ function AddressModal({ open, onClose, onAddAddress }) {
       
       if (data[0].Status === "Success") {
         const locationData = data[0].PostOffice[0];
-        setDistrict(locationData.District);
+        setCity(locationData.District);
         setState(locationData.State);
       } else {
         setError('Invalid Pincode');
-        setDistrict('');
+        setCity('');
         setState('');
       }
     } catch (err) {
       setError('Error fetching location details');
-      setDistrict('');
+      setCity('');
       setState('');
     } finally {
       setLoading(false);
@@ -767,23 +855,63 @@ function AddressModal({ open, onClose, onAddAddress }) {
     if (value.length === 6) {
       fetchLocationDetails(value);
     } else {
-      setDistrict('');
+      setCity('');
       setState('');
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (address1.trim() && pincode.length === 6) {
-      const fullAddress = `${address1.trim()}${address2.trim() ? `, ${address2.trim()}` : ''}, ${district}, ${state} - ${pincode}`;
-      onAddAddress(fullAddress);
-      // Reset form
-      setAddress1('');
-      setAddress2('');
-      setPincode('');
-      setDistrict('');
-      setState('');
-      setError('');
-      onClose();
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const addressData = {
+          addressLine1: address1.trim(),
+          addressLine2: address2.trim(),
+          pincode: pincode,
+          city: city,
+          state: state
+        };
+
+        console.log('Sending address data:', addressData);
+        
+        if (isEditing && editAddress) {
+          // Update existing address
+          const response = await axios.put(`https://api.boldeats.in/api/addresses/${editAddress.id}`, addressData, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          console.log('Address updated successfully:', response.data);
+        } else {
+          // Add new address
+          const response = await axios.post('https://api.boldeats.in/api/addresses', addressData, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          console.log('Address added successfully:', response.data);
+        }
+
+        const fullAddress = `${address1.trim()}${address2.trim() ? `, ${address2.trim()}` : ''}, ${city}, ${state} - ${pincode}`;
+        onAddAddress(fullAddress, isEditing ? editAddress.id : null);
+        
+        // Reset form
+        setAddress1('');
+        setAddress2('');
+        setPincode('');
+        setCity('');
+        setState('');
+        setError('');
+        onClose();
+      } catch (err) {
+        console.error('Error saving address:', err.response?.data || err.message);
+        setError(err.response?.data?.message || 'Error saving address');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -806,7 +934,7 @@ function AddressModal({ open, onClose, onAddAddress }) {
         fontSize: '1.5rem',
         color: '#222'
       }}>
-        Add New Address
+        {isEditing ? 'Edit Address' : 'Add New Address'}
         <IconButton
           onClick={onClose}
           sx={{
@@ -858,14 +986,14 @@ function AddressModal({ open, onClose, onAddAddress }) {
           <Box sx={{ display: 'flex', gap: 2 }}>
             <TextField
               fullWidth
-              label="District"
-              value={district}
+              label="City"
+              value={city}
               InputProps={{
                 readOnly: true,
               }}
               sx={{ 
                 '& .MuiInputBase-input': {
-                  color: district ? '#222' : '#999'
+                  color: city ? '#222' : '#999'
                 }
               }}
             />
@@ -906,7 +1034,7 @@ function AddressModal({ open, onClose, onAddAddress }) {
             }
           }}
         >
-          Add Address
+          {loading ? 'Saving...' : isEditing ? 'Update Address' : 'Add Address'}
         </Button>
       </DialogActions>
     </Dialog>
@@ -925,11 +1053,105 @@ const MenuDetails = () => {
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [addressModalOpen, setAddressModalOpen] = useState(false);
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
+  const [editAddress, setEditAddress] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const handleSetDefaultAddress = async (addressId) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No token found');
+        return;
+      }
+
+      console.log('Setting default address with ID:', addressId);
+      
+      const response = await axios({
+        method: 'patch',
+        url: `https://api.boldeats.in/api/addresses/${addressId}/default`,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (response.data) {
+        console.log('Default address set successfully:', response.data);
+        
+        // Update local state to reflect the new default address
+        setAddresses(prevAddresses => 
+          prevAddresses.map(addr => ({
+            ...addr,
+            isDefault: addr.id === addressId
+          }))
+        );
+
+        // Update selected address
+        const updatedAddress = addresses.find(addr => addr.id === addressId);
+        if (updatedAddress) {
+          setSelectedAddress(updatedAddress.fullAddress);
+        }
+      }
+    } catch (err) {
+      console.error('Error setting default address:', err.response?.data || err.message);
+    }
+  };
+
+  // Update the address selection handler
+  const handleAddressSelect = (address) => {
+    setSelectedAddress(address.fullAddress);
+    handleSetDefaultAddress(address.id);
+  };
+
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      setLoadingAddresses(true);
+      try {
+        const token = localStorage.getItem('token');
+        console.log('Fetching addresses with token:', token);
+        
+        const response = await axios.get('https://api.boldeats.in/api/addresses', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        console.log('Fetched addresses:', response.data);
+        
+        if (response.data && response.data.data) {
+          // Transform the addresses to the format we need
+          const formattedAddresses = response.data.data.map(address => 
+            ({ 
+              ...address, 
+              fullAddress: `${address.addressLine1}${address.addressLine2 ? `, ${address.addressLine2}` : ''}, ${address.city}, ${address.state} - ${address.pincode}`,
+              isDefault: address.isDefault || false
+            })
+          );
+          console.log('Formatted addresses:', formattedAddresses);
+          setAddresses(formattedAddresses);
+          
+          // Select the default address if available, otherwise the first address
+          const defaultAddress = formattedAddresses.find(addr => addr.isDefault) || formattedAddresses[0];
+          if (defaultAddress) {
+            setSelectedAddress(defaultAddress.fullAddress);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching addresses:', err.response?.data || err.message);
+      } finally {
+        setLoadingAddresses(false);
+      }
+    };
+
+    fetchAddresses();
+  }, []);
 
   // Move useEffect before any conditional returns
   useEffect(() => {
     if (addresses.length > 0 && !selectedAddress) {
-      setSelectedAddress(addresses[0]);
+      setSelectedAddress(addresses[0].fullAddress);
     }
   }, [addresses]);
 
@@ -999,119 +1221,65 @@ const MenuDetails = () => {
   // Calculate total price
   const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-  const handleAddAddress = (newAddress) => {
-    setAddresses(prev => [...prev, newAddress]);
-  };
-
-  const handleDeleteAddress = (indexToDelete) => {
-    setAddresses(prev => prev.filter((_, index) => index !== indexToDelete));
-    // If the deleted address was selected, select the first remaining address or null if none left
-    if (selectedAddress === addresses[indexToDelete]) {
-      const remainingAddresses = addresses.filter((_, index) => index !== indexToDelete);
-      setSelectedAddress(remainingAddresses.length > 0 ? remainingAddresses[0] : null);
+  // Update the handleAddAddress function
+  const handleAddAddress = (newAddress, addressId = null) => {
+    if (addressId) {
+      // Update existing address
+      setAddresses(prev => prev.map(addr => 
+        addr.id === addressId ? { ...addr, fullAddress: newAddress } : addr
+      ));
+    } else {
+      // Add new address
+      setAddresses(prev => [...prev, { id: Date.now(), fullAddress: newAddress }]);
     }
   };
 
-  // Update the cart section JSX
-  const cartSection = cartItems.length === 0 ? (
-    <>
-      <ShoppingCartOutlinedIcon sx={{ fontSize: 50, color: '#bdbdbd', mb: 1, mt: 2 }} />
-      <Typography sx={{ fontWeight: 700, fontSize: 18, mb: 0.5, mt: 2 }}>OOPS! your cart is EMPTY</Typography>
-      <Typography sx={{ color: '#888', fontSize: 13 }}>Looks like you haven't added to your cart yet.</Typography>
-    </>
-  ) : (
-    <Box sx={{ width: '100%', mt: 2 }}>
-      <Box sx={{ background: '#ffe7d6', borderRadius: 1, py: 0.5, mb: 1.5, textAlign: 'center', fontWeight: 600, fontSize: 15, letterSpacing: 1, color: '#222' }}>CART</Box>
-      <Typography sx={{ fontWeight: 600, fontSize: 11, mb: 1, color: '#222' }}>{cartItems.length} ITEM(S)</Typography>
-      {cartItems.map((item, index) => (
-        <Box key={index} sx={{ 
-          border: '1.2px solid #e0e0e0', 
-          borderRadius: 2, 
-          p: 2,
-          display: 'flex', 
-          flexDirection: 'column',
-          mb: 2,
-          background: item.days === 30 ? '#fff3f0' : '#f5f9ff',
-          borderColor: item.days === 30 ? '#ffcdc3' : '#b3d4ff'
-        }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-            <Typography sx={{ 
-              fontWeight: 600, 
-              fontSize: 13,
-              color: item.days === 30 ? '#C4362A' : '#1976d2'
-            }}>
-              {item.days} Days Subscription
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <IconButton 
-                size="small"
-                onClick={() => updateCartItemQuantity(index, -1)}
-                sx={{ 
-                  border: '1px solid #bbb',
-                  '&:hover': { background: '#eee' }
-                }}
-              >
-                <RemoveIcon />
-              </IconButton>
-              <Typography sx={{ mx: 1, fontWeight: 600 }}>{item.quantity}</Typography>
-              <IconButton 
-                size="small"
-                onClick={() => updateCartItemQuantity(index, 1)}
-                sx={{ 
-                  border: '1px solid #bbb',
-                  '&:hover': { background: '#eee' }
-                }}
-              >
-                <AddIcon />
-              </IconButton>
-            </Box>
-          </Box>
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            mt: 0.5
-          }}>
-            <Typography sx={{ 
-              fontWeight: 700, 
-              fontSize: 14,
-              color: '#222'
-            }}>
-              ₹{item.price * item.quantity}
-            </Typography>
-          </Box>
-        </Box>
-      ))}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography sx={{ fontWeight: 600, fontSize: 12, color: '#222' }}>SUBTOTAL</Typography>
-        <Typography sx={{ fontWeight: 600, fontSize: 13, color: '#222' }}>₹ {totalPrice}</Typography>
-      </Box>
-      <Button 
-        fullWidth 
-        sx={{ 
-          background: '#c4362a', 
-          color: '#fff', 
-          fontWeight: 700, 
-          fontSize: 15, 
-          borderRadius: 2, 
-          py: 1, 
-          mt: 1, 
-          boxShadow: 'none', 
-          '&:hover': { 
-            background: '#c4362a' 
-          },
-          '&.Mui-disabled': {
-            background: '#e0e0e0',
-            color: '#999'
-          }
-        }}
-        onClick={() => setPaymentModalOpen(true)}
-        disabled={!selectedAddress || addresses.length === 0}
-      >
-        {!selectedAddress && addresses.length === 0 ? 'ADD ADDRESS TO CHECKOUT' : 'CHECKOUT'}
-      </Button>
-    </Box>
-  );
+  // Add handleEditAddress function
+  const handleEditAddress = (address) => {
+    setEditAddress(address);
+    setIsEditing(true);
+    setAddressModalOpen(true);
+  };
+
+  // Add handleDeleteAddress function
+  const handleDeleteAddress = async (index) => {
+    try {
+      const addressToDelete = addresses[index];
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        console.error('No token found');
+        return;
+      }
+
+      console.log('Deleting address:', addressToDelete);
+      
+      const response = await axios({
+        method: 'delete',
+        url: `https://api.boldeats.in/api/addresses/${addressToDelete.id}`,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (response.data) {
+        console.log('Address deleted successfully:', response.data);
+        
+        // Update local state by removing the deleted address
+        const updatedAddresses = addresses.filter((_, i) => i !== index);
+        setAddresses(updatedAddresses);
+        
+        // If the deleted address was selected, select the first available address
+        if (selectedAddress === addressToDelete.fullAddress) {
+          setSelectedAddress(updatedAddresses.length > 0 ? updatedAddresses[0].fullAddress : null);
+        }
+      }
+    } catch (err) {
+      console.error('Error deleting address:', err.response?.data || err.message);
+    }
+  };
 
   // Update the address section JSX
   const addressSection = (
@@ -1130,7 +1298,11 @@ const MenuDetails = () => {
     }}>
       <Box sx={{ background: '#ffe7d6', borderRadius: 1, py: 0.5, mb: 1.5, textAlign: 'center', fontWeight: 600, fontSize: 15, letterSpacing: 1, color: '#222' }}>DELIVERY ADDRESS</Box>
       
-      {addresses.length === 0 ? (
+      {loadingAddresses ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+          <CircularProgress size={24} sx={{ color: '#C4362A' }} />
+        </Box>
+      ) : addresses.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 4 }}>
           <AddLocationAltIcon sx={{ fontSize: 40, color: '#bdbdbd', mb: 1 }} />
           <Typography sx={{ color: '#888', fontSize: 14 }}>No addresses added yet</Typography>
@@ -1142,12 +1314,12 @@ const MenuDetails = () => {
               key={index}
               sx={{
                 border: '1.5px solid',
-                borderColor: selectedAddress === address ? '#C4362A' : '#e0e0e0',
+                borderColor: selectedAddress === address.fullAddress ? '#C4362A' : '#e0e0e0',
                 borderRadius: 2,
                 p: 2,
                 mb: 2,
                 cursor: 'pointer',
-                background: selectedAddress === address ? '#fff3f0' : '#fff',
+                background: selectedAddress === address.fullAddress ? '#fff3f0' : '#fff',
                 '&:hover': {
                   borderColor: '#C4362A',
                   background: '#fff3f0'
@@ -1155,38 +1327,81 @@ const MenuDetails = () => {
                 position: 'relative'
               }}
             >
+              {address.isDefault && (
+                <Box sx={{
+                  position: 'absolute',
+                  top: -10,
+                  left: 10,
+                  background: '#4caf50',
+                  color: '#fff',
+                  px: 1.5,
+                  py: 0.5,
+                  borderRadius: 1,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  zIndex: 1
+                }}>
+                  Default
+                </Box>
+              )}
               <Box 
-                onClick={() => setSelectedAddress(address)}
+                onClick={() => handleAddressSelect(address)}
                 sx={{ 
                   display: 'flex', 
                   alignItems: 'flex-start', 
                   gap: 1,
-                  pr: 4 // Add padding for delete button
+                  pr: 8
                 }}
               >
-                <LocationOnIcon sx={{ color: selectedAddress === address ? '#C4362A' : '#666', mt: 0.5 }} />
-                <Typography sx={{ fontSize: 14, color: '#222' }}>{address}</Typography>
+                <LocationOnIcon sx={{ color: selectedAddress === address.fullAddress ? '#C4362A' : '#666', mt: 0.5, flexShrink: 0 }} />
+                <Typography sx={{ 
+                  fontSize: 14, 
+                  color: '#222',
+                  wordBreak: 'break-word',
+                  flex: 1
+                }}>
+                  {address.fullAddress}
+                </Typography>
               </Box>
               
-              {/* Delete Button */}
-              <IconButton
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent address selection when clicking delete
-                  handleDeleteAddress(index);
-                }}
-                sx={{
-                  position: 'absolute',
-                  top: 8,
-                  right: 8,
-                  color: '#C4362A',
-                  '&:hover': {
-                    background: 'rgba(196, 54, 42, 0.1)'
-                  }
-                }}
-                size="small"
-              >
-                <DeleteIcon fontSize="small" />
-              </IconButton>
+              <Box sx={{ 
+                position: 'absolute', 
+                top: 8, 
+                right: 4,
+                display: 'flex', 
+                gap: 1
+              }}>
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditAddress(address);
+                  }}
+                  sx={{
+                    color: '#1976d2',
+                    '&:hover': {
+                      background: 'rgba(25, 118, 210, 0.1)'
+                    }
+                  }}
+                  size="small"
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteAddress(index);
+                  }}
+                  sx={{
+                    color: '#C4362A',
+                    '&:hover': {
+                      background: 'rgba(196, 54, 42, 0.1)'
+                    }
+                  }}
+                  size="small"
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Box>
             </Box>
           ))}
         </Box>
@@ -1196,7 +1411,11 @@ const MenuDetails = () => {
         fullWidth
         variant="outlined"
         startIcon={<AddLocationAltIcon />}
-        onClick={() => setAddressModalOpen(true)}
+        onClick={() => {
+          setIsEditing(false);
+          setEditAddress(null);
+          setAddressModalOpen(true);
+        }}
         sx={{
           mt: 2,
           borderColor: '#C4362A',
@@ -1220,11 +1439,18 @@ const MenuDetails = () => {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', maxWidth: 1200, mx: 'auto', mt: 14, px: 4 }}>
           {/* Left: Image & Info */}
           <Box sx={{ display: 'flex', gap: 3 }}>
-            <img src={caterer.image} alt={caterer.name} style={{ width: 180, height: 120, borderRadius: 12, objectFit: 'cover', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }} />
+            <img 
+              src={`https://api.boldeats.in/${caterer.logo}`} 
+              alt={caterer.name} 
+              style={{ width: 180, height: 120, borderRadius: 12, objectFit: 'cover', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }} 
+              onError={(e) => {
+                e.target.src = 'https://via.placeholder.com/180x120?text=No+Image';
+              }}
+            />
             <Box>
               <Typography variant="h5" sx={{ fontWeight: 600 }}>{caterer.name}</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-                {[...Array(5)].map((_, i) => (
+                {[...Array(caterer.rating || 5)].map((_, i) => (
                   <span key={i} style={{ color: '#FFD600', fontSize: 18 }}>★</span>
                 ))}
               </Box>
@@ -1232,17 +1458,18 @@ const MenuDetails = () => {
                 <Chip label="Non-veg" color="error" size="small" icon={<CancelIcon sx={{ color: '#fff' }} />} />
                 <Chip label="Veg" color="success" size="small" icon={<CheckCircleIcon sx={{ color: '#fff' }} />} />
               </Box>
-              <Typography sx={{ mt: 1, fontSize: 15 }}>{caterer.years} years in business · {caterer.address} · {caterer.phone}</Typography>
-              <Typography sx={{ fontSize: 15 }}>Open 24 hours</Typography>
-              <Typography sx={{ fontSize: 15 }}>On-site services·Online appointments</Typography>
+              <Typography sx={{ mt: 1, fontSize: 15 }}>{caterer.yearsInBusiness} years in business · {caterer.address}</Typography>
+              <Typography sx={{ fontSize: 15 }}>Open {caterer.openingTime} - {caterer.closingTime}</Typography>
+              {caterer.phoneNumber && (
+                <Typography sx={{ fontSize: 15 }}>Contact: {caterer.phoneNumber}</Typography>
+              )}
             </Box>
           </Box>
           {/* Right: Info */}
           <Box sx={{ minWidth: 320, textAlign: 'right', mt: 1 }}>
             <Typography sx={{ fontSize: 15 }}>Lunch and Dinner can be ordered from the site.</Typography>
             <Typography sx={{ fontSize: 15, mt: 2 }}>
-              For breakfast please call on<br />
-              <span style={{ fontWeight: 600 }}>{caterer.phone}</span>
+              For breakfast please contact support
             </Typography>
           </Box>
         </Box>
@@ -1338,7 +1565,105 @@ const MenuDetails = () => {
           <Box sx={{ display: 'flex', gap: 2 }}>
             {/* Cart Section */}
             <Box sx={{ background: '#fff', borderRadius: 10, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', minWidth: 280, maxWidth: 340, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', p: 1.5 }}>
-              {cartSection}
+              {cartItems.length === 0 ? (
+                <>
+                  <ShoppingCartOutlinedIcon sx={{ fontSize: 50, color: '#bdbdbd', mb: 1, mt: 2 }} />
+                  <Typography sx={{ fontWeight: 700, fontSize: 18, mb: 0.5, mt: 2 }}>OOPS! your cart is EMPTY</Typography>
+                  <Typography sx={{ color: '#888', fontSize: 13 }}>Looks like you haven't added to your cart yet.</Typography>
+                </>
+              ) : (
+                <>
+                  <Box sx={{ background: '#ffe7d6', borderRadius: 1, py: 0.5, mb: 1.5, textAlign: 'center', fontWeight: 600, fontSize: 15, letterSpacing: 1, color: '#222' }}>CART</Box>
+                  <Typography sx={{ fontWeight: 600, fontSize: 11, mb: 1, color: '#222' }}>{cartItems.length} ITEM(S)</Typography>
+                  {cartItems.map((item, index) => (
+                    <Box key={index} sx={{ 
+                      border: '1.2px solid #e0e0e0', 
+                      borderRadius: 2, 
+                      p: 2,
+                      display: 'flex', 
+                      flexDirection: 'column',
+                      mb: 2,
+                      background: item.days === 30 ? '#fff3f0' : '#f5f9ff',
+                      borderColor: item.days === 30 ? '#ffcdc3' : '#b3d4ff'
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography sx={{ 
+                          fontWeight: 600, 
+                          fontSize: 13,
+                          color: item.days === 30 ? '#C4362A' : '#1976d2'
+                        }}>
+                          {item.days} Days Subscription
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <IconButton 
+                            size="small"
+                            onClick={() => updateCartItemQuantity(index, -1)}
+                            sx={{ 
+                              border: '1px solid #bbb',
+                              '&:hover': { background: '#eee' }
+                            }}
+                          >
+                            <RemoveIcon />
+                          </IconButton>
+                          <Typography sx={{ mx: 1, fontWeight: 600 }}>{item.quantity}</Typography>
+                          <IconButton 
+                            size="small"
+                            onClick={() => updateCartItemQuantity(index, 1)}
+                            sx={{ 
+                              border: '1px solid #bbb',
+                              '&:hover': { background: '#eee' }
+                            }}
+                          >
+                            <AddIcon />
+                          </IconButton>
+                        </Box>
+                      </Box>
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        mt: 0.5
+                      }}>
+                        <Typography sx={{ 
+                          fontWeight: 700, 
+                          fontSize: 14,
+                          color: '#222'
+                        }}>
+                          ₹{item.price * item.quantity}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography sx={{ fontWeight: 600, fontSize: 12, color: '#222' }}>SUBTOTAL</Typography>
+                    <Typography sx={{ fontWeight: 600, fontSize: 13, color: '#222' }}>₹ {totalPrice}</Typography>
+                  </Box>
+                  <Button 
+                    fullWidth 
+                    sx={{ 
+                      background: '#c4362a', 
+                      color: '#fff', 
+                      fontWeight: 700, 
+                      fontSize: 15, 
+                      borderRadius: 2, 
+                      py: 1, 
+                      mt: 1, 
+                      boxShadow: 'none', 
+                      '&:hover': { 
+                        background: '#c4362a' 
+                      },
+                      '&.Mui-disabled': {
+                        background: '#e0e0e0',
+                        color: '#999'
+                      }
+                    }}
+                    onClick={() => setPaymentModalOpen(true)}
+                    disabled={!selectedAddress || addresses.length === 0}
+                  >
+                    {!selectedAddress && addresses.length === 0 ? 'ADD ADDRESS TO CHECKOUT' : 'CHECKOUT'}
+                  </Button>
+                </>
+              )}
             </Box>
             
             {/* Address Section */}
@@ -1359,11 +1684,18 @@ const MenuDetails = () => {
         open={subscriptionModalOpen}
         onClose={() => setSubscriptionModalOpen(false)}
         onAdd={handleAddToCart}
+        caterer={caterer}
       />
       <AddressModal
         open={addressModalOpen}
-        onClose={() => setAddressModalOpen(false)}
+        onClose={() => {
+          setAddressModalOpen(false);
+          setIsEditing(false);
+          setEditAddress(null);
+        }}
         onAddAddress={handleAddAddress}
+        editAddress={editAddress}
+        isEditing={isEditing}
       />
     </>
   );

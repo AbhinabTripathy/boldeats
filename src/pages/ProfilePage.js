@@ -215,6 +215,7 @@ const ProfilePage = () => {
           return;
         }
 
+        // Fetch user profile
         const response = await axios.get('https://api.boldeats.in/api/users/profile', {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -238,6 +239,28 @@ const ProfilePage = () => {
             address: user?.address || 'Not Available',
           });
         }
+
+        // Fetch default address
+        const addressResponse = await axios.get('https://api.boldeats.in/api/addresses', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (addressResponse?.data?.data) {
+          const defaultAddress = addressResponse.data.data.find(addr => addr.isDefault);
+          if (defaultAddress) {
+            const formattedAddress = `${defaultAddress.addressLine1}${defaultAddress.addressLine2 ? `, ${defaultAddress.addressLine2}` : ''}, ${defaultAddress.city}, ${defaultAddress.state} - ${defaultAddress.pincode}`;
+            setUserData(prev => ({
+              ...prev,
+              address: formattedAddress
+            }));
+            setEditData(prev => ({
+              ...prev,
+              address: formattedAddress
+            }));
+          }
+        }
         
         // Load transactions from localStorage
         const storedTransactions = localStorage.getItem('transactions');
@@ -256,7 +279,7 @@ const ProfilePage = () => {
     fetchUserData();
   }, []);
 
-  // Fetch wallet balance for modal (simulate same as WalletModal.js)
+  // Fetch wallet balance for modal
   const [walletLoading, setWalletLoading] = useState(true);
   const [walletUser, setWalletUser] = useState(null);
   const [walletBalance, setWalletBalance] = useState(0);
@@ -268,20 +291,38 @@ const ProfilePage = () => {
       setWalletLoading(false);
       return;
     }
-    axios.get('api.boldeats.in/api/users/profile', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-      .then(res => {
-        setWalletUser(res.data?.data?.user || null);
-        // setWalletBalance(res.data?.data?.user?.walletBalance || 0); // If you have wallet balance in user data
+
+    const fetchWalletData = async () => {
+      try {
+        setWalletLoading(true);
+        // Fetch user profile
+        const userResponse = await axios.get('https://api.boldeats.in/api/users/profile', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        setWalletUser(userResponse.data?.data?.user || null);
+
+        // Fetch wallet balance
+        const walletResponse = await axios.get('https://api.boldeats.in/api/payment/wallet', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (walletResponse?.data?.data?.balance !== undefined) {
+          setWalletBalance(walletResponse.data.data.balance);
+        }
         setWalletLoading(false);
-      })
-      .catch(() => {
+      } catch (err) {
+        console.error('Error fetching wallet data:', err);
         setWalletUser(null);
+        setWalletBalance(0);
         setWalletLoading(false);
-      });
+      }
+    };
+
+    fetchWalletData();
   }, [isWalletOpen]);
 
   const handleWalletOpen = () => setIsWalletOpen(true);
