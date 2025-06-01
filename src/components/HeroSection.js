@@ -68,6 +68,10 @@ const HeroRoot = styled(Box)(({ theme }) => ({
     marginTop: theme.spacing(10),
     paddingBottom: theme.spacing(1),
   },
+  [theme.breakpoints.down('sm')]: {
+    marginTop: theme.spacing(8),
+    paddingBottom: 0,
+  },
   position: 'relative',
   overflow: 'hidden',
   maxWidth: '100vw',
@@ -180,31 +184,71 @@ const HeroSection = () => {
   return (
     <HeroRoot sx={{ justifyContent: 'center', alignItems: 'center', position: 'relative', background: 'radial-gradient(circle at 80% 10%, #fbeaea 40%, #fff6f6 100%)', overflow: 'hidden' }}>
       {activeIndex === 0 ? (
-        // --- Custom layout for the first hero slider (matches screenshot) ---
-        <Box sx={{ width: '100%', display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'flex-start', justifyContent: 'space-between', minHeight: 600, position: 'relative', px: { xs: 2, md: 8 }, pt: { xs: 4, md: 8 } }}>
+        <Box sx={{ 
+          width: '100%', 
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' }, 
+          alignItems: { xs: 'center', md: 'flex-start' }, 
+          justifyContent: 'space-between', 
+          minHeight: { xs: 'auto', md: 600 }, 
+          position: 'relative', 
+          px: { xs: 2, sm: 4, md: 8 }, 
+          pt: { xs: 4, sm: 6, md: 8 },
+          gap: { xs: 4, md: 0 }
+        }}>
           {/* Left: Text and Button */}
-          <Box sx={{ flex: 1, minWidth: 320, zIndex: 2, pt: 2 }}>
-            <Typography variant="h2" sx={{ fontWeight: 700, fontSize: { xs: '2.2rem', md: '3.5rem', lg: '4rem' }, mb: 0, lineHeight: 1.1, color: '#111', textAlign: 'left' }}>
+          <Box sx={{ 
+            flex: 1, 
+            minWidth: { xs: '100%', md: 320 }, 
+            zIndex: 2, 
+            pt: { xs: 0, md: 2 },
+            textAlign: { xs: 'center', md: 'left' }
+          }}>
+            <Typography variant="h2" sx={{ 
+              fontWeight: 700, 
+              fontSize: { xs: '2rem', sm: '2.5rem', md: '3.5rem', lg: '4rem' }, 
+              mb: 0, 
+              lineHeight: 1.1, 
+              color: '#111'
+            }}>
               Choose Your<br />
               <Box component="span" sx={{ color: '#e53935', fontWeight: 700 }}>Food</Box><br />
               Plan With Us
             </Typography>
             {/* Dotted Arrow and Button Row */}
-            <Box sx={{ display: 'flex', alignItems: 'center', mt: 4, mb: 2, position: 'relative', height: 80 }}>
-              <Box component="img" src={dottedArrow} alt="Dotted Arrow" sx={{ height: 70, width: 140, mr: 2, position: 'relative', left: 0, top: 0 }} />
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              mt: 4, 
+              mb: 2, 
+              position: 'relative', 
+              height: { xs: 'auto', md: 80 },
+              flexDirection: { xs: 'column', sm: 'row' },
+              justifyContent: { xs: 'center', md: 'flex-start' }
+            }}>
+              <Box component="img" 
+                src={dottedArrow} 
+                alt="Dotted Arrow" 
+                sx={{ 
+                  height: { xs: 50, sm: 70 }, 
+                  width: { xs: 100, sm: 140 }, 
+                  mr: { xs: 0, sm: 2 }, 
+                  mb: { xs: 2, sm: 0 }
+                }} 
+              />
               <Button
                 sx={{
                   background: '#e53935',
                   color: '#fff',
                   fontWeight: 700,
-                  fontSize: '1.1rem',
+                  fontSize: { xs: '1rem', sm: '1.1rem' },
                   borderRadius: 2,
-                  px: 4,
-                  py: 1.5,
+                  px: { xs: 3, sm: 4 },
+                  py: { xs: 1, sm: 1.5 },
                   boxShadow: '0 4px 16px #f8bfbf',
                   textTransform: 'none',
-                  ml: 2,
-                  minWidth: 120,
+                  ml: { xs: 0, sm: 2 },
+                  minWidth: { xs: 100, sm: 120 },
                   transition: 'background 0.2s',
                   '&:hover': { background: '#b71c1c' },
                 }}
@@ -214,19 +258,68 @@ const HeroSection = () => {
               </Button>
             </Box>
             {/* Description */}
-            <Typography sx={{ color: '#222', fontSize: { xs: '1rem', md: '1.2rem' }, mb: 2, maxWidth: 700, mt: 2, textAlign: 'left' }}>
+            <Typography sx={{ 
+              color: '#222', 
+              fontSize: { xs: '0.9rem', sm: '1rem', md: '1.2rem' }, 
+              mb: 2, 
+              maxWidth: 700, 
+              mt: 2,
+              textAlign: { xs: 'center', md: 'left' }
+            }}>
               {description}
             </Typography>
           </Box>
-          {/* Right: Only show Right View.png image, fully visible, no cropping, increased width, shifted right with fixed margin */}
-          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', minHeight: 400, mt: { xs: 4, md: 0 } }}>
-            <Box sx={{ position: 'relative', width: '100%', maxWidth: { xs: '100vw', md: 900 }, height: { xs: 400, md: 600 }, mx: 'auto', background: 'transparent', zIndex: 2, display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'visible', marginRight: '-65px' }}>
-              <img src={rightView} alt="Right View" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 0, boxShadow: 'none', border: 'none', display: 'block' }} />
+          {/* Right: Only show Right View.png image */}
+          <Box sx={{ 
+            flex: 1, 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            position: 'relative', 
+            minHeight: { xs: 300, sm: 400, md: 400 }, 
+            mt: { xs: 4, md: 0 },
+            width: { xs: '100%', md: 'auto' }
+          }}>
+            <Box sx={{ 
+              position: 'relative', 
+              width: '100%', 
+              maxWidth: { xs: '100%', md: 900 }, 
+              height: { xs: 300, sm: 400, md: 600 }, 
+              mx: 'auto', 
+              background: 'transparent', 
+              zIndex: 2, 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              overflow: 'visible', 
+              marginRight: { xs: 0, md: '-65px' }
+            }}>
+              <img 
+                src={rightView} 
+                alt="Right View" 
+                style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  objectFit: 'contain', 
+                  borderRadius: 0, 
+                  boxShadow: 'none', 
+                  border: 'none', 
+                  display: 'block' 
+                }} 
+              />
             </Box>
           </Box>
-          {/* Line indicator overlapping the bottom of the hero image */}
-          <Box sx={{ position: 'absolute', left: 0, right: 0, bottom: 32, display: 'flex', justifyContent: 'center', zIndex: 2 }}>
-            <SliderDots sx={{ gap: 2 }}>
+          {/* Line indicator */}
+          <Box sx={{ 
+            position: 'absolute', 
+            left: 0, 
+            right: 0, 
+            bottom: { xs: 16, sm: 32 }, 
+            display: 'flex', 
+            justifyContent: 'center', 
+            zIndex: 2 
+          }}>
+            <SliderDots sx={{ gap: { xs: 1, sm: 2 } }}>
               {slides.map((_, idx) => (
                 <LineIndicator
                   key={idx}
@@ -238,30 +331,116 @@ const HeroSection = () => {
           </Box>
         </Box>
       ) : activeIndex === 1 ? (
-        // --- Custom layout for the second hero slider (matches screenshot) ---
-        <Box sx={{ width: '100%', display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'flex-start', justifyContent: 'space-between', minHeight: 450, position: 'relative', px: { xs: 2, md: 8 }, pt: { xs: 4, md: 8 }, background: 'radial-gradient(circle at 80% 10%, #fbeaea 40%, #fff6f6 100%)' }}>
+        <Box sx={{ 
+          width: '100%', 
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' }, 
+          alignItems: { xs: 'center', md: 'flex-start' }, 
+          justifyContent: 'space-between', 
+          minHeight: { xs: 'auto', md: 450 }, 
+          position: 'relative', 
+          px: { xs: 2, sm: 4, md: 8 }, 
+          pt: { xs: 4, sm: 6, md: 8 },
+          gap: { xs: 4, md: 0 }
+        }}>
           {/* Left: Title, Description, and Image below */}
-          <Box sx={{ flex: 1, minWidth: 320, zIndex: 2, pt: 2, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-            <Typography variant="h2" sx={{ fontWeight: 700, fontSize: { xs: '2rem', md: '2.5rem', lg: '2.8rem' }, mb: 4, lineHeight: 1.1, color: '#111', textAlign: 'left' }}>
+          <Box sx={{ 
+            flex: 1, 
+            minWidth: { xs: '100%', md: 320 }, 
+            zIndex: 2, 
+            pt: { xs: 0, md: 2 },
+            textAlign: { xs: 'center', md: 'left' }
+          }}>
+            <Typography variant="h2" sx={{ 
+              fontWeight: 700, 
+              fontSize: { xs: '1.8rem', sm: '2rem', md: '2.5rem', lg: '2.8rem' }, 
+              mb: { xs: 2, md: 4 }, 
+              lineHeight: 1.1, 
+              color: '#111'
+            }}>
               Fresh Flavors &<br />Creative Catering Services provider
             </Typography>
-            <Typography sx={{ color: '#222', fontSize: { xs: '1.2rem', md: '1.4rem' }, mb: 2, maxWidth: 700, textAlign: 'left' }}>
-              Maria's Food Catering & Services offers an elegant fine dining experience, blending Filipino flavors with modern culinary techniques. From succulent lechon belly to gourmet seafood sinigang, each dish is beautifully plated and made with fresh, high-quality ingredients.<br />
-              Perfect for weddings, corporate events, and special celebrations, Maria's ensures impeccable service and a refined dining experience for every occasion.
+            <Typography sx={{ 
+              color: '#222', 
+              fontSize: { xs: '1rem', sm: '1.2rem', md: '1.4rem' }, 
+              mb: 2, 
+              maxWidth: 700,
+              textAlign: { xs: 'center', md: 'left' }
+            }}>
+              {description}
             </Typography>
-            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-start', mt: 2 }}>
-              <img src={leftImage} alt="Left" style={{ width: 600, height: 600, objectFit: 'contain', borderRadius: 0, display: 'block', marginLeft: '-65px'}} />
+            <Box sx={{ 
+              width: '100%', 
+              display: 'flex', 
+              justifyContent: { xs: 'center', md: 'flex-start' }, 
+              mt: 2 
+            }}>
+              <img 
+                src={leftImage} 
+                alt="Left" 
+                style={{ 
+                  width: '100%',
+                  maxWidth: 600,
+                  height: 'auto',
+                  objectFit: 'contain', 
+                  borderRadius: 0, 
+                  display: 'block',
+                  marginLeft: { xs: 0, md: '-65px' }
+                }} 
+              />
             </Box>
           </Box>
           {/* Right: Catering Table Image */}
-          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', minHeight: 400, mt: { xs: 4, md: 0 } }}>
-            <Box sx={{ position: 'relative', width: '100%', maxWidth: { xs: '100vw', md: 900 }, height: { xs: 400, md: 600 }, mx: 'auto', background: 'transparent', zIndex: 2, display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'visible', marginRight: '-65px' }}>
-              <img src={cateringTableImg} alt="Catering Table" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 0, boxShadow: 'none', border: 'none', display: 'block' }} />
+          <Box sx={{ 
+            flex: 1, 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            position: 'relative', 
+            minHeight: { xs: 300, sm: 400 }, 
+            mt: { xs: 4, md: 0 },
+            width: { xs: '100%', md: 'auto' }
+          }}>
+            <Box sx={{ 
+              position: 'relative', 
+              width: '100%', 
+              maxWidth: { xs: '100%', md: 900 }, 
+              height: { xs: 300, sm: 400, md: 600 }, 
+              mx: 'auto', 
+              background: 'transparent', 
+              zIndex: 2, 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              overflow: 'visible', 
+              marginRight: { xs: 0, md: '-65px' }
+            }}>
+              <img 
+                src={cateringTableImg} 
+                alt="Catering Table" 
+                style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  objectFit: 'cover', 
+                  borderRadius: 0, 
+                  boxShadow: 'none', 
+                  border: 'none', 
+                  display: 'block' 
+                }} 
+              />
             </Box>
           </Box>
-          {/* Line indicator overlapping the bottom of the hero image */}
-          <Box sx={{ position: 'absolute', left: 0, right: 0, bottom: 32, display: 'flex', justifyContent: 'center', zIndex: 2 }}>
-            <SliderDots sx={{ gap: 2 }}>
+          {/* Line indicator */}
+          <Box sx={{ 
+            position: 'absolute', 
+            left: 0, 
+            right: 0, 
+            bottom: { xs: 16, sm: 32 }, 
+            display: 'flex', 
+            justifyContent: 'center', 
+            zIndex: 2 
+          }}>
+            <SliderDots sx={{ gap: { xs: 1, sm: 2 } }}>
               {slides.map((_, idx) => (
                 <LineIndicator
                   key={idx}
@@ -273,32 +452,127 @@ const HeroSection = () => {
           </Box>
         </Box>
       ) : activeIndex === 2 ? (
-        // --- Custom layout for the third hero slider (matches screenshot) ---
-        <Box sx={{ width: '100%', display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'center', justifyContent: 'space-between', minHeight: 450, position: 'relative', px: { xs: 2, md: 8 }, pt: { xs: 4, md: 8 }, background: 'radial-gradient(circle at 80% 10%, #fbeaea 40%, #fff6f6 100%)' }}>
+        <Box sx={{ 
+          width: '100%', 
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' }, 
+          alignItems: 'center', 
+          justifyContent: 'space-between', 
+          minHeight: { xs: 'auto', md: 450 }, 
+          position: 'relative', 
+          px: { xs: 2, sm: 4, md: 8 }, 
+          pt: { xs: 4, sm: 6, md: 8 },
+          gap: { xs: 4, md: 0 }
+        }}>
           {/* Left: Chef Image */}
-          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', minWidth: 320 }}>
-            <img src={chefImg} alt="Chef" style={{ width: 600, height: 900, objectFit: 'contain', borderRadius: 0, display: 'block', marginLeft: '-50px' }} />
+          <Box sx={{ 
+            flex: 1, 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            minWidth: { xs: '100%', md: 320 },
+            order: { xs: 2, md: 1 }
+          }}>
+            <img 
+              src={chefImg} 
+              alt="Chef" 
+              style={{ 
+                width: '100%',
+                maxWidth: 600,
+                height: 'auto',
+                objectFit: 'contain', 
+                borderRadius: 0, 
+                display: 'block',
+                marginLeft: { xs: 0, md: '-50px' }
+              }} 
+            />
           </Box>
           {/* Center: Title, Description, Subscribe Button */}
-          <Box sx={{ flex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 2, mb: 6, marginTop: '-80px' }}>
-            <Typography variant="h2" sx={{ fontWeight: 700, fontSize: { xs: '2rem', md: '2.5rem', lg: '2.8rem' }, mb: 2, lineHeight: 1.1, color: '#111', textAlign: 'center', marginTop: "-100px" }}>
+          <Box sx={{ 
+            flex: 2, 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            px: { xs: 1, sm: 2 }, 
+            mb: { xs: 4, md: 6 },
+            order: { xs: 1, md: 2 }
+          }}>
+            <Typography variant="h2" sx={{ 
+              fontWeight: 700, 
+              fontSize: { xs: '1.8rem', sm: '2rem', md: '2.5rem', lg: '2.8rem' }, 
+              mb: 2, 
+              lineHeight: 1.1, 
+              color: '#111', 
+              textAlign: 'center',
+              marginTop: { xs: 0, md: '-100px' }
+            }}>
               Fresh Flavors &<br />Creative Catering Services provider
             </Typography>
-            <Box sx={{ my: 2, marginTop: '-60px', cursor: 'pointer' }} onClick={() => navigate('/subscription')}>
-              <img src={subscribeBtn} alt="Subscribe" style={{ width: 300, height: 300, objectFit: 'contain', display: 'block', margin: '0 auto' }} />
+            <Box sx={{ 
+              my: 2, 
+              marginTop: { xs: 0, md: '-60px' }, 
+              cursor: 'pointer' 
+            }} 
+            onClick={() => navigate('/subscription')}>
+              <img 
+                src={subscribeBtn} 
+                alt="Subscribe" 
+                style={{ 
+                  width: '100%',
+                  maxWidth: 300,
+                  height: 'auto',
+                  objectFit: 'contain', 
+                  display: 'block', 
+                  margin: '0 auto' 
+                }} 
+              />
             </Box>
-            <Typography sx={{ color: '#222', fontSize: { xs: '1.2rem', md: '1.3rem' }, maxWidth: 540, textAlign: 'center', mt: 0, marginTop: "-80px" }}>
-              Maria's Food Catering & Services offers an elegant fine dining experience, blending Filipino flavors with modern culinary techniques. From succulent lechon belly to gourmet seafood sinigang, each dish is beautifully plated and made with fresh, high-quality ingredients.<br />
-              Perfect for weddings, corporate events, and special celebrations, Maria's ensures impeccable service and a refined dining experience for every occasion.
+            <Typography sx={{ 
+              color: '#222', 
+              fontSize: { xs: '1rem', sm: '1.2rem', md: '1.3rem' }, 
+              maxWidth: 540, 
+              textAlign: 'center', 
+              mt: { xs: 2, md: 0 },
+              marginTop: { xs: 0, md: '-80px' }
+            }}>
+              {description}
             </Typography>
           </Box>
           {/* Right: Thali Image */}
-          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', minWidth: 320 }}>
-            <img src={thaliImg} alt="Thali" style={{ width: 600, height: 900, objectFit: 'contain', borderRadius: 0, display: 'block', marginRight: '-40px' }} />
+          <Box sx={{ 
+            flex: 1, 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            minWidth: { xs: '100%', md: 320 },
+            order: { xs: 3, md: 3 }
+          }}>
+            <img 
+              src={thaliImg} 
+              alt="Thali" 
+              style={{ 
+                width: '100%',
+                maxWidth: 600,
+                height: 'auto',
+                objectFit: 'contain', 
+                borderRadius: 0, 
+                display: 'block',
+                marginRight: { xs: 0, md: '-40px' }
+              }} 
+            />
           </Box>
-          {/* Line indicator overlapping the bottom of the hero image */}
-          <Box sx={{ position: 'absolute', left: 0, right: 0, bottom: 32, display: 'flex', justifyContent: 'center', zIndex: 2 }}>
-            <SliderDots sx={{ gap: 2 }}>
+          {/* Line indicator */}
+          <Box sx={{ 
+            position: 'absolute', 
+            left: 0, 
+            right: 0, 
+            bottom: { xs: 16, sm: 32 }, 
+            display: 'flex', 
+            justifyContent: 'center', 
+            zIndex: 2 
+          }}>
+            <SliderDots sx={{ gap: { xs: 1, sm: 2 } }}>
               {slides.map((_, idx) => (
                 <LineIndicator
                   key={idx}
@@ -309,29 +583,7 @@ const HeroSection = () => {
             </SliderDots>
           </Box>
         </Box>
-      ) : (
-        // --- Default layout for other hero sliders ---
-        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 600, position: 'relative' }}>
-          <HeroImage
-            src={slides[activeIndex].image}
-            alt={slides[activeIndex].alt}
-            onClick={slides[activeIndex].onClick ? () => slides[activeIndex].onClick(navigate) : undefined}
-            style={{ cursor: slides[activeIndex].onClick ? 'pointer' : 'default', width: '100%', height: 'auto', maxWidth: '100%', maxHeight: '700px', borderRadius: 24, boxShadow: '0 8px 32px #e0e0e0', objectFit: 'cover' }}
-          />
-          {/* Line indicator overlapping the image at the bottom center */}
-          <Box sx={{ position: 'absolute', left: 0, right: 0, bottom: 32, display: 'flex', justifyContent: 'center', zIndex: 2 }}>
-            <SliderDots sx={{ gap: 2 }}>
-              {slides.map((_, idx) => (
-                <LineIndicator
-                  key={idx}
-                  active={idx === activeIndex}
-                  onClick={() => setActiveIndex(idx)}
-                />
-              ))}
-            </SliderDots>
-          </Box>
-        </Box>
-      )}
+      ) : null}
     </HeroRoot>
   );
 };

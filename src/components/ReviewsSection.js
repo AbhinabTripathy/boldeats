@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, Container, IconButton, Avatar, Rating } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
@@ -61,7 +61,59 @@ const NavigationButton = styled(IconButton)(({ theme }) => ({
   }
 }));
 
+const reviews = [
+  {
+    name: "Niharika Jain",
+    avatar: "/assets/reviewer-avatar.jpg",
+    rating: 5,
+    review: "Lacus luctus accumsan tortor posuere ac ut consequat semper. Vitae tortor condimentum lacinia quis vel. Quisque id diam vel quam elementum pulvinar etiam non. Est ultricies integer quis auctor elit sed vulputate congue eu consequu."
+  },
+  {
+    name: "Manoranjan Basantia",
+    avatar: "/assets/reviewer-avatar.jpg",
+    rating: 5,
+    review: "Exceptional service and amazing food quality! The catering team went above and beyond to make our event special. The menu was diverse and everything was perfectly prepared. Highly recommend their services for any occasion."
+  },
+  {
+    name: "Nikita Pradhan",
+    avatar: "/assets/reviewer-avatar.jpg",
+    rating: 5,
+    review: "The attention to detail and professionalism of the team is outstanding. The food was not only delicious but also beautifully presented. They accommodated all our special requests and made our corporate event a huge success."
+  },
+  {
+    name: "Arpita Singh",
+    avatar: "/assets/reviewer-avatar.jpg",
+    rating: 5,
+    review: "I've used their services multiple times for family gatherings and each time has been perfect. The food is consistently excellent, the staff is courteous, and the service is prompt. They truly understand customer satisfaction."
+  },
+  {
+    name: "Abhinav Tripathy",
+    avatar: "/assets/reviewer-avatar.jpg",
+    rating: 5,
+    review: "The best catering service I've experienced! From the initial consultation to the final delivery, everything was handled professionally. The food quality and variety exceeded our expectations. Will definitely use their services again."
+  }
+];
+
 const ReviewsSection = () => {
+  const [currentReview, setCurrentReview] = useState(0);
+
+  // Auto-slide functionality
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentReview((prev) => (prev + 1) % reviews.length);
+    }, 5000); // Change review every 5 seconds
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const handlePrevious = () => {
+    setCurrentReview((prev) => (prev - 1 + reviews.length) % reviews.length);
+  };
+
+  const handleNext = () => {
+    setCurrentReview((prev) => (prev + 1) % reviews.length);
+  };
+
   return (
     <StyledSection>
       <Container maxWidth="lg">
@@ -80,8 +132,8 @@ const ReviewsSection = () => {
         </Typography>
         <ReviewCard>
           <Avatar
-            src="/assets/reviewer-avatar.jpg"
-            alt="Reviewer"
+            src={reviews[currentReview].avatar}
+            alt={reviews[currentReview].name}
             sx={{ 
               width: { xs: 80, sm: 90, md: 100 }, 
               height: { xs: 80, sm: 90, md: 100 }, 
@@ -99,7 +151,7 @@ const ReviewsSection = () => {
               fontSize: { xs: '20px', sm: '22px', md: '24px' }
             }}
           >
-            Niharika jain
+            {reviews[currentReview].name}
           </Typography>
           <Typography 
             variant="body1" 
@@ -113,13 +165,10 @@ const ReviewsSection = () => {
               px: { xs: 2, sm: 3, md: 0 }
             }}
           >
-            Lacus luctus accumsan tortor posuere ac ut consequat semper. Vitae
-            tortor condimentum lacinia quis vel. Quisque id diam vel quam
-            elementum pulvinar etiam non. Est ultricies integer quis auctor elit sed
-            vulputate congue eu consequu.
+            {reviews[currentReview].review}
           </Typography>
           <Rating 
-            value={5} 
+            value={reviews[currentReview].rating} 
             readOnly 
             sx={{ 
               mb: 4,
@@ -140,10 +189,10 @@ const ReviewsSection = () => {
               mt: { xs: 2, sm: 0 }
             }}
           >
-            <NavigationButton>
+            <NavigationButton onClick={handlePrevious}>
               <ArrowBack />
             </NavigationButton>
-            <NavigationButton>
+            <NavigationButton onClick={handleNext}>
               <ArrowForward />
             </NavigationButton>
           </Box>

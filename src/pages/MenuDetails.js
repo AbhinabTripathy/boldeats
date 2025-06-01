@@ -588,15 +588,21 @@ function SubscriptionModal({ open, onClose, onAdd, caterer }) {
   ].filter(Boolean); // Remove null/undefined entries
 
   const handleAdd = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      // Close the subscription modal
+      onClose();
+      // Open the login modal from Header
+      if (window.openLoginModalFromHeader) {
+        window.openLoginModalFromHeader();
+      }
+      return;
+    }
+
     setLoading(true);
     setError('');
     
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
       // Create cart items for each selected plan
       const cartPromises = plans.map(async (plan) => {
         const quantity = quantities[plan.days];
@@ -1436,25 +1442,48 @@ const MenuDetails = () => {
       <Header />
       <Box sx={{ background: '#fff', minHeight: '100vh', pb: 6, mt: 4 }}>
         {/* Top Vendor Info */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', maxWidth: 1200, mx: 'auto', mt: 14, px: 4 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' },
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'center', md: 'flex-start' }, 
+          maxWidth: 1200, 
+          mx: 'auto', 
+          mt: { xs: 10, sm: 12, md: 14 }, 
+          px: { xs: 2, sm: 3, md: 4 },
+          gap: { xs: 3, md: 0 }
+        }}>
           {/* Left: Image & Info */}
-          <Box sx={{ display: 'flex', gap: 3 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: 3,
+            alignItems: { xs: 'center', sm: 'flex-start' },
+            textAlign: { xs: 'center', sm: 'left' }
+          }}>
             <img 
               src={`https://api.boldeats.in/${caterer.logo}`} 
               alt={caterer.name} 
-              style={{ width: 180, height: 120, borderRadius: 12, objectFit: 'cover', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }} 
+              style={{ 
+                width: { xs: '100%', sm: 180 },
+                height: { xs: 'auto', sm: 120 },
+                maxWidth: 180,
+                borderRadius: 12, 
+                objectFit: 'cover', 
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)' 
+              }} 
               onError={(e) => {
                 e.target.src = 'https://via.placeholder.com/180x120?text=No+Image';
               }}
             />
             <Box>
               <Typography variant="h5" sx={{ fontWeight: 600 }}>{caterer.name}</Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, justifyContent: { xs: 'center', sm: 'flex-start' } }}>
                 {[...Array(caterer.rating || 5)].map((_, i) => (
                   <span key={i} style={{ color: '#FFD600', fontSize: 18 }}>★</span>
                 ))}
               </Box>
-              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+              <Box sx={{ display: 'flex', gap: 1, mt: 1, justifyContent: { xs: 'center', sm: 'flex-start' } }}>
                 <Chip label="Non-veg" color="error" size="small" icon={<CancelIcon sx={{ color: '#fff' }} />} />
                 <Chip label="Veg" color="success" size="small" icon={<CheckCircleIcon sx={{ color: '#fff' }} />} />
               </Box>
@@ -1466,7 +1495,11 @@ const MenuDetails = () => {
             </Box>
           </Box>
           {/* Right: Info */}
-          <Box sx={{ minWidth: 320, textAlign: 'right', mt: 1 }}>
+          <Box sx={{ 
+            minWidth: { xs: '100%', md: 320 }, 
+            textAlign: { xs: 'center', md: 'right' }, 
+            mt: { xs: 2, md: 1 } 
+          }}>
             <Typography sx={{ fontSize: 15 }}>Lunch and Dinner can be ordered from the site.</Typography>
             <Typography sx={{ fontSize: 15, mt: 2 }}>
               For breakfast please contact support
@@ -1475,16 +1508,23 @@ const MenuDetails = () => {
         </Box>
 
         {/* Meal Tabs */}
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 4 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          gap: { xs: 1, sm: 2 }, 
+          mt: 4,
+          flexWrap: 'wrap',
+          px: { xs: 2, sm: 0 }
+        }}>
           {["Lunch", "Dinner", "Breakfast"].map((label, idx) => (
             <Button
               key={label}
               variant={activeTab === idx ? 'contained' : 'outlined'}
               sx={{
                 borderRadius: 2,
-                minWidth: 120,
+                minWidth: { xs: 'calc(33.33% - 8px)', sm: 120 },
                 fontWeight: 600,
-                fontSize: 16,
+                fontSize: { xs: 14, sm: 16 },
                 background: activeTab === idx ? '#e9b7b2' : '#fff',
                 color: activeTab === idx ? '#C4362A' : '#333',
                 borderColor: '#e9b7b2',
@@ -1502,10 +1542,30 @@ const MenuDetails = () => {
         </Box>
 
         {/* Main Content: Menu + Cart + Address */}
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4, mt: 5, maxWidth: 1200, mx: 'auto' }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', lg: 'row' },
+          justifyContent: 'center', 
+          gap: { xs: 3, lg: 4 }, 
+          mt: 5, 
+          maxWidth: 1200, 
+          mx: 'auto',
+          px: { xs: 2, sm: 3, md: 4 }
+        }}>
           {/* Left: Weekly Menu */}
-          <Box sx={{ background: 'linear-gradient(180deg, #ffe0d3 0%, #fbeee6 100%)', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', p: 2, minWidth: 300, maxWidth: 400, flex: 1, mx: 'auto' }}>
-            <Typography sx={{ fontWeight: 600, fontSize: 22, mb: 3, textAlign: 'center', color: '#222' }}>Choose your weekly menu</Typography>
+          <Box sx={{ 
+            background: 'linear-gradient(180deg, #ffe0d3 0%, #fbeee6 100%)', 
+            borderRadius: 3, 
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
+            p: 2, 
+            width: { xs: '100%', lg: 'auto' },
+            minWidth: { xs: 'auto', lg: 300 },
+            maxWidth: { xs: '100%', lg: 400 },
+            flex: 1
+          }}>
+            <Typography sx={{ fontWeight: 600, fontSize: { xs: 20, sm: 22 }, mb: 3, textAlign: 'center', color: '#222' }}>
+              Choose your weekly menu
+            </Typography>
             {menu.map((item, idx) => (
               <Box key={idx} sx={{
                 background: '#fff',
@@ -1543,9 +1603,9 @@ const MenuDetails = () => {
                   background: '#fff',
                   color: '#C4362A',
                   fontWeight: 700,
-                  fontSize: 24,
+                  fontSize: { xs: 20, sm: 24 },
                   borderRadius: 6,
-                  px: 4,
+                  px: { xs: 3, sm: 4 },
                   py: 1,
                   boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
                   border: '1.5px solid #e0e0e0',
@@ -1554,7 +1614,17 @@ const MenuDetails = () => {
                     color: '#C4362A',
                   },
                 }}
-                onClick={() => setSubscriptionModalOpen(true)}
+                onClick={() => {
+                  const token = localStorage.getItem('token');
+                  if (!token) {
+                    // Open the login modal from Header
+                    if (window.openLoginModalFromHeader) {
+                      window.openLoginModalFromHeader();
+                    }
+                  } else {
+                    setSubscriptionModalOpen(true);
+                  }
+                }}
               >
                 ADD +
               </Button>
@@ -1562,9 +1632,26 @@ const MenuDetails = () => {
           </Box>
           
           {/* Right: Cart and Address Sections */}
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', md: 'row' },
+            gap: 2,
+            width: { xs: '100%', lg: 'auto' }
+          }}>
             {/* Cart Section */}
-            <Box sx={{ background: '#fff', borderRadius: 10, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', minWidth: 280, maxWidth: 340, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', p: 1.5 }}>
+            <Box sx={{ 
+              background: '#fff', 
+              borderRadius: 10, 
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
+              width: { xs: '100%', md: '50%', lg: 'auto' },
+              minWidth: { xs: 'auto', lg: 280 },
+              maxWidth: { xs: '100%', lg: 340 },
+              flex: 1, 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'stretch', 
+              p: 1.5 
+            }}>
               {cartItems.length === 0 ? (
                 <>
                   <ShoppingCartOutlinedIcon sx={{ fontSize: 50, color: '#bdbdbd', mb: 1, mt: 2 }} />
@@ -1667,7 +1754,22 @@ const MenuDetails = () => {
             </Box>
             
             {/* Address Section */}
-            {addressSection}
+            <Box sx={{ 
+              background: '#fff', 
+              borderRadius: 10, 
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
+              width: { xs: '100%', md: '50%', lg: 'auto' },
+              minWidth: { xs: 'auto', lg: 280 },
+              maxWidth: { xs: '100%', lg: 340 },
+              flex: 1, 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'stretch', 
+              p: 1.5,
+              ml: { xs: 0, md: 2 }
+            }}>
+              {addressSection}
+            </Box>
           </Box>
         </Box>
       </Box>

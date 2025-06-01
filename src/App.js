@@ -16,6 +16,11 @@ import ProtectedRoute from './components/ProtectedRoute';
 import SplashScreen from './components/SplashScreen';
 import ProductPage from './pages/ProductPage';
 import MenuDetails from './pages/MenuDetails';
+import TermsConditions from './pages/TermsConditions';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import RefundPolicy from './pages/RefundPolicy';
+import CancellationPolicy from './pages/CancellationPolicy';
+import AboutPage from './pages/AboutPage';
 
 
 const theme = createTheme({
@@ -66,6 +71,11 @@ const AppContent = () => {
   const isHomePage = location.pathname === '/';
   const isSubscriptionPage = location.pathname === '/subscription';
   const isMenuDetails = location.pathname === '/menu-details';
+  const isPolicyPage = location.pathname.startsWith('/terms-conditions') || 
+                      location.pathname.startsWith('/privacy-policy') ||
+                      location.pathname.startsWith('/refund-policy') ||
+                      location.pathname.startsWith('/cancellation-policy') ||
+                      location.pathname.startsWith('/about');
 
   return (
     <Box sx={{ 
@@ -91,6 +101,11 @@ const AppContent = () => {
           <Route path="/product" element={<ProductPage />} />
           <Route path="/menu-details" element={<MenuDetails onSubscription={() => window.location.assign('/subscription')} />} />
           <Route path="/subscription" element={<SubscriptionPage />} />
+          <Route path="/terms-conditions" element={<TermsConditions />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/refund-policy" element={<RefundPolicy />} />
+          <Route path="/cancellation-policy" element={<CancellationPolicy />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route 
             path="/profile" 
             element={
