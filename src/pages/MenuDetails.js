@@ -335,16 +335,49 @@ function PaymentModal({ open, onClose, price }) {
   const [receiptImage, setReceiptImage] = useState(null);
   const [showTimer, setShowTimer] = useState(false);
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
+  const [paymentId, setPaymentId] = useState(null);
+  const [paymentStatus, setPaymentStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     let timer;
-    if (showTimer && timeLeft > 0) {
+    if (showTimer && timeLeft > 0 && paymentStatus !== 'ACCEPTED' && paymentStatus !== 'FAILED') {
       timer = setInterval(() => {
         setTimeLeft(prev => prev - 1);
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [showTimer, timeLeft]);
+  }, [showTimer, timeLeft, paymentStatus]);
+
+  // Add status check interval
+  useEffect(() => {
+    let statusCheck;
+    if (paymentId && showTimer && paymentStatus !== 'ACCEPTED' && paymentStatus !== 'FAILED') {
+      statusCheck = setInterval(async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await axios.get(`https://api.boldeats.in/api/payment/status/${paymentId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (response.data && response.data.status) {
+            setPaymentStatus(response.data.status);
+            if (response.data.status === 'ACCEPTED') {
+              setTimeout(() => {
+                onClose();
+              }, 3000);
+            }
+          }
+        } catch (err) {
+          console.error('Error checking payment status:', err);
+        }
+      }, 5000); // Check every 5 seconds
+    }
+    return () => clearInterval(statusCheck);
+  }, [paymentId, showTimer, paymentStatus]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -359,13 +392,62 @@ function PaymentModal({ open, onClose, price }) {
   const handleReceiptUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setReceiptImage(URL.createObjectURL(file));
+      // Store the actual file instead of URL
+      setReceiptImage(file);
     }
   };
 
-  const handleOrder = () => {
-    setShowTimer(true);
+  const handleOrder = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // Create FormData object
+      const formData = new FormData();
+      formData.append('receipt', receiptImage); // This is now the actual file
+      formData.append('method', selectedMethod.toUpperCase()); // Convert to uppercase
+      formData.append('amount', price.toString()); // Convert to string
+
+      console.log('Uploading payment with data:', {
+        method: selectedMethod.toUpperCase(),
+        amount: price,
+        hasReceipt: !!receiptImage
+      });
+
+      const response = await axios.post('https://api.boldeats.in/api/payment/upload', formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+          'Accept': 'application/json'
+        }
+      });
+
+      console.log('Payment upload response:', response.data);
+
+      if (response.data && response.data.paymentId) {
+        setPaymentId(response.data.paymentId);
+        setPaymentStatus('PENDING');
+        setShowTimer(true);
+        setShowReceiptUpload(false);
+      }
+    } catch (err) {
+      console.error('Error uploading payment receipt:', err);
+      setError(err.response?.data?.message || 'Failed to upload payment receipt. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRetry = () => {
+    setShowTimer(false);
     setShowReceiptUpload(false);
+    setReceiptImage(null);
+    setPaymentId(null);
+    setPaymentStatus(null);
+    setTimeLeft(600);
   };
 
   return (
@@ -480,6 +562,14 @@ function PaymentModal({ open, onClose, price }) {
         ) : showReceiptUpload ? (
           <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
             <Typography variant="h6" sx={{ fontWeight: 600 }}>Upload Payment Receipt</Typography>
+            
+            <Box sx={{ width: '100%', mb: 2 }}>
+              <Typography sx={{ fontWeight: 600, mb: 1 }}>Payment Method</Typography>
+              <Typography>{selectedMethod === 'upi' ? 'UPI Payment' : 'Net Banking'}</Typography>
+              <Typography sx={{ fontWeight: 600, mt: 2, mb: 1 }}>Subtotal Amount</Typography>
+              <Typography>₹{price}</Typography>
+            </Box>
+
             <Box sx={{ 
               width: '100%', 
               height: 200, 
@@ -491,18 +581,35 @@ function PaymentModal({ open, onClose, price }) {
               justifyContent: 'center',
               cursor: 'pointer',
               background: receiptImage ? 'none' : '#fafafa',
-              position: 'relative'
+              position: 'relative',
+              overflow: 'hidden'
             }}>
               {receiptImage ? (
-                <img 
-                  src={receiptImage} 
-                  alt="Receipt" 
-                  style={{ 
-                    maxWidth: '100%', 
-                    maxHeight: '100%', 
-                    objectFit: 'contain' 
-                  }} 
-                />
+                <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
+                  <img 
+                    src={URL.createObjectURL(receiptImage)} 
+                    alt="Receipt" 
+                    style={{ 
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain'
+                    }} 
+                  />
+                  <IconButton
+                    onClick={() => setReceiptImage(null)}
+                    sx={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      background: 'rgba(0,0,0,0.1)',
+                      '&:hover': {
+                        background: 'rgba(0,0,0,0.2)'
+                      }
+                    }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Box>
               ) : (
                 <>
                   <input
@@ -522,6 +629,13 @@ function PaymentModal({ open, onClose, price }) {
                 </>
               )}
             </Box>
+
+            {error && (
+              <Typography color="error" sx={{ mt: 1 }}>
+                {error}
+              </Typography>
+            )}
+
             <Button 
               variant="contained" 
               sx={{ 
@@ -536,29 +650,75 @@ function PaymentModal({ open, onClose, price }) {
                 }
               }} 
               onClick={handleOrder}
-              disabled={!receiptImage}
+              disabled={!receiptImage || loading}
             >
-              Place Order
+              {loading ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CircularProgress size={20} sx={{ color: '#fff' }} />
+                  <span>Uploading...</span>
+                </Box>
+              ) : (
+                'Submit'
+              )}
             </Button>
           </Box>
         ) : (
           <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, color: '#C4362A' }}>Wait for the Status</Typography>
-            <Typography sx={{ 
-              fontSize: 48, 
-              fontWeight: 700, 
-              color: '#C4362A',
-              fontFamily: 'monospace',
-              background: '#fff5f5',
-              padding: '16px 32px',
-              borderRadius: 2,
-              boxShadow: '0 2px 8px rgba(196,54,42,0.1)'
-            }}>
-              {formatTime(timeLeft)}
-            </Typography>
-            <Typography sx={{ color: '#666', textAlign: 'center', maxWidth: 400 }}>
-              Please wait while we verify your payment. You will receive a confirmation once verified.
-            </Typography>
+            {paymentStatus === 'PENDING' && (
+              <>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#C4362A' }}>Wait for the Status</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <CircularProgress size={24} sx={{ color: '#C4362A' }} />
+                  <Typography sx={{ fontWeight: 600, color: '#C4362A' }}>PENDING</Typography>
+                </Box>
+                <Typography sx={{ 
+                  fontSize: 48, 
+                  fontWeight: 700, 
+                  color: '#C4362A',
+                  fontFamily: 'monospace',
+                  background: '#fff5f5',
+                  padding: '16px 32px',
+                  borderRadius: 2,
+                  boxShadow: '0 2px 8px rgba(196,54,42,0.1)'
+                }}>
+                  {formatTime(timeLeft)}
+                </Typography>
+                <Typography sx={{ color: '#666', textAlign: 'center', maxWidth: 400 }}>
+                  Please wait while we verify your payment. You will receive a confirmation once verified.
+                </Typography>
+              </>
+            )}
+            
+            {paymentStatus === 'ACCEPTED' && (
+              <>
+                <CheckCircleIcon sx={{ fontSize: 60, color: '#4caf50' }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#4caf50' }}>
+                  Order Accepted
+                </Typography>
+              </>
+            )}
+            
+            {paymentStatus === 'FAILED' && (
+              <>
+                <CancelIcon sx={{ fontSize: 60, color: '#f44336' }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#f44336' }}>
+                  Payment Failed
+                </Typography>
+                <Button
+                  variant="contained"
+                  onClick={handleRetry}
+                  sx={{
+                    mt: 2,
+                    background: '#C4362A',
+                    '&:hover': {
+                      background: '#a82a1f'
+                    }
+                  }}
+                >
+                  Retry
+                </Button>
+              </>
+            )}
           </Box>
         )}
       </DialogContent>
@@ -577,22 +737,20 @@ function SubscriptionModal({ open, onClose, onAdd, caterer }) {
       days: 15,
       price: parseFloat(caterer.subscriptionPrice15Days),
       label: '15 Days Subscription',
-      planType: '15_days'
+      planType: '15days'
     },
     caterer.subscriptionPriceMonthly && {
       days: 30,
       price: parseFloat(caterer.subscriptionPriceMonthly),
       label: '30 Days Subscription',
-      planType: '30_days'
+      planType: '30days'
     }
   ].filter(Boolean); // Remove null/undefined entries
 
   const handleAdd = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
-      // Close the subscription modal
       onClose();
-      // Open the login modal from Header
       if (window.openLoginModalFromHeader) {
         window.openLoginModalFromHeader();
       }
@@ -608,26 +766,36 @@ function SubscriptionModal({ open, onClose, onAdd, caterer }) {
         const quantity = quantities[plan.days];
         if (quantity > 0) {
           const cartData = {
-            vendorId: caterer.id,
+            vendorId: parseInt(caterer.id),
             planType: plan.planType,
-            quantity: quantity,
-            amount: plan.price * quantity
+            quantity: parseInt(quantity),
+            pricePerUnit: parseFloat(plan.price),
+            totalPrice: parseFloat(plan.price * quantity)
           };
 
-          console.log('Adding to cart:', cartData);
+          console.log('Adding to cart with data:', cartData);
 
-          return axios.post('https://api.boldeats.in/api/cart/add-to-cart', cartData, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          });
+          try {
+            const response = await axios.post('https://api.boldeats.in/api/cart/add-to-cart', cartData, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              }
+            });
+            
+            console.log('Cart response:', response.data);
+            return response;
+          } catch (error) {
+            console.error('Error in individual cart item:', error.response?.data || error.message);
+            throw error;
+          }
         }
         return null;
       }).filter(Boolean);
 
       const responses = await Promise.all(cartPromises);
-      console.log('Cart responses:', responses);
+      console.log('All cart responses:', responses);
 
       // Update local cart state
       plans.forEach(plan => {
@@ -635,7 +803,8 @@ function SubscriptionModal({ open, onClose, onAdd, caterer }) {
           onAdd({
             days: plan.days,
             price: plan.price,
-            quantity: quantities[plan.days]
+            quantity: quantities[plan.days],
+            planType: plan.planType
           });
         }
       });
@@ -644,7 +813,7 @@ function SubscriptionModal({ open, onClose, onAdd, caterer }) {
       onClose();
     } catch (err) {
       console.error('Error adding to cart:', err);
-      setError(err.response?.data?.message || 'Failed to add items to cart');
+      setError(err.response?.data?.message || 'Failed to add items to cart. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -1062,6 +1231,36 @@ const MenuDetails = () => {
   const [loadingAddresses, setLoadingAddresses] = useState(false);
   const [editAddress, setEditAddress] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [menuItems, setMenuItems] = useState([]);
+  const [loadingMenu, setLoadingMenu] = useState(false);
+
+  // Function to fetch menu items by day of week
+  const fetchMenuItems = async () => {
+    setLoadingMenu(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`https://api.boldeats.in/api/users/vendors/${caterer.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.data && response.data.data && response.data.data.menuItems) {
+        setMenuItems(response.data.data.menuItems);
+      }
+    } catch (err) {
+      console.error('Error fetching menu items:', err);
+    } finally {
+      setLoadingMenu(false);
+    }
+  };
+
+  // Fetch menu items when component mounts or caterer changes
+  useEffect(() => {
+    if (caterer && caterer.id) {
+      fetchMenuItems();
+    }
+  }, [caterer]);
 
   const handleSetDefaultAddress = async (addressId) => {
     try {
@@ -1566,37 +1765,65 @@ const MenuDetails = () => {
             <Typography sx={{ fontWeight: 600, fontSize: { xs: 20, sm: 22 }, mb: 3, textAlign: 'center', color: '#222' }}>
               Choose your weekly menu
             </Typography>
-            {menu.map((item, idx) => (
-              <Box key={idx} sx={{
-                background: '#fff',
-                borderRadius: 3,
-                border: '1.5px solid #e0e0e0',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
-                display: 'flex',
-                alignItems: 'center',
-                px: 2,
-                py: 1,
-                mb: 2.5,
-                minHeight: 60,
-                justifyContent: 'space-between',
-              }}>
-                {/* Left: Menu Info */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                  <Typography sx={{ fontSize: 11, color: '#888', fontWeight: 500, mb: 0.2 }}>MENU 1</Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.2 }}>
-                    <FiberManualRecordIcon sx={{ color: '#43a047', fontSize: 15, mr: 0.5 }} />
-                    <Typography sx={{ fontWeight: 700, fontSize: 15, color: '#222', mr: 1 }}>{item.day}</Typography>
-                  </Box>
-                  {item.items && item.items.map((i, j) => (
-                    <Typography key={j} sx={{ fontSize: 11, color: '#222', textTransform: 'uppercase', fontWeight: 500, letterSpacing: 0.15 }}>{i.desc}</Typography>
-                  ))}
-                </Box>
-                {/* Right: Food Image */}
-                <Box sx={{ ml: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Avatar src={foodImg} alt="food" sx={{ width: 36, height: 36, borderRadius: '50%', border: '1.5px solid #e0e0e0', objectFit: 'cover' }} />
-                </Box>
+            
+            {loadingMenu ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+                <CircularProgress size={24} sx={{ color: '#C4362A' }} />
               </Box>
-            ))}
+            ) : menuItems.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography sx={{ color: '#888', fontSize: 14 }}>No menu items available</Typography>
+              </Box>
+            ) : (
+              menuItems.map((item, idx) => (
+                <Box key={item.id} sx={{
+                  background: '#fff',
+                  borderRadius: 3,
+                  border: '1.5px solid #e0e0e0',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  px: 2,
+                  py: 1,
+                  mb: 2.5,
+                  minHeight: 60,
+                  justifyContent: 'space-between',
+                }}>
+                  {/* Left: Menu Info */}
+                  <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                    <Typography sx={{ fontSize: 11, color: '#888', fontWeight: 500, mb: 0.2 }}>
+                      MENU {item.menuSectionId}
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.2 }}>
+                      <FiberManualRecordIcon sx={{ color: '#43a047', fontSize: 15, mr: 0.5 }} />
+                      <Typography sx={{ fontWeight: 700, fontSize: 15, color: '#222', mr: 1 }}>
+                        {item.dayOfWeek}
+                      </Typography>
+                    </Box>
+                    {item.items && item.items.map((menuItem, j) => (
+                      <Typography key={j} sx={{ fontSize: 11, color: '#222', textTransform: 'uppercase', fontWeight: 500, letterSpacing: 0.15 }}>
+                        {menuItem}
+                      </Typography>
+                    ))}
+                  </Box>
+                  {/* Right: Food Image */}
+                  <Box sx={{ ml: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Avatar 
+                      src={item.menuPhotos && item.menuPhotos.length > 0 ? item.menuPhotos[0] : foodImg} 
+                      alt="food" 
+                      sx={{ 
+                        width: 36, 
+                        height: 36, 
+                        borderRadius: '50%', 
+                        border: '1.5px solid #e0e0e0', 
+                        objectFit: 'cover' 
+                      }} 
+                    />
+                  </Box>
+                </Box>
+              ))
+            )}
+
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
               <Button 
                 sx={{
@@ -1617,7 +1844,6 @@ const MenuDetails = () => {
                 onClick={() => {
                   const token = localStorage.getItem('token');
                   if (!token) {
-                    // Open the login modal from Header
                     if (window.openLoginModalFromHeader) {
                       window.openLoginModalFromHeader();
                     }
