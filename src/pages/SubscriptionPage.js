@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, Button, styled } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -219,6 +219,60 @@ const PriceBox = styled(Box)({
 });
 
 const SubscriptionPage = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const handleLoginClick = () => {
+    if (window.openLoginModalFromHeader) {
+      window.openLoginModalFromHeader();
+    }
+  };
+
+  if (!isLoggedIn) {
+    return (
+      <PageContainer>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          minHeight: '60vh',
+          textAlign: 'center',
+          padding: '20px'
+        }}>
+          <Typography variant="h4" sx={{ mb: 2, color: '#333' }}>
+            Login to View Your Subscriptions
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 4, color: '#666' }}>
+            Please login to access your subscription list and manage your meal plans.
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={handleLoginClick}
+            sx={{
+              backgroundColor: '#C4362A',
+              color: 'white',
+              padding: '12px 32px',
+              fontSize: '16px',
+              borderRadius: '25px',
+              textTransform: 'none',
+              '&:hover': {
+                backgroundColor: '#b02d23',
+              }
+            }}
+          >
+            Login Now
+          </Button>
+        </Box>
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer>
       <SubscriptionNotice>

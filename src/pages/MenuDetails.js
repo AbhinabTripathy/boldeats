@@ -1233,8 +1233,9 @@ const MenuDetails = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [menuItems, setMenuItems] = useState([]);
   const [loadingMenu, setLoadingMenu] = useState(false);
+  const [availableMealTypes, setAvailableMealTypes] = useState([]);
 
-  // Function to fetch menu items by day of week
+  // Function to fetch menu items and vendor details by day of week
   const fetchMenuItems = async () => {
     setLoadingMenu(true);
     try {
@@ -1245,8 +1246,21 @@ const MenuDetails = () => {
         }
       });
       
-      if (response.data && response.data.data && response.data.data.menuItems) {
-        setMenuItems(response.data.data.menuItems);
+      if (response.data && response.data.data) {
+        setMenuItems(response.data.data.menuItems || []);
+        
+        // Extract and set available meal types
+        const mealTypes = response.data.data.mealTypes || [];
+        const formattedMealTypes = mealTypes.map(type => ({
+          key: type.toLowerCase(),
+          label: type.charAt(0).toUpperCase() + type.slice(1).toLowerCase()
+        }));
+        setAvailableMealTypes(formattedMealTypes);
+        
+        // Set active tab to first available meal type
+        if (formattedMealTypes.length > 0) {
+          setActiveTab(0);
+        }
       }
     } catch (err) {
       console.error('Error fetching menu items:', err);
@@ -1715,9 +1729,9 @@ const MenuDetails = () => {
           flexWrap: 'wrap',
           px: { xs: 2, sm: 0 }
         }}>
-          {["Lunch", "Dinner", "Breakfast"].map((label, idx) => (
+          {availableMealTypes.map((mealType, idx) => (
             <Button
-              key={label}
+              key={mealType.key}
               variant={activeTab === idx ? 'contained' : 'outlined'}
               sx={{
                 borderRadius: 2,
@@ -1735,7 +1749,7 @@ const MenuDetails = () => {
               }}
               onClick={() => setActiveTab(idx)}
             >
-              {label}
+              {mealType.label}
             </Button>
           ))}
         </Box>
@@ -1800,11 +1814,11 @@ const MenuDetails = () => {
                         {item.dayOfWeek}
                       </Typography>
                     </Box>
-                    {item.items && item.items.map((menuItem, j) => (
-                      <Typography key={j} sx={{ fontSize: 11, color: '#222', textTransform: 'uppercase', fontWeight: 500, letterSpacing: 0.15 }}>
-                        {menuItem}
+                    {item.items && (
+                      <Typography sx={{ fontSize: 11, color: '#222', fontWeight: 500, letterSpacing: 0.15 }}>
+                        {item.items.map(item => item.charAt(0).toUpperCase() + item.slice(1).toLowerCase()).join(', ')}
                       </Typography>
-                    ))}
+                    )}
                   </Box>
                   {/* Right: Food Image */}
                   <Box sx={{ ml: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
