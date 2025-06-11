@@ -427,11 +427,13 @@ function PaymentModal({ open, onClose, price }) {
 
       console.log('Payment upload response:', response.data);
 
-      if (response.data && response.data.paymentId) {
+      if (response.status === 201 && response.data.success) {
         setPaymentId(response.data.paymentId);
         setPaymentStatus('PENDING');
         setShowTimer(true);
         setShowReceiptUpload(false);
+      } else {
+        throw new Error('Payment upload failed');
       }
     } catch (err) {
       console.error('Error uploading payment receipt:', err);
