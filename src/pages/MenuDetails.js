@@ -1788,18 +1788,25 @@ const MenuDetails = () => {
     const items = menuItems[activeMealType] || [];
     const isLoading = loadingMenu[activeMealType];
 
+    // Helper function to capitalize first letter of each word
+    const capitalizeFirstLetter = (str) => {
+      return str.split(' ').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      ).join(' ');
+    };
+
     if (isLoading) {
       return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress size={40} sx={{ color: '#C4362A' }} />
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+          <CircularProgress size={30} sx={{ color: '#C4362A' }} />
         </Box>
       );
     }
 
     if (items.length === 0) {
       return (
-        <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Typography sx={{ color: '#666', fontSize: 16 }}>
+        <Box sx={{ textAlign: 'center', py: 2 }}>
+          <Typography sx={{ color: '#666', fontSize: 14 }}>
             No menu items available for {activeMealType}
           </Typography>
         </Box>
@@ -1807,56 +1814,51 @@ const MenuDetails = () => {
     }
 
     return (
-      <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box sx={{ 
+        width: '100%', 
+        display: 'grid', 
+        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+        gap: 1,
+        p: 0.5
+      }}>
         {items.map((item, index) => (
           <Box
             key={index}
             sx={{
               background: '#fff',
-              borderRadius: 3,
-              border: '1.5px solid #e0e0e0',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+              borderRadius: 2,
+              border: '1px solid #e0e0e0',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
               display: 'flex',
               alignItems: 'center',
-              px: 2,
-              py: 1.5, // Reduced from 2
-              mb: 0,
-              minHeight: 70, // Reduced from 80
+              px: 1,
+              py: 0.5,
+              minHeight: 50,
               justifyContent: 'space-between',
-              width: { xs: '100%', sm: '90%', md: '80%' },
-              mx: 'auto',
+              width: '100%',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                borderColor: '#C4362A'
+              }
             }}
           >
-            {/* Left: Veg icon (green circle), MENU 1, Day, Description */}
+            {/* Left: Veg icon and Description */}
             <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', mr: 2 }}>
-                <FiberManualRecordIcon sx={{ color: '#1dbf73', fontSize: 24, mb: 0.5 }} />
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', mr: 1 }}>
+                <FiberManualRecordIcon sx={{ color: '#1dbf73', fontSize: 16 }} />
               </Box>
               <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                <Typography sx={{ fontWeight: 700, fontSize: 18, color: '#222', mb: 0.5 }}>
+                <Typography sx={{ fontWeight: 600, fontSize: 14, color: '#222', mb: 0.25 }}>
                   {item.dayOfWeek}
                 </Typography>
                 {item.items && (
-                  <Typography sx={{ fontSize: 13, color: '#222', fontWeight: 500, letterSpacing: 0.15 }}>
-                    {item.items.join(' , ').toUpperCase()}
+                  <Typography sx={{ fontSize: 11, color: '#666', fontWeight: 500 }}>
+                    {item.items.map(item => capitalizeFirstLetter(item)).join(' , ')}
                   </Typography>
                 )}
               </Box>
-            </Box>
-            {/* Right: Food Image */}
-            <Box sx={{ ml: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Avatar 
-                src={foodImg} // Replace with item.image if available
-                alt="food" 
-                sx={{ 
-                  width: 56, 
-                  height: 56, 
-                  borderRadius: '10px', 
-                  border: '1.5px solid #e0e0e0', 
-                  objectFit: 'cover',
-                  background: '#fff',
-                }} 
-              />
             </Box>
           </Box>
         ))}
@@ -2166,9 +2168,9 @@ const MenuDetails = () => {
           display: 'flex', 
           flexDirection: { xs: 'column', md: 'row' },
           justifyContent: 'center', 
-          gap: 4,
-          mt: 3, // Reduced from 5
-          maxWidth: 1200, 
+          gap: 2,
+          mt: 2,
+          maxWidth: 1400,
           mx: 'auto',
           px: { xs: 2, sm: 3, md: 4 }
         }}>
@@ -2177,45 +2179,56 @@ const MenuDetails = () => {
             background: 'linear-gradient(180deg, #ffe0d3 0%, #fbeee6 100%)', 
             borderRadius: 3, 
             boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
-            p: 1, // Reduced from 1.5
-            width: { xs: '100%', md: '50%' },
-            minWidth: { xs: 'auto', md: 300 },
-            maxWidth: { xs: '100%', md: 400 },
-            flex: 1
+            p: 1,
+            width: { xs: '100%', md: '48%' },
+            minWidth: { xs: 'auto', md: 450 },
+            maxWidth: { xs: '100%', md: 550 },
+            flex: 1,
+            height: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            transition: 'transform 0.3s ease-in-out',
+            '&:hover': {
+              transform: 'translateY(-5px)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.12)'
+            }
           }}>
             <Typography variant="h5" sx={{ 
               textAlign: 'center', 
-              mb: 1, // Reduced from 1.5
+              mb: 0.5,
               fontWeight: 600,
-              color: '#222'
+              color: '#222',
+              fontSize: { xs: '1.1rem', md: '1.3rem' }
             }}>
               REGULAR MEAL
             </Typography>
             <Typography variant="h6" sx={{ 
               textAlign: 'center', 
-              mb: 1, // Reduced from 1.5
+              mb: 0.5,
               fontWeight: 500,
               color: '#666',
-              fontSize: 16
+              fontSize: { xs: '0.8rem', md: '0.9rem' }
             }}>
               Choose your Weekly Menu
             </Typography>
             {renderMenuItems()}
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}> {/* Reduced from mt: 1.5 */}
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 0.5 }}>
               <Button 
                 sx={{
                   background: '#fff',
                   color: '#C4362A',
                   fontWeight: 700,
-                  fontSize: { xs: 16, sm: 18 },
+                  fontSize: { xs: 13, sm: 14 },
                   borderRadius: 6,
-                  px: { xs: 3, sm: 4 },
-                  py: 0.5, // Reduced from 1
+                  px: { xs: 1.5, sm: 2 },
+                  py: 0.5,
                   boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
                   border: '1.5px solid #e0e0e0',
+                  transition: 'all 0.3s ease',
                   '&:hover': {
                     background: '#f5f5f5',
                     color: '#C4362A',
+                    transform: 'scale(1.05)'
                   },
                 }}
                 onClick={() => {
@@ -2239,40 +2252,49 @@ const MenuDetails = () => {
             background: 'linear-gradient(180deg, #ffe0d3 0%, #fbeee6 100%)', 
             borderRadius: 3, 
             boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
-            p: 1, // Reduced from 1.5
-            width: { xs: '100%', md: '50%' },
-            minWidth: { xs: 'auto', md: 300 },
-            maxWidth: { xs: '100%', md: 400 },
-            flex: 1
+            p: 1,
+            width: { xs: '100%', md: '42%' }, // Decreased from 45%
+            minWidth: { xs: 'auto', md: 350 }, // Decreased from 400
+            maxWidth: { xs: '100%', md: 450 }, // Decreased from 500
+            flex: 1,
+            height: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            transition: 'transform 0.3s ease-in-out',
+            '&:hover': {
+              transform: 'translateY(-5px)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.12)'
+            }
           }}>
             <Typography variant="h5" sx={{ 
               textAlign: 'center', 
-              mb: 1, // Reduced from 1.5
+              mb: 1,
               fontWeight: 600,
-              color: '#222'
+              color: '#222',
+              fontSize: { xs: '1.2rem', md: '1.4rem' }
             }}>
               VEG MEAL
             </Typography>
             <Typography variant="h6" sx={{ 
               textAlign: 'center', 
-              mb: 1, // Reduced from 1.5
+              mb: 1,
               fontWeight: 500,
               color: '#666',
-              fontSize: 16
+              fontSize: { xs: '0.9rem', md: '1rem' }
             }}>
               Choose your Weekly Menu
             </Typography>
             {renderMenuItems()}
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}> {/* Reduced from mt: 1.5 */}
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
               <Button 
                 sx={{
                   background: '#fff',
                   color: '#C4362A',
                   fontWeight: 700,
-                  fontSize: { xs: 16, sm: 18 },
+                  fontSize: { xs: 14, sm: 16 },
                   borderRadius: 6,
-                  px: { xs: 3, sm: 4 },
-                  py: 0.5, // Reduced from 1
+                  px: { xs: 2, sm: 3 },
+                  py: 0.5,
                   boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
                   border: '1.5px solid #e0e0e0',
                   '&:hover': {
