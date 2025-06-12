@@ -1655,13 +1655,13 @@ const MenuDetails = () => {
         mt: 2,
         width: '100%'
       }}>
-        <Button 
-          variant="outlined" 
+      <Button
+        variant="outlined"
           onClick={() => setAddressModalOpen(true)}
-          startIcon={<AddLocationAltIcon />}
-          sx={{ 
-            borderColor: '#C4362A', 
-            color: '#C4362A', 
+        startIcon={<AddLocationAltIcon />}
+        sx={{
+          borderColor: '#C4362A',
+          color: '#C4362A',
             fontWeight: 600, 
             fontSize: 14,
             borderRadius: 2,
@@ -1670,14 +1670,14 @@ const MenuDetails = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            '&:hover': { 
-              borderColor: '#C4362A', 
-              background: '#fff3f0' 
-            } 
-          }}
-        >
+          '&:hover': {
+            borderColor: '#C4362A',
+            background: '#fff3f0'
+          }
+        }}
+      >
           Add new Address
-        </Button>
+      </Button>
       </Box>
     </Box>
   );
@@ -1819,9 +1819,9 @@ const MenuDetails = () => {
               display: 'flex',
               alignItems: 'center',
               px: 2,
-              py: 2,
+              py: 1.5, // Reduced from 2
               mb: 0,
-              minHeight: 80,
+              minHeight: 70, // Reduced from 80
               justifyContent: 'space-between',
               width: { xs: '100%', sm: '90%', md: '80%' },
               mx: 'auto',
@@ -1831,9 +1831,6 @@ const MenuDetails = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', mr: 2 }}>
                 <FiberManualRecordIcon sx={{ color: '#1dbf73', fontSize: 24, mb: 0.5 }} />
-                <Typography sx={{ fontSize: 11, color: '#888', fontWeight: 600, mb: 0.5, mt: 0.5 }}>
-                  MENU 1
-                </Typography>
               </Box>
               <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                 <Typography sx={{ fontWeight: 700, fontSize: 18, color: '#222', mb: 0.5 }}>
@@ -1911,7 +1908,7 @@ const MenuDetails = () => {
   return (
     <>
       <Header />
-      <Box sx={{ background: '#fff', minHeight: '100vh', pb: 6, mt: 4 }}>
+      <Box sx={{ background: '#fff', minHeight: '100vh', pb: 6, mt: 1 }}> {/* Reduced from mt: 2 */}
         {/* Top Vendor Info */}
         <Box sx={{ 
           display: 'flex', 
@@ -1920,7 +1917,7 @@ const MenuDetails = () => {
           alignItems: { xs: 'center', md: 'flex-start' }, 
           maxWidth: 1200, 
           mx: 'auto', 
-          mt: { xs: 10, sm: 12, md: 14 }, 
+          mt: { xs: 4, sm: 6, md: 8 }, // Reduced from { xs: 6, sm: 8, md: 10 }
           px: { xs: 2, sm: 3, md: 4 },
           gap: { xs: 3, md: 0 }
         }}>
@@ -1958,10 +1955,10 @@ const MenuDetails = () => {
                 <Chip 
                   label="Veg" 
                   size="small" 
-                  sx={{ 
+              sx={{
                     background: '#e8f5e9', 
                     color: '#2e7d32', 
-                    fontWeight: 600, 
+                fontWeight: 600,
                     fontSize: 13,
                     height: 32,
                     '& .MuiChip-label': { px: 2 }
@@ -1970,7 +1967,7 @@ const MenuDetails = () => {
                 <Chip 
                   label="Non-veg" 
                   size="small" 
-                  sx={{ 
+                sx={{
                     background: '#ffebee', 
                     color: '#c62828', 
                     fontWeight: 600, 
@@ -1984,7 +1981,7 @@ const MenuDetails = () => {
               <Typography sx={{ fontSize: 15 }}>Open {caterer.openingTime} - {caterer.closingTime}</Typography>
             </Box>
           </Box>
-
+          
           {/* Right: Address and Cart Sections */}
           <Box sx={{ 
             display: 'flex', 
@@ -2108,12 +2105,12 @@ const MenuDetails = () => {
               )}
             </Box>
           </Box>
-        </Box>
-
+            </Box>
+            
         {/* Meal Type Selection - Below Cart Section */}
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: 'column',
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
           alignItems: 'center',
           gap: 2,
           mt: 8, // Increased from 4 to 8
@@ -2161,29 +2158,6 @@ const MenuDetails = () => {
             flexWrap: 'wrap',
             width: '100%'
           }}>
-            {['COMMON MEAL', 'VEG MEAL'].map((mealType, idx) => (
-              <Button
-                key={mealType}
-                variant={activeTab === idx + 2 ? 'contained' : 'outlined'}
-                sx={{
-                  borderRadius: 2,
-                  minWidth: { xs: 'calc(50% - 8px)', sm: 120 },
-                  fontWeight: 600,
-                  fontSize: { xs: 14, sm: 16 },
-                  background: idx === 0 ? '#e9b7b2' : '#fff', // COMMON MEAL selected by default
-                  color: idx === 0 ? '#C4362A' : '#333', // COMMON MEAL selected by default
-                  borderColor: '#e9b7b2',
-                  boxShadow: idx === 0 ? '0 2px 8px rgba(196,54,42,0.08)' : 'none', // COMMON MEAL selected by default
-                  '&:hover': {
-                    background: '#f5e0de',
-                    color: '#C4362A',
-                  },
-                }}
-                onClick={() => setActiveTab(idx + 2)}
-              >
-                {mealType}
-              </Button>
-            ))}
           </Box>
         </Box>
 
@@ -2193,7 +2167,7 @@ const MenuDetails = () => {
           flexDirection: { xs: 'column', md: 'row' },
           justifyContent: 'center', 
           gap: 4,
-          mt: 5, 
+          mt: 3, // Reduced from 5
           maxWidth: 1200, 
           mx: 'auto',
           px: { xs: 2, sm: 3, md: 4 }
@@ -2203,7 +2177,7 @@ const MenuDetails = () => {
             background: 'linear-gradient(180deg, #ffe0d3 0%, #fbeee6 100%)', 
             borderRadius: 3, 
             boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
-            p: 2, 
+            p: 1, // Reduced from 1.5
             width: { xs: '100%', md: '50%' },
             minWidth: { xs: 'auto', md: 300 },
             maxWidth: { xs: '100%', md: 400 },
@@ -2211,14 +2185,23 @@ const MenuDetails = () => {
           }}>
             <Typography variant="h5" sx={{ 
               textAlign: 'center', 
-              mb: 3, 
+              mb: 1, // Reduced from 1.5
               fontWeight: 600,
               color: '#222'
             }}>
-              Choose your weekly menu
+              REGULAR MEAL
+            </Typography>
+            <Typography variant="h6" sx={{ 
+              textAlign: 'center', 
+              mb: 1, // Reduced from 1.5
+              fontWeight: 500,
+              color: '#666',
+              fontSize: 16
+            }}>
+              Choose your Weekly Menu
             </Typography>
             {renderMenuItems()}
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}> {/* Reduced from mt: 1.5 */}
               <Button 
                 sx={{
                   background: '#fff',
@@ -2227,7 +2210,7 @@ const MenuDetails = () => {
                   fontSize: { xs: 16, sm: 18 },
                   borderRadius: 6,
                   px: { xs: 3, sm: 4 },
-                  py: 1,
+                  py: 0.5, // Reduced from 1
                   boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
                   border: '1.5px solid #e0e0e0',
                   '&:hover': {
@@ -2256,7 +2239,7 @@ const MenuDetails = () => {
             background: 'linear-gradient(180deg, #ffe0d3 0%, #fbeee6 100%)', 
             borderRadius: 3, 
             boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
-            p: 2, 
+            p: 1, // Reduced from 1.5
             width: { xs: '100%', md: '50%' },
             minWidth: { xs: 'auto', md: 300 },
             maxWidth: { xs: '100%', md: 400 },
@@ -2264,14 +2247,23 @@ const MenuDetails = () => {
           }}>
             <Typography variant="h5" sx={{ 
               textAlign: 'center', 
-              mb: 3, 
+              mb: 1, // Reduced from 1.5
               fontWeight: 600,
               color: '#222'
             }}>
-              Choose your weekly menu
+              VEG MEAL
+            </Typography>
+            <Typography variant="h6" sx={{ 
+              textAlign: 'center', 
+              mb: 1, // Reduced from 1.5
+              fontWeight: 500,
+              color: '#666',
+              fontSize: 16
+            }}>
+              Choose your Weekly Menu
             </Typography>
             {renderMenuItems()}
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}> {/* Reduced from mt: 1.5 */}
               <Button 
                 sx={{
                   background: '#fff',
@@ -2280,7 +2272,7 @@ const MenuDetails = () => {
                   fontSize: { xs: 16, sm: 18 },
                   borderRadius: 6,
                   px: { xs: 3, sm: 4 },
-                  py: 1,
+                  py: 0.5, // Reduced from 1
                   boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
                   border: '1.5px solid #e0e0e0',
                   '&:hover': {
