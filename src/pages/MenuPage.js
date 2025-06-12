@@ -9,7 +9,7 @@ const PageContainer = styled(Box)({
   minHeight: 'calc(100vh - 90px)',
   display: 'flex',
   flexDirection: 'column',
-  marginTop: '120px',
+  marginTop: '-10px',
   paddingBottom: '40px',
   background: '#fff',
 });
@@ -19,16 +19,17 @@ const Banner = styled(Box)({
   minHeight: '190px',
   background: 'linear-gradient(90deg, #C4362A 0%, #ff5e62 60%, #ff9966 100%)',
   borderRadius: '16px',
-  marginBottom: '36px',
+  marginBottom: '24px',
   boxShadow: '0 4px 16px rgba(196,54,42,0.10)',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: '40px 16px 32px 16px',
+  padding: '24px 16px 20px 16px',
   position: 'relative',
   textAlign: 'center',
   overflow: 'hidden',
+  marginTop: '8px',
 });
 
 const FoodEmojis = styled('div')({

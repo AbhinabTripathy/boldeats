@@ -56,21 +56,25 @@ const SocialIcon = styled(Box)(({ theme }) => ({
 }));
 
 const HeroRoot = styled(Box)(({ theme }) => ({
-  minHeight: '100vh',
+  minHeight: 'calc(100vh - 80px)',
   display: 'flex',
   alignItems: 'stretch',
   background: 'radial-gradient(circle at 80% 10%, #fbeaea 40%, #fff6f6 100%)',
-  marginTop: theme.spacing(16),
-  paddingBottom: theme.spacing(2),
+  marginTop: theme.spacing(12),
+  paddingTop: theme.spacing(7),
+  paddingBottom: theme.spacing(4),
   [theme.breakpoints.down('md')]: {
     flexDirection: 'column',
-    minHeight: 'auto',
-    marginTop: theme.spacing(10),
-    paddingBottom: theme.spacing(1),
+    minHeight: 'calc(100vh - 60px)',
+    marginTop: theme.spacing(9),
+    paddingTop: theme.spacing(5),
+    paddingBottom: theme.spacing(3),
   },
   [theme.breakpoints.down('sm')]: {
-    marginTop: theme.spacing(8),
-    paddingBottom: 0,
+    minHeight: 'calc(100vh - 50px)',
+    marginTop: theme.spacing(7),
+    paddingTop: theme.spacing(4),
+    paddingBottom: theme.spacing(2),
   },
   position: 'relative',
   overflow: 'hidden',
@@ -182,7 +186,7 @@ const HeroSection = () => {
   );
 
   return (
-    <HeroRoot sx={{ justifyContent: 'center', alignItems: 'center', position: 'relative', background: 'radial-gradient(circle at 80% 10%, #fbeaea 40%, #fff6f6 100%)', overflow: 'hidden' }}>
+    <HeroRoot>
       {activeIndex === 0 ? (
         <Box sx={{ 
           width: '100%', 
@@ -190,7 +194,7 @@ const HeroSection = () => {
           flexDirection: { xs: 'column', md: 'row' }, 
           alignItems: { xs: 'center', md: 'flex-start' }, 
           justifyContent: 'space-between', 
-          minHeight: { xs: 'auto', md: 600 }, 
+          minHeight: { xs: 'auto', md: 700 }, 
           position: 'relative', 
           px: { xs: 2, sm: 4, md: 8 }, 
           pt: { xs: 4, sm: 6, md: 8 },
@@ -337,7 +341,7 @@ const HeroSection = () => {
           flexDirection: { xs: 'column', md: 'row' }, 
           alignItems: { xs: 'center', md: 'flex-start' }, 
           justifyContent: 'space-between', 
-          minHeight: { xs: 'auto', md: 450 }, 
+          minHeight: { xs: 'auto', md: 600 }, 
           position: 'relative', 
           px: { xs: 2, sm: 4, md: 8 }, 
           pt: { xs: 4, sm: 6, md: 8 },
@@ -458,7 +462,7 @@ const HeroSection = () => {
           flexDirection: { xs: 'column', md: 'row' }, 
           alignItems: 'center', 
           justifyContent: 'space-between', 
-          minHeight: { xs: 'auto', md: 450 }, 
+          minHeight: { xs: 'auto', md: 600 }, 
           position: 'relative', 
           px: { xs: 2, sm: 4, md: 8 }, 
           pt: { xs: 4, sm: 6, md: 8 },

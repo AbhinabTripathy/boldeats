@@ -740,28 +740,27 @@ const Header = () => {
     
     // Validate input
     if (!name || !email || !phone || !registerPassword) {
-      // Show error message
-      console.error('All fields are required');
+      alert('All fields are required');
       return;
     }
     
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      console.error('Please enter a valid email address');
+      alert('Please enter a valid email address');
       return;
     }
     
     // Phone validation - only numbers
     const phoneRegex = /^\d+$/;
     if (!phoneRegex.test(phone)) {
-      console.error('Phone number should contain only digits');
+      alert('Phone number should contain only digits');
       return;
     }
     
     // Password length check
     if (registerPassword.length < 6) {
-      console.error('Password must be at least 6 characters long');
+      alert('Password must be at least 6 characters long');
       return;
     }
     
@@ -788,20 +787,22 @@ const Header = () => {
       console.log('Registration response:', response.data);
       
       if (response.data) {
-        // Store user data in localStorage with consistent formatting
+        // Store user data in localStorage
         if (response?.data?.data?.user) {
-          localStorage.setItem('userData', JSON.stringify(response?.data?.data?.user));
+          localStorage.setItem('userData', JSON.stringify(response.data.data.user));
         }
         
         // Store token if provided
         if (response?.data?.data?.token) {
-          localStorage.setItem('token', response?.data?.data?.token);
+          localStorage.setItem('token', response.data.data.token);
+          setHasToken(true);
         }
         
         setIsLoggedIn(true);
         localStorage.setItem('isLoggedIn', 'true');
         setWalletBalance(0); // Set initial wallet balance to 0 for new users
         
+        // Clear any existing data
         localStorage.removeItem('addresses');
         localStorage.removeItem('transactions');
         
