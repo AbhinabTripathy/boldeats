@@ -1765,13 +1765,28 @@ const MenuDetails = () => {
               py: 1,
               px: 3,
               borderRadius: 2,
+              position: 'relative',
               background: activeTab === index ? '#C4362A' : 'transparent',
               color: activeTab === index ? '#fff' : '#222',
               border: `1.5px solid ${activeTab === index ? '#C4362A' : '#e0e0e0'}`,
               fontWeight: 600,
+              overflow: 'visible',
               '&:hover': {
                 background: activeTab === index ? '#C4362A' : '#fff3f0',
                 borderColor: '#C4362A'
+              },
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                bottom: -4,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: activeTab === index ? '40%' : '0%',
+                height: '3px',
+                backgroundColor: '#C4362A',
+                borderRadius: '2px',
+                transition: 'width 0.3s ease',
+                zIndex: 1
               }
             }}
           >
@@ -1915,13 +1930,13 @@ const MenuDetails = () => {
         <Box sx={{ 
           display: 'flex', 
           flexDirection: { xs: 'column', md: 'row' },
-          justifyContent: 'space-between', 
+          justifyContent: 'flex-start', 
           alignItems: { xs: 'center', md: 'flex-start' }, 
           maxWidth: 1200, 
           mx: 'auto', 
-          mt: { xs: 4, sm: 6, md: 8 }, // Reduced from { xs: 6, sm: 8, md: 10 }
+          mt: { xs: 4, sm: 6, md: 8 },
           px: { xs: 2, sm: 3, md: 4 },
-          gap: { xs: 3, md: 0 }
+          gap: { xs: 3, md: 4 }
         }}>
           {/* Left: Image & Info */}
           <Box sx={{ 
@@ -1929,58 +1944,67 @@ const MenuDetails = () => {
             flexDirection: { xs: 'column', sm: 'row' },
             gap: 3,
             alignItems: { xs: 'center', sm: 'flex-start' },
-            textAlign: { xs: 'center', sm: 'left' }
+            textAlign: { xs: 'center', sm: 'left' },
+            flex: 1,
+            mr: { md: 8 }
           }}>
             <img 
               src={`https://api.boldeats.in/${caterer.logo}`} 
               alt={caterer.name} 
               style={{ 
-                width: { xs: '100%', sm: 180 },
-                height: { xs: 'auto', sm: 120 },
-                maxWidth: 180,
-                borderRadius: 12, 
-                objectFit: 'cover', 
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)' 
+                width: 220,
+                height: 150,
+                objectFit: 'contain'
               }} 
               onError={(e) => {
-                e.target.src = 'https://via.placeholder.com/180x120?text=No+Image';
+                e.target.src = 'https://via.placeholder.com/220x150?text=No+Image';
               }}
             />
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 600 }}>{caterer.name}</Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, justifyContent: { xs: 'center', sm: 'flex-start' } }}>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography variant="h5" sx={{ 
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}>
+                {caterer.name}
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
                 {[...Array(caterer.rating || 5)].map((_, i) => (
                   <span key={i} style={{ color: '#FFD600', fontSize: 18 }}>★</span>
                 ))}
               </Box>
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}>
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1, flexWrap: 'wrap' }}>
                 <Chip 
                   label="Veg" 
                   size="small" 
-              sx={{
+                  sx={{
                     background: '#e8f5e9', 
                     color: '#2e7d32', 
-                fontWeight: 600,
-                    fontSize: 13,
-                    height: 32,
-                    '& .MuiChip-label': { px: 2 }
-                  }} 
+                    fontWeight: 600,
+                    fontSize: 13
+                  }}
                 />
                 <Chip 
                   label="Non-veg" 
                   size="small" 
-                sx={{
+                  sx={{
                     background: '#ffebee', 
                     color: '#c62828', 
-                    fontWeight: 600, 
-                    fontSize: 13,
-                    height: 32,
-                    '& .MuiChip-label': { px: 2 }
-                  }} 
+                    fontWeight: 600,
+                    fontSize: 13
+                  }}
                 />
               </Box>
-              <Typography sx={{ mt: 1, fontSize: 15 }}>{caterer.yearsInBusiness} years in business · {caterer.address}</Typography>
-              <Typography sx={{ fontSize: 15 }}>Open {caterer.openingTime} - {caterer.closingTime}</Typography>
+              <Typography sx={{ fontSize: 14, color: '#666', mb: 0.5 }}>
+                {caterer.yearsInBusiness} years in business
+              </Typography>
+              <Typography sx={{ fontSize: 14, color: '#666', mb: 0.5 }}>
+                {caterer.address}
+              </Typography>
+              <Typography sx={{ fontSize: 14, color: '#666' }}>
+                Open {caterer.openingTime} - {caterer.closingTime}
+              </Typography>
             </Box>
           </Box>
           
@@ -2167,22 +2191,22 @@ const MenuDetails = () => {
         <Box sx={{ 
           display: 'flex', 
           flexDirection: { xs: 'column', md: 'row' },
-          justifyContent: 'center', 
+          justifyContent: 'space-evenly', 
           gap: 2,
           mt: 2,
           maxWidth: 1400,
           mx: 'auto',
           px: { xs: 2, sm: 3, md: 4 }
         }}>
-          {/* First Menu Card */}
+          {/* First Menu Card - REGULAR MEAL */}
           <Box sx={{ 
             background: 'linear-gradient(180deg, #ffe0d3 0%, #fbeee6 100%)', 
             borderRadius: 3, 
             boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
             p: 1,
-            width: { xs: '100%', md: '48%' },
-            minWidth: { xs: 'auto', md: 450 },
-            maxWidth: { xs: '100%', md: 550 },
+            width: { xs: '100%', md: '36%' },
+            minWidth: { xs: 'auto', md: 280 },
+            maxWidth: { xs: '100%', md: 370 },
             flex: 1,
             height: 'auto',
             display: 'flex',
@@ -2247,15 +2271,15 @@ const MenuDetails = () => {
             </Box>
           </Box>
 
-          {/* Second Menu Card */}
+          {/* Second Menu Card - VEG MEAL */}
           <Box sx={{ 
             background: 'linear-gradient(180deg, #ffe0d3 0%, #fbeee6 100%)', 
             borderRadius: 3, 
             boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
             p: 1,
-            width: { xs: '100%', md: '42%' }, // Decreased from 45%
-            minWidth: { xs: 'auto', md: 350 }, // Decreased from 400
-            maxWidth: { xs: '100%', md: 450 }, // Decreased from 500
+            width: { xs: '100%', md: '36%' },
+            minWidth: { xs: 'auto', md: 280 },
+            maxWidth: { xs: '100%', md: 370 },
             flex: 1,
             height: 'auto',
             display: 'flex',
