@@ -28,6 +28,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import StarIcon from '@mui/icons-material/Star';
 // import { caterers } from './MenuPage';
 import phonepe from "../assets/phonepe.png";
 import gpay from "../assets/gpay.png";
@@ -45,6 +46,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import TextField from '@mui/material/TextField';
 import CircularProgress from '@mui/material/CircularProgress';
 import axios from 'axios';
+import Modal from '@mui/material/Modal';
 
 const WaveHeader = styled(Box)({
   width: '100vw',
@@ -728,7 +730,7 @@ function PaymentModal({ open, onClose, price }) {
   );
 }
 
-function SubscriptionModal({ open, onClose, onAdd, caterer }) {
+function SubscriptionModal({ open, onClose, onAdd, caterer, cartItems, setCartItems }) {
   const [quantities, setQuantities] = useState({ 15: 0, 30: 0 });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -802,12 +804,26 @@ function SubscriptionModal({ open, onClose, onAdd, caterer }) {
       // Update local cart state
       plans.forEach(plan => {
         if (quantities[plan.days] > 0) {
-          onAdd({
-            days: plan.days,
-            price: plan.price,
-            quantity: quantities[plan.days],
-            planType: plan.planType
-          });
+          // Check if this plan type already exists in cart
+          const existingItemIndex = cartItems.findIndex(item => item.days === plan.days);
+          
+          if (existingItemIndex >= 0) {
+            // Update existing item quantity
+            const updatedItems = [...cartItems];
+            updatedItems[existingItemIndex] = {
+              ...updatedItems[existingItemIndex],
+              quantity: updatedItems[existingItemIndex].quantity + quantities[plan.days]
+            };
+            setCartItems(updatedItems);
+          } else {
+            // Add new item
+            onAdd({
+              days: plan.days,
+              price: plan.price,
+              quantity: quantities[plan.days],
+              planType: plan.planType
+            });
+          }
         }
       });
 
@@ -979,6 +995,7 @@ function AddressModal({ open, onClose, onAddAddress, editAddress, isEditing }) {
   const [pincode, setPincode] = useState('');
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
+  const [isDefault, setIsDefault] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -990,12 +1007,14 @@ function AddressModal({ open, onClose, onAddAddress, editAddress, isEditing }) {
       setPincode(editAddress.pincode || '');
       setCity(editAddress.city || '');
       setState(editAddress.state || '');
+      setIsDefault(editAddress.isDefault || false);
     } else {
       setAddress1('');
       setAddress2('');
       setPincode('');
       setCity('');
       setState('');
+      setIsDefault(false);
     }
   }, [open, editAddress, isEditing]);
 
@@ -1050,6 +1069,8 @@ function AddressModal({ open, onClose, onAddAddress, editAddress, isEditing }) {
           state: state
         };
 
+        const fullAddress = `${address1.trim()}${address2.trim() ? `, ${address2.trim()}` : ''}, ${city}, ${state} - ${pincode}`;
+
         console.log('Sending address data:', addressData);
         
         if (isEditing && editAddress) {
@@ -1061,6 +1082,27 @@ function AddressModal({ open, onClose, onAddAddress, editAddress, isEditing }) {
             }
           });
           console.log('Address updated successfully:', response.data);
+
+          // Handle default address setting
+          try {
+            const defaultResponse = await axios.patch(
+              `https://api.boldeats.in/api/addresses/${editAddress.id}/default`,
+              { isDefault: isDefault },
+              {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+                }
+              }
+            );
+            console.log('Default status updated:', defaultResponse.data);
+
+            // Update local state immediately
+            onAddAddress(fullAddress, editAddress.id);
+          } catch (defaultErr) {
+            console.error('Error updating default status:', defaultErr);
+          }
         } else {
           // Add new address
           const response = await axios.post('https://api.boldeats.in/api/addresses', addressData, {
@@ -1070,10 +1112,30 @@ function AddressModal({ open, onClose, onAddAddress, editAddress, isEditing }) {
             }
           });
           console.log('Address added successfully:', response.data);
-        }
 
-        const fullAddress = `${address1.trim()}${address2.trim() ? `, ${address2.trim()}` : ''}, ${city}, ${state} - ${pincode}`;
-        onAddAddress(fullAddress, isEditing ? editAddress.id : null);
+          // Handle default address setting for new address
+          if (isDefault && response.data.data.id) {
+            try {
+              await axios.patch(
+                `https://api.boldeats.in/api/addresses/${response.data.data.id}/default`,
+                { isDefault: true },
+                {
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                  }
+                }
+              );
+              console.log('New address set as default successfully');
+            } catch (defaultErr) {
+              console.error('Error setting new address as default:', defaultErr);
+            }
+          }
+
+          // Update local state immediately
+          onAddAddress(fullAddress);
+        }
         
         // Reset form
         setAddress1('');
@@ -1081,6 +1143,7 @@ function AddressModal({ open, onClose, onAddAddress, editAddress, isEditing }) {
         setPincode('');
         setCity('');
         setState('');
+        setIsDefault(false);
         setError('');
         onClose();
       } catch (err) {
@@ -1189,6 +1252,43 @@ function AddressModal({ open, onClose, onAddAddress, editAddress, isEditing }) {
               }}
             />
           </Box>
+
+          {/* Add Default Address Selection */}
+          <Box sx={{ mt: 2 }}>
+            <Typography sx={{ mb: 1, fontWeight: 500 }}>Set as Default Address</Typography>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button
+                variant={isDefault ? "contained" : "outlined"}
+                onClick={() => setIsDefault(true)}
+                sx={{
+                  flex: 1,
+                  borderColor: isDefault ? '#C4362A' : 'grey.300',
+                  color: isDefault ? 'white' : '#C4362A',
+                  '&:hover': {
+                    borderColor: '#C4362A',
+                    backgroundColor: isDefault ? '#C4362A' : 'transparent'
+                  }
+                }}
+              >
+                Yes
+              </Button>
+              <Button
+                variant={!isDefault ? "contained" : "outlined"}
+                onClick={() => setIsDefault(false)}
+                sx={{
+                  flex: 1,
+                  borderColor: !isDefault ? '#C4362A' : 'grey.300',
+                  color: !isDefault ? 'white' : '#C4362A',
+                  '&:hover': {
+                    borderColor: '#C4362A',
+                    backgroundColor: !isDefault ? '#C4362A' : 'transparent'
+                  }
+                }}
+              >
+                No
+              </Button>
+            </Box>
+          </Box>
         </Box>
       </DialogContent>
       <DialogActions sx={{ p: 2, pt: 0 }}>
@@ -1231,54 +1331,73 @@ const MenuDetails = () => {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [addressModalOpen, setAddressModalOpen] = useState(false);
   const [loadingAddresses, setLoadingAddresses] = useState(false);
+  const [loadingCart, setLoadingCart] = useState(false);
   const [editAddress, setEditAddress] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [menuItems, setMenuItems] = useState([]);
-  const [loadingMenu, setLoadingMenu] = useState(false);
+  const [menuItems, setMenuItems] = useState({
+    breakfast: [],
+    lunch: [],
+    dinner: []
+  });
+  const [loadingMenu, setLoadingMenu] = useState({
+    breakfast: false,
+    lunch: false,
+    dinner: false
+  });
   const [availableMealTypes, setAvailableMealTypes] = useState([]);
 
-  // Function to fetch menu items and vendor details by day of week
-  const fetchMenuItems = async () => {
-    setLoadingMenu(true);
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`https://api.boldeats.in/api/users/vendors/${caterer.id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.data && response.data.data) {
-        setMenuItems(response.data.data.menuItems || []);
-        
-        // Extract and set available meal types
-        const mealTypes = response.data.data.mealTypes || [];
-        const formattedMealTypes = mealTypes.map(type => ({
-          key: type.toLowerCase(),
-          label: type.charAt(0).toUpperCase() + type.slice(1).toLowerCase()
-        }));
-        setAvailableMealTypes(formattedMealTypes);
-        
-        // Set active tab to first available meal type
-        if (formattedMealTypes.length > 0) {
-          setActiveTab(0);
-        }
-      }
-    } catch (err) {
-      console.error('Error fetching menu items:', err);
-    } finally {
-      setLoadingMenu(false);
-    }
-  };
-
-  // Fetch menu items when component mounts or caterer changes
+  // Add useEffect for fetching cart data
   useEffect(() => {
-    if (caterer && caterer.id) {
-      fetchMenuItems();
-    }
-  }, [caterer]);
+    const fetchCartData = async () => {
+      setLoadingCart(true);
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.log('No token found, skipping cart fetch');
+          return;
+        }
 
-  const handleSetDefaultAddress = async (addressId) => {
+        const response = await axios.get('https://api.boldeats.in/api/cart', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+
+        console.log('Cart data response:', response.data);
+
+        if (response.data && response.data.data) {
+          // Transform cart data to match our cart items format
+          const transformedCartItems = response.data.data.map(item => ({
+            id: item.id,
+            days: item.planType === '30days' ? 30 : 15,
+            price: parseFloat(item.pricePerUnit),
+            quantity: parseInt(item.quantity),
+            planType: item.planType
+          }));
+
+          setCartItems(transformedCartItems);
+          
+          // Update total cart quantity
+          const totalQty = transformedCartItems.reduce((sum, item) => sum + item.quantity, 0);
+          setCartQty(totalQty);
+        }
+      } catch (err) {
+        console.error('Error fetching cart data:', err.response?.data || err.message);
+      } finally {
+        setLoadingCart(false);
+      }
+    };
+
+    fetchCartData();
+  }, []); // Empty dependency array means this runs once when component mounts
+
+  // Calculate total price
+  const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  // Add handleDeleteCartItem function
+  const handleDeleteCartItem = async (itemId) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -1286,114 +1405,31 @@ const MenuDetails = () => {
         return;
       }
 
-      console.log('Setting default address with ID:', addressId);
-      
-      const response = await axios({
-        method: 'patch',
-        url: `https://api.boldeats.in/api/addresses/${addressId}/default`,
+      console.log('Deleting cart item with ID:', itemId);
+
+      const response = await axios.delete(`https://api.boldeats.in/api/cart/${itemId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         }
       });
-      
-      if (response.data) {
-        console.log('Default address set successfully:', response.data);
-        
-        // Update local state to reflect the new default address
-        setAddresses(prevAddresses => 
-          prevAddresses.map(addr => ({
-            ...addr,
-            isDefault: addr.id === addressId
-          }))
-        );
 
-        // Update selected address
-        const updatedAddress = addresses.find(addr => addr.id === addressId);
-        if (updatedAddress) {
-          setSelectedAddress(updatedAddress.fullAddress);
-        }
+      if (response.data) {
+        console.log('Cart item deleted successfully:', response.data);
+        
+        // Update local cart state by removing the deleted item
+        setCartItems(prevItems => prevItems.filter(item => item.id !== itemId));
+        
+        // Update total cart quantity
+        setCartQty(prevQty => prevQty - 1);
       }
     } catch (err) {
-      console.error('Error setting default address:', err.response?.data || err.message);
+      console.error('Error deleting cart item:', err.response?.data || err.message);
     }
   };
 
-  // Update the address selection handler
-  const handleAddressSelect = (address) => {
-    setSelectedAddress(address.fullAddress);
-    handleSetDefaultAddress(address.id);
-  };
-
-  useEffect(() => {
-    const fetchAddresses = async () => {
-      setLoadingAddresses(true);
-      try {
-        const token = localStorage.getItem('token');
-        console.log('Fetching addresses with token:', token);
-        
-        const response = await axios.get('https://api.boldeats.in/api/addresses', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        console.log('Fetched addresses:', response.data);
-        
-        if (response.data && response.data.data) {
-          // Transform the addresses to the format we need
-          const formattedAddresses = response.data.data.map(address => 
-            ({ 
-              ...address, 
-              fullAddress: `${address.addressLine1}${address.addressLine2 ? `, ${address.addressLine2}` : ''}, ${address.city}, ${address.state} - ${address.pincode}`,
-              isDefault: address.isDefault || false
-            })
-          );
-          console.log('Formatted addresses:', formattedAddresses);
-          setAddresses(formattedAddresses);
-          
-          // Select the default address if available, otherwise the first address
-          const defaultAddress = formattedAddresses.find(addr => addr.isDefault) || formattedAddresses[0];
-          if (defaultAddress) {
-            setSelectedAddress(defaultAddress.fullAddress);
-          }
-        }
-      } catch (err) {
-        console.error('Error fetching addresses:', err.response?.data || err.message);
-      } finally {
-        setLoadingAddresses(false);
-      }
-    };
-
-    fetchAddresses();
-  }, []);
-
-  // Move useEffect before any conditional returns
-  useEffect(() => {
-    if (addresses.length > 0 && !selectedAddress) {
-      setSelectedAddress(addresses[0].fullAddress);
-    }
-  }, [addresses]);
-
-  if (!caterer) {
-    return (
-      <Box sx={{ p: 4, textAlign: 'center' }}>
-        <Typography variant="h5" color="error">No caterer data found.</Typography>
-        <Typography sx={{ mt: 2 }}>
-          <span style={{ color: '#1976d2', cursor: 'pointer' }} onClick={() => navigate(-1)}>Go Back</span>
-        </Typography>
-      </Box>
-    );
-  }
-
-  // Determine which menu to show based on activeTab
-  let menu = [];
-  if (activeTab === 0 && caterer.lunchMenu) menu = caterer.lunchMenu;
-  if (activeTab === 1 && caterer.dinnerMenu) menu = caterer.dinnerMenu;
-  if (activeTab === 2 && caterer.breakfastMenu) menu = caterer.breakfastMenu;
-
-  // Update the cart items handling
+  // Add handleAddToCart function
   const handleAddToCart = (newItem) => {
     setCartItems(prev => {
       // Check if this subscription type already exists
@@ -1415,94 +1451,107 @@ const MenuDetails = () => {
     setCartQty(prev => prev + newItem.quantity);
   };
 
-  // Add function to update quantity in cart
-  const updateCartItemQuantity = (index, delta) => {
-    setCartItems(prev => {
-      const updatedItems = [...prev];
-      const newQuantity = Math.max(0, updatedItems[index].quantity + delta);
-      
-      if (newQuantity === 0) {
-        // Remove item if quantity becomes 0
-        updatedItems.splice(index, 1);
-      } else {
-        updatedItems[index] = {
-          ...updatedItems[index],
-          quantity: newQuantity
-        };
-      }
-      
-      // Update total cart quantity
-      const newTotalQty = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
-      setCartQty(newTotalQty);
-      
-      return updatedItems;
-    });
-  };
-
-  // Calculate total price
-  const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-  // Update the handleAddAddress function
+  // Add handleAddAddress function
   const handleAddAddress = (newAddress, addressId = null) => {
     if (addressId) {
       // Update existing address
       setAddresses(prev => prev.map(addr => 
-        addr.id === addressId ? { ...addr, fullAddress: newAddress } : addr
+        addr.id === addressId ? { 
+          ...addr, 
+          fullAddress: newAddress,
+          isDefault: editAddress?.isDefault || false 
+        } : {
+          ...addr,
+          isDefault: false // Set all other addresses to non-default
+        }
       ));
     } else {
       // Add new address
-      setAddresses(prev => [...prev, { id: Date.now(), fullAddress: newAddress }]);
+      setAddresses(prev => {
+        // If new address is default, set all others to non-default
+        if (editAddress?.isDefault) {
+          return prev.map(addr => ({
+            ...addr,
+            isDefault: false
+          })).concat([{ 
+            id: Date.now(), 
+            fullAddress: newAddress,
+            isDefault: true 
+          }]);
+        } else {
+          return [...prev, { 
+            id: Date.now(), 
+            fullAddress: newAddress,
+            isDefault: false 
+          }];
+        }
+      });
     }
   };
 
-  // Add handleEditAddress function
+  // Handler to edit address
   const handleEditAddress = (address) => {
-    setEditAddress(address);
+    setEditAddress({
+      ...address,
+      isDefault: address.isDefault || false
+    });
     setIsEditing(true);
     setAddressModalOpen(true);
   };
 
-  // Add handleDeleteAddress function
-  const handleDeleteAddress = async (index) => {
+  // Handler to delete address
+  const handleDeleteAddress = async (addressId) => {
     try {
-      const addressToDelete = addresses[index];
       const token = localStorage.getItem('token');
-      
-      if (!token) {
-        console.error('No token found');
-        return;
-      }
-
-      console.log('Deleting address:', addressToDelete);
-      
-      const response = await axios({
-        method: 'delete',
-        url: `https://api.boldeats.in/api/addresses/${addressToDelete.id}`,
+      if (!token) return;
+      await axios.delete(`https://api.boldeats.in/api/addresses/${addressId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         }
       });
-      
-      if (response.data) {
-        console.log('Address deleted successfully:', response.data);
-        
-        // Update local state by removing the deleted address
-        const updatedAddresses = addresses.filter((_, i) => i !== index);
-        setAddresses(updatedAddresses);
-        
-        // If the deleted address was selected, select the first available address
-        if (selectedAddress === addressToDelete.fullAddress) {
-          setSelectedAddress(updatedAddresses.length > 0 ? updatedAddresses[0].fullAddress : null);
-        }
-      }
+      setAddresses(prev => prev.filter(addr => addr.id !== addressId));
     } catch (err) {
       console.error('Error deleting address:', err.response?.data || err.message);
     }
   };
 
-  // Update the address section JSX
+  // Handler to set default address
+  const handleSetDefaultAddress = async (addressId) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      console.log('Setting default address for ID:', addressId);
+
+      // First, remove default status from all addresses
+      const response = await axios.patch(
+        `https://api.boldeats.in/api/addresses/${addressId}/default`,
+        { isDefault: true },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        }
+      );
+
+      if (response.data && response.data.success) {
+        // Update local state to reflect the change
+        setAddresses(prev => prev.map(addr => ({
+          ...addr,
+          isDefault: addr.id === addressId
+        })));
+        console.log('Default address updated successfully');
+      }
+    } catch (err) {
+      console.error('Error setting default address:', err.response?.data || err.message);
+    }
+  };
+
+  // Add addressSection component
   const addressSection = (
     <Box sx={{ 
       background: '#fff', 
@@ -1532,7 +1581,7 @@ const MenuDetails = () => {
         <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
           {addresses.map((address, index) => (
             <Box
-              key={index}
+              key={address.id}
               sx={{
                 border: '1.5px solid',
                 borderColor: selectedAddress === address.fullAddress ? '#C4362A' : '#e0e0e0',
@@ -1545,13 +1594,15 @@ const MenuDetails = () => {
                   borderColor: '#C4362A',
                   background: '#fff3f0'
                 },
-                position: 'relative'
+                position: 'relative',
+                mt: address.isDefault ? 2 : 0
               }}
+              onClick={() => setSelectedAddress(address.fullAddress)}
             >
               {address.isDefault && (
                 <Box sx={{
                   position: 'absolute',
-                  top: -10,
+                  top: -12,
                   left: 10,
                   background: '#4caf50',
                   color: '#fff',
@@ -1560,64 +1611,33 @@ const MenuDetails = () => {
                   borderRadius: 1,
                   fontSize: 12,
                   fontWeight: 600,
-                  zIndex: 1
+                  zIndex: 2,
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  border: '1px solid #fff'
                 }}>
-                  Default
+                  Default Address
                 </Box>
               )}
-              <Box 
-                onClick={() => handleAddressSelect(address)}
-                sx={{ 
-                  display: 'flex', 
-                  alignItems: 'flex-start', 
-                  gap: 1,
-                  pr: 8
-                }}
-              >
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, pr: 8, mt: address.isDefault ? 1 : 0 }}>
                 <LocationOnIcon sx={{ color: selectedAddress === address.fullAddress ? '#C4362A' : '#666', mt: 0.5, flexShrink: 0 }} />
-                <Typography sx={{ 
-                  fontSize: 14, 
-                  color: '#222',
-                  wordBreak: 'break-word',
-                  flex: 1
-                }}>
+                <Typography sx={{ fontSize: 14, color: '#222', wordBreak: 'break-word', flex: 1 }}>
                   {address.fullAddress}
                 </Typography>
               </Box>
-              
-              <Box sx={{ 
-                position: 'absolute', 
-                top: 8, 
-                right: 4,
-                display: 'flex', 
-                gap: 1
-              }}>
+              <Box sx={{ position: 'absolute', top: 8, right: 4, display: 'flex', gap: 1 }}>
                 <IconButton
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={e => { 
+                    e.stopPropagation(); 
                     handleEditAddress(address);
                   }}
-                  sx={{
-                    color: '#1976d2',
-                    '&:hover': {
-                      background: 'rgba(25, 118, 210, 0.1)'
-                    }
-                  }}
+                  sx={{ color: '#1976d2', '&:hover': { background: 'rgba(25, 118, 210, 0.1)' } }}
                   size="small"
                 >
                   <EditIcon fontSize="small" />
                 </IconButton>
                 <IconButton
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteAddress(index);
-                  }}
-                  sx={{
-                    color: '#C4362A',
-                    '&:hover': {
-                      background: 'rgba(196, 54, 42, 0.1)'
-                    }
-                  }}
+                  onClick={e => { e.stopPropagation(); handleDeleteAddress(address.id); }}
+                  sx={{ color: '#C4362A', '&:hover': { background: 'rgba(196, 54, 42, 0.1)' } }}
                   size="small"
                 >
                   <DeleteIcon fontSize="small" />
@@ -1627,7 +1647,6 @@ const MenuDetails = () => {
           ))}
         </Box>
       )}
-      
       <Button
         fullWidth
         variant="outlined"
@@ -1651,6 +1670,232 @@ const MenuDetails = () => {
       </Button>
     </Box>
   );
+
+  // Fetch menu items for each meal type
+  useEffect(() => {
+    const fetchMenuItems = async (mealType) => {
+      if (!caterer?.id) return;
+
+      setLoadingMenu(prev => ({ ...prev, [mealType]: true }));
+      try {
+        const response = await axios.get(
+          `https://api.boldeats.in/api/vendors/${caterer.id}/menu?mealType=${mealType}`
+        );
+
+        console.log(`${mealType} menu response:`, response.data);
+
+        if (response.data && response.data.success === 'true') {
+          const menuData = response.data.data.menu || [];
+          if (menuData.length > 0) {
+            setMenuItems(prev => ({
+              ...prev,
+              [mealType]: menuData
+            }));
+            
+            // Add this meal type to available types if it has items
+            setAvailableMealTypes(prev => {
+              const newTypes = prev.includes(mealType) ? prev : [...prev, mealType];
+              // Custom sort to ensure lunch comes first, then dinner
+              return newTypes.sort((a, b) => {
+                if (a === 'lunch') return -1;
+                if (b === 'lunch') return 1;
+                if (a === 'dinner') return -1;
+                if (b === 'dinner') return 1;
+                return a.localeCompare(b);
+              });
+            });
+          }
+        }
+      } catch (err) {
+        console.error(`Error fetching ${mealType} menu:`, err.response?.data || err.message);
+      } finally {
+        setLoadingMenu(prev => ({ ...prev, [mealType]: false }));
+      }
+    };
+
+    // Reset states when caterer changes
+    setMenuItems({
+      breakfast: [],
+      lunch: [],
+      dinner: []
+    });
+    setAvailableMealTypes([]);
+    setActiveTab(0);
+
+    // Fetch menu for all meal types
+    fetchMenuItems('breakfast');
+    fetchMenuItems('lunch');
+    fetchMenuItems('dinner');
+  }, [caterer]);
+
+  // Render tabs based on available meal types
+  const renderTabs = () => (
+    <>
+      <Typography variant="h5" sx={{ 
+        textAlign: 'center', 
+        mb: 3, 
+        fontWeight: 600,
+        color: '#222'
+      }}>
+        Choose your weekly menu
+      </Typography>
+      <Box sx={{ 
+        display: 'flex', 
+        gap: 2, 
+        justifyContent: 'center', 
+        mb: 4 
+      }}>
+        {availableMealTypes.map((mealType, index) => (
+          <Button
+            key={mealType}
+            onClick={() => setActiveTab(index)}
+            sx={{
+              minWidth: 120,
+              py: 1,
+              px: 3,
+              borderRadius: 2,
+              background: activeTab === index ? '#C4362A' : 'transparent',
+              color: activeTab === index ? '#fff' : '#222',
+              border: `1.5px solid ${activeTab === index ? '#C4362A' : '#e0e0e0'}`,
+              fontWeight: 600,
+              '&:hover': {
+                background: activeTab === index ? '#C4362A' : '#fff3f0',
+                borderColor: '#C4362A'
+              }
+            }}
+          >
+            {mealType.toUpperCase()}
+          </Button>
+        ))}
+      </Box>
+    </>
+  );
+
+  // Render menu items for active tab
+  const renderMenuItems = () => {
+    const activeMealType = availableMealTypes[activeTab];
+    const items = menuItems[activeMealType] || [];
+    const isLoading = loadingMenu[activeMealType];
+
+    if (isLoading) {
+      return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+          <CircularProgress size={40} sx={{ color: '#C4362A' }} />
+        </Box>
+      );
+    }
+
+    if (items.length === 0) {
+      return (
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+          <Typography sx={{ color: '#666', fontSize: 16 }}>
+            No menu items available for {activeMealType}
+          </Typography>
+        </Box>
+      );
+    }
+
+    return (
+      <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 3 }}>
+        {items.map((item, index) => (
+          <Box
+            key={index}
+            sx={{
+              background: '#fff',
+              borderRadius: 3,
+              border: '1.5px solid #e0e0e0',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+              display: 'flex',
+              alignItems: 'center',
+              px: 2,
+              py: 2,
+              mb: 0,
+              minHeight: 80,
+              justifyContent: 'space-between',
+              width: { xs: '100%', sm: '90%', md: '80%' },
+              mx: 'auto',
+            }}
+          >
+            {/* Left: Veg icon (green circle), MENU 1, Day, Description */}
+            <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', mr: 2 }}>
+                <FiberManualRecordIcon sx={{ color: '#1dbf73', fontSize: 24, mb: 0.5 }} />
+                <Typography sx={{ fontSize: 11, color: '#888', fontWeight: 600, mb: 0.5, mt: 0.5 }}>
+                  MENU 1
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                <Typography sx={{ fontWeight: 700, fontSize: 18, color: '#222', mb: 0.5 }}>
+                  {item.dayOfWeek}
+                </Typography>
+                {item.items && (
+                  <Typography sx={{ fontSize: 13, color: '#222', fontWeight: 500, letterSpacing: 0.15 }}>
+                    {item.items.join(' , ').toUpperCase()}
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+            {/* Right: Food Image */}
+            <Box sx={{ ml: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Avatar 
+                src={foodImg} // Replace with item.image if available
+                alt="food" 
+                sx={{ 
+                  width: 56, 
+                  height: 56, 
+                  borderRadius: '10px', 
+                  border: '1.5px solid #e0e0e0', 
+                  objectFit: 'cover',
+                  background: '#fff',
+                }} 
+              />
+            </Box>
+          </Box>
+        ))}
+      </Box>
+    );
+  };
+
+  // Fetch addresses using user token
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      setLoadingAddresses(true);
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.log('No token found, skipping address fetch');
+          setLoadingAddresses(false);
+          return;
+        }
+        const response = await axios.get('https://api.boldeats.in/api/addresses', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+        if (response.data && response.data.data) {
+          // Format addresses if needed
+          const formattedAddresses = response.data.data.map(address => ({
+            ...address,
+            fullAddress: `${address.addressLine1}${address.addressLine2 ? `, ${address.addressLine2}` : ''}, ${address.city}, ${address.state} - ${address.pincode}`,
+            isDefault: address.isDefault || false
+          }));
+          setAddresses(formattedAddresses);
+          // Select default address if available
+          const defaultAddress = formattedAddresses.find(addr => addr.isDefault) || formattedAddresses[0];
+          if (defaultAddress) {
+            setSelectedAddress(defaultAddress.fullAddress);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching addresses:', err.response?.data || err.message);
+      } finally {
+        setLoadingAddresses(false);
+      }
+    };
+    fetchAddresses();
+  }, []);
 
   return (
     <>
@@ -1778,67 +2023,8 @@ const MenuDetails = () => {
             maxWidth: { xs: '100%', lg: 400 },
             flex: 1
           }}>
-            <Typography sx={{ fontWeight: 600, fontSize: { xs: 20, sm: 22 }, mb: 3, textAlign: 'center', color: '#222' }}>
-              Choose your weekly menu
-            </Typography>
-            
-            {loadingMenu ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
-                <CircularProgress size={24} sx={{ color: '#C4362A' }} />
-              </Box>
-            ) : menuItems.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Typography sx={{ color: '#888', fontSize: 14 }}>No menu items available</Typography>
-              </Box>
-            ) : (
-              menuItems.map((item, idx) => (
-                <Box key={item.id} sx={{
-                  background: '#fff',
-                  borderRadius: 3,
-                  border: '1.5px solid #e0e0e0',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  px: 2,
-                  py: 1,
-                  mb: 2.5,
-                  minHeight: 60,
-                  justifyContent: 'space-between',
-                }}>
-                  {/* Left: Menu Info */}
-                  <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <Typography sx={{ fontSize: 11, color: '#888', fontWeight: 500, mb: 0.2 }}>
-                      MENU {item.menuSectionId}
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.2 }}>
-                      <FiberManualRecordIcon sx={{ color: '#43a047', fontSize: 15, mr: 0.5 }} />
-                      <Typography sx={{ fontWeight: 700, fontSize: 15, color: '#222', mr: 1 }}>
-                        {item.dayOfWeek}
-                      </Typography>
-                    </Box>
-                    {item.items && (
-                      <Typography sx={{ fontSize: 11, color: '#222', fontWeight: 500, letterSpacing: 0.15 }}>
-                        {item.items.map(item => item.charAt(0).toUpperCase() + item.slice(1).toLowerCase()).join(', ')}
-                      </Typography>
-                    )}
-                  </Box>
-                  {/* Right: Food Image */}
-                  <Box sx={{ ml: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Avatar 
-                      src={item.menuPhotos && item.menuPhotos.length > 0 ? item.menuPhotos[0] : foodImg} 
-                      alt="food" 
-                      sx={{ 
-                        width: 36, 
-                        height: 36, 
-                        borderRadius: '50%', 
-                        border: '1.5px solid #e0e0e0', 
-                        objectFit: 'cover' 
-                      }} 
-                    />
-                  </Box>
-                </Box>
-              ))
-            )}
+            {renderTabs()}
+            {renderMenuItems()}
 
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
               <Button 
@@ -1894,7 +2080,11 @@ const MenuDetails = () => {
               alignItems: 'stretch', 
               p: 1.5 
             }}>
-              {cartItems.length === 0 ? (
+              {loadingCart ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+                  <CircularProgress size={24} sx={{ color: '#C4362A' }} />
+                </Box>
+              ) : cartItems.length === 0 ? (
                 <>
                   <ShoppingCartOutlinedIcon sx={{ fontSize: 50, color: '#bdbdbd', mb: 1, mt: 2 }} />
                   <Typography sx={{ fontWeight: 700, fontSize: 18, mb: 0.5, mt: 2 }}>OOPS! your cart is EMPTY</Typography>
@@ -1905,7 +2095,7 @@ const MenuDetails = () => {
                   <Box sx={{ background: '#ffe7d6', borderRadius: 1, py: 0.5, mb: 1.5, textAlign: 'center', fontWeight: 600, fontSize: 15, letterSpacing: 1, color: '#222' }}>CART</Box>
                   <Typography sx={{ fontWeight: 600, fontSize: 11, mb: 1, color: '#222' }}>{cartItems.length} ITEM(S)</Typography>
                   {cartItems.map((item, index) => (
-                    <Box key={index} sx={{ 
+                    <Box key={item.id} sx={{ 
                       border: '1.2px solid #e0e0e0', 
                       borderRadius: 2, 
                       p: 2,
@@ -1913,51 +2103,44 @@ const MenuDetails = () => {
                       flexDirection: 'column',
                       mb: 2,
                       background: item.days === 30 ? '#fff3f0' : '#f5f9ff',
-                      borderColor: item.days === 30 ? '#ffcdc3' : '#b3d4ff'
+                      borderColor: item.days === 30 ? '#ffcdc3' : '#b3d4ff',
+                      position: 'relative'
                     }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography sx={{ 
-                          fontWeight: 600, 
-                          fontSize: 13,
-                          color: item.days === 30 ? '#C4362A' : '#1976d2'
-                        }}>
+                      <IconButton
+                        onClick={() => handleDeleteCartItem(item.id)}
+                        sx={{
+                          position: 'absolute',
+                          top: -10,
+                          right: -10,
+                          color: '#C4362A',
+                          background: '#fff',
+                          border: '1px solid #e0e0e0',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                          '&:hover': {
+                            background: '#fff3f0',
+                            borderColor: '#C4362A'
+                          },
+                          width: 24,
+                          height: 24,
+                          padding: 0
+                        }}
+                        size="small"
+                      >
+                        <DeleteIcon sx={{ fontSize: 16 }} />
+                      </IconButton>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                        <Typography sx={{ fontWeight: 600, fontSize: 13, color: '#222' }}>
                           {item.days} Days Subscription
                         </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <IconButton 
-                            size="small"
-                            onClick={() => updateCartItemQuantity(index, -1)}
-                            sx={{ 
-                              border: '1px solid #bbb',
-                              '&:hover': { background: '#eee' }
-                            }}
-                          >
-                            <RemoveIcon />
-                          </IconButton>
-                          <Typography sx={{ mx: 1, fontWeight: 600 }}>{item.quantity}</Typography>
-                          <IconButton 
-                            size="small"
-                            onClick={() => updateCartItemQuantity(index, 1)}
-                            sx={{ 
-                              border: '1px solid #bbb',
-                              '&:hover': { background: '#eee' }
-                            }}
-                          >
-                            <AddIcon />
-                          </IconButton>
-                        </Box>
+                        <Typography sx={{ fontWeight: 600, fontSize: 13, color: '#222' }}>
+                          ₹{item.price}
+                        </Typography>
                       </Box>
-                      <Box sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        mt: 0.5
-                      }}>
-                        <Typography sx={{ 
-                          fontWeight: 700, 
-                          fontSize: 14,
-                          color: '#222'
-                        }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography sx={{ fontSize: 12, color: '#666' }}>
+                          Quantity: {item.quantity}
+                        </Typography>
+                        <Typography sx={{ fontWeight: 600, fontSize: 13, color: '#222' }}>
                           ₹{item.price * item.quantity}
                         </Typography>
                       </Box>
@@ -2029,6 +2212,8 @@ const MenuDetails = () => {
         onClose={() => setSubscriptionModalOpen(false)}
         onAdd={handleAddToCart}
         caterer={caterer}
+        cartItems={cartItems}
+        setCartItems={setCartItems}
       />
       <AddressModal
         open={addressModalOpen}
