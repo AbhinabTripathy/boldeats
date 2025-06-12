@@ -1345,6 +1345,7 @@ const MenuDetails = () => {
     dinner: false
   });
   const [availableMealTypes, setAvailableMealTypes] = useState([]);
+  const [selectedSubMenuType, setSelectedSubMenuType] = useState('COMMON MEAL');
 
   // Add useEffect for fetching cart data
   useEffect(() => {
@@ -1647,27 +1648,37 @@ const MenuDetails = () => {
           ))}
         </Box>
       )}
-      <Button
-        fullWidth
-        variant="outlined"
-        startIcon={<AddLocationAltIcon />}
-        onClick={() => {
-          setIsEditing(false);
-          setEditAddress(null);
-          setAddressModalOpen(true);
-        }}
-        sx={{
-          mt: 2,
-          borderColor: '#C4362A',
-          color: '#C4362A',
-          '&:hover': {
-            borderColor: '#C4362A',
-            background: '#fff3f0'
-          }
-        }}
-      >
-        Add New Address
-      </Button>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        mt: 2,
+        width: '100%'
+      }}>
+        <Button 
+          variant="outlined" 
+          onClick={() => setAddressModalOpen(true)}
+          startIcon={<AddLocationAltIcon />}
+          sx={{ 
+            borderColor: '#C4362A', 
+            color: '#C4362A', 
+            fontWeight: 600, 
+            fontSize: 14,
+            borderRadius: 2,
+            minWidth: { xs: 'auto', md: 180 },
+            maxWidth: { xs: '100%', md: 200 },
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            '&:hover': { 
+              borderColor: '#C4362A', 
+              background: '#fff3f0' 
+            } 
+          }}
+        >
+          Add new Address
+        </Button>
+      </Box>
     </Box>
   );
 
@@ -1943,137 +1954,56 @@ const MenuDetails = () => {
                   <span key={i} style={{ color: '#FFD600', fontSize: 18 }}>★</span>
                 ))}
               </Box>
-              <Box sx={{ display: 'flex', gap: 1, mt: 1, justifyContent: { xs: 'center', sm: 'flex-start' } }}>
-                <Chip label="Non-veg" color="error" size="small" icon={<CancelIcon sx={{ color: '#fff' }} />} />
-                <Chip label="Veg" color="success" size="small" icon={<CheckCircleIcon sx={{ color: '#fff' }} />} />
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}>
+                <Chip 
+                  label="Veg" 
+                  size="small" 
+                  sx={{ 
+                    background: '#e8f5e9', 
+                    color: '#2e7d32', 
+                    fontWeight: 600, 
+                    fontSize: 13,
+                    height: 32,
+                    '& .MuiChip-label': { px: 2 }
+                  }} 
+                />
+                <Chip 
+                  label="Non-veg" 
+                  size="small" 
+                  sx={{ 
+                    background: '#ffebee', 
+                    color: '#c62828', 
+                    fontWeight: 600, 
+                    fontSize: 13,
+                    height: 32,
+                    '& .MuiChip-label': { px: 2 }
+                  }} 
+                />
               </Box>
               <Typography sx={{ mt: 1, fontSize: 15 }}>{caterer.yearsInBusiness} years in business · {caterer.address}</Typography>
               <Typography sx={{ fontSize: 15 }}>Open {caterer.openingTime} - {caterer.closingTime}</Typography>
-              {caterer.phoneNumber && (
-                <Typography sx={{ fontSize: 15 }}>Contact: {caterer.phoneNumber}</Typography>
-              )}
             </Box>
           </Box>
-          {/* Right: Info */}
-          <Box sx={{ 
-            minWidth: { xs: '100%', md: 320 }, 
-            textAlign: { xs: 'center', md: 'right' }, 
-            mt: { xs: 2, md: 1 } 
-          }}>
-            <Typography sx={{ fontSize: 15 }}>Lunch and Dinner can be ordered from the site.</Typography>
-            <Typography sx={{ fontSize: 15, mt: 2 }}>
-              For breakfast please contact support
-            </Typography>
-          </Box>
-        </Box>
 
-        {/* Meal Tabs */}
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          gap: { xs: 1, sm: 2 }, 
-          mt: 4,
-          flexWrap: 'wrap',
-          px: { xs: 2, sm: 0 }
-        }}>
-          {availableMealTypes.map((mealType, idx) => (
-            <Button
-              key={mealType.key}
-              variant={activeTab === idx ? 'contained' : 'outlined'}
-              sx={{
-                borderRadius: 2,
-                minWidth: { xs: 'calc(33.33% - 8px)', sm: 120 },
-                fontWeight: 600,
-                fontSize: { xs: 14, sm: 16 },
-                background: activeTab === idx ? '#e9b7b2' : '#fff',
-                color: activeTab === idx ? '#C4362A' : '#333',
-                borderColor: '#e9b7b2',
-                boxShadow: activeTab === idx ? '0 2px 8px rgba(196,54,42,0.08)' : 'none',
-                '&:hover': {
-                  background: '#f5e0de',
-                  color: '#C4362A',
-                },
-              }}
-              onClick={() => setActiveTab(idx)}
-            >
-              {mealType.label}
-            </Button>
-          ))}
-        </Box>
-
-        {/* Main Content: Menu + Cart + Address */}
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: { xs: 'column', lg: 'row' },
-          justifyContent: 'center', 
-          gap: { xs: 3, lg: 4 }, 
-          mt: 5, 
-          maxWidth: 1200, 
-          mx: 'auto',
-          px: { xs: 2, sm: 3, md: 4 }
-        }}>
-          {/* Left: Weekly Menu */}
-          <Box sx={{ 
-            background: 'linear-gradient(180deg, #ffe0d3 0%, #fbeee6 100%)', 
-            borderRadius: 3, 
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
-            p: 2, 
-            width: { xs: '100%', lg: 'auto' },
-            minWidth: { xs: 'auto', lg: 300 },
-            maxWidth: { xs: '100%', lg: 400 },
-            flex: 1
-          }}>
-            {renderTabs()}
-            {renderMenuItems()}
-
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-              <Button 
-                sx={{
-                  background: '#fff',
-                  color: '#C4362A',
-                  fontWeight: 700,
-                  fontSize: { xs: 20, sm: 24 },
-                  borderRadius: 6,
-                  px: { xs: 3, sm: 4 },
-                  py: 1,
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
-                  border: '1.5px solid #e0e0e0',
-                  '&:hover': {
-                    background: '#f5f5f5',
-                    color: '#C4362A',
-                  },
-                }}
-                onClick={() => {
-                  const token = localStorage.getItem('token');
-                  if (!token) {
-                    if (window.openLoginModalFromHeader) {
-                      window.openLoginModalFromHeader();
-                    }
-                  } else {
-                    setSubscriptionModalOpen(true);
-                  }
-                }}
-              >
-                ADD +
-              </Button>
-            </Box>
-          </Box>
-          
-          {/* Right: Cart and Address Sections */}
+          {/* Right: Address and Cart Sections */}
           <Box sx={{ 
             display: 'flex', 
             flexDirection: { xs: 'column', md: 'row' },
-            gap: 2,
-            width: { xs: '100%', lg: 'auto' }
+            gap: 4, // Increased from 2 to 4
+            width: { xs: '100%', md: 'auto' },
+            minWidth: { xs: 'auto', md: 600 }
           }}>
-            {/* Cart Section */}
+            {/* Address Section First */}
+            {addressSection}
+            
+            {/* Cart Section Second */}
             <Box sx={{ 
               background: '#fff', 
               borderRadius: 10, 
               boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
-              width: { xs: '100%', md: '50%', lg: 'auto' },
-              minWidth: { xs: 'auto', lg: 280 },
-              maxWidth: { xs: '100%', lg: 340 },
+              width: { xs: '100%', md: '50%' },
+              minWidth: { xs: 'auto', md: 280 },
+              maxWidth: { xs: '100%', md: 340 },
               flex: 1, 
               display: 'flex', 
               flexDirection: 'column', 
@@ -2177,23 +2107,200 @@ const MenuDetails = () => {
                 </>
               )}
             </Box>
-            
-            {/* Address Section */}
-            <Box sx={{ 
-              background: '#fff', 
-              borderRadius: 10, 
-              boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
-              width: { xs: '100%', md: '50%', lg: 'auto' },
-              minWidth: { xs: 'auto', lg: 280 },
-              maxWidth: { xs: '100%', lg: 340 },
-              flex: 1, 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'stretch', 
-              p: 1.5,
-              ml: { xs: 0, md: 2 }
+          </Box>
+        </Box>
+
+        {/* Meal Type Selection - Below Cart Section */}
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 2,
+          mt: 8, // Increased from 4 to 8
+          px: { xs: 2, sm: 0 }
+        }}>
+          {/* LUNCH/DINNER Selection */}
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            gap: { xs: 1, sm: 2 }, 
+            flexWrap: 'wrap',
+            width: '100%',
+            mb: 2 // Added margin bottom
+          }}>
+            {['LUNCH', 'DINNER'].map((mealType, idx) => (
+              <Button
+                key={mealType}
+                variant={activeTab === idx ? 'contained' : 'outlined'}
+                sx={{
+                  borderRadius: 2,
+                  minWidth: { xs: 'calc(50% - 8px)', sm: 120 },
+                  fontWeight: 600,
+                  fontSize: { xs: 14, sm: 16 },
+                  background: activeTab === idx ? '#e9b7b2' : '#fff',
+                  color: activeTab === idx ? '#C4362A' : '#333',
+                  borderColor: '#e9b7b2',
+                  boxShadow: activeTab === idx ? '0 2px 8px rgba(196,54,42,0.08)' : 'none',
+                  '&:hover': {
+                    background: '#f5e0de',
+                    color: '#C4362A',
+                  },
+                }}
+                onClick={() => setActiveTab(idx)}
+              >
+                {mealType}
+              </Button>
+            ))}
+          </Box>
+
+          {/* VEG/COMMON MEAL Selection */}
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            gap: { xs: 1, sm: 2 }, 
+            flexWrap: 'wrap',
+            width: '100%'
+          }}>
+            {['COMMON MEAL', 'VEG MEAL'].map((mealType, idx) => (
+              <Button
+                key={mealType}
+                variant={activeTab === idx + 2 ? 'contained' : 'outlined'}
+                sx={{
+                  borderRadius: 2,
+                  minWidth: { xs: 'calc(50% - 8px)', sm: 120 },
+                  fontWeight: 600,
+                  fontSize: { xs: 14, sm: 16 },
+                  background: idx === 0 ? '#e9b7b2' : '#fff', // COMMON MEAL selected by default
+                  color: idx === 0 ? '#C4362A' : '#333', // COMMON MEAL selected by default
+                  borderColor: '#e9b7b2',
+                  boxShadow: idx === 0 ? '0 2px 8px rgba(196,54,42,0.08)' : 'none', // COMMON MEAL selected by default
+                  '&:hover': {
+                    background: '#f5e0de',
+                    color: '#C4362A',
+                  },
+                }}
+                onClick={() => setActiveTab(idx + 2)}
+              >
+                {mealType}
+              </Button>
+            ))}
+          </Box>
+        </Box>
+
+        {/* Main Content: Two Menu Cards */}
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' },
+          justifyContent: 'center', 
+          gap: 4,
+          mt: 5, 
+          maxWidth: 1200, 
+          mx: 'auto',
+          px: { xs: 2, sm: 3, md: 4 }
+        }}>
+          {/* First Menu Card */}
+          <Box sx={{ 
+            background: 'linear-gradient(180deg, #ffe0d3 0%, #fbeee6 100%)', 
+            borderRadius: 3, 
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
+            p: 2, 
+            width: { xs: '100%', md: '50%' },
+            minWidth: { xs: 'auto', md: 300 },
+            maxWidth: { xs: '100%', md: 400 },
+            flex: 1
+          }}>
+            <Typography variant="h5" sx={{ 
+              textAlign: 'center', 
+              mb: 3, 
+              fontWeight: 600,
+              color: '#222'
             }}>
-              {addressSection}
+              Choose your weekly menu
+            </Typography>
+            {renderMenuItems()}
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+              <Button 
+                sx={{
+                  background: '#fff',
+                  color: '#C4362A',
+                  fontWeight: 700,
+                  fontSize: { xs: 16, sm: 18 },
+                  borderRadius: 6,
+                  px: { xs: 3, sm: 4 },
+                  py: 1,
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+                  border: '1.5px solid #e0e0e0',
+                  '&:hover': {
+                    background: '#f5f5f5',
+                    color: '#C4362A',
+                  },
+                }}
+                onClick={() => {
+                  const token = localStorage.getItem('token');
+                  if (!token) {
+                    if (window.openLoginModalFromHeader) {
+                      window.openLoginModalFromHeader();
+                    }
+                  } else {
+                    setSubscriptionModalOpen(true);
+                  }
+                }}
+              >
+                ADD +
+              </Button>
+            </Box>
+          </Box>
+
+          {/* Second Menu Card */}
+          <Box sx={{ 
+            background: 'linear-gradient(180deg, #ffe0d3 0%, #fbeee6 100%)', 
+            borderRadius: 3, 
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
+            p: 2, 
+            width: { xs: '100%', md: '50%' },
+            minWidth: { xs: 'auto', md: 300 },
+            maxWidth: { xs: '100%', md: 400 },
+            flex: 1
+          }}>
+            <Typography variant="h5" sx={{ 
+              textAlign: 'center', 
+              mb: 3, 
+              fontWeight: 600,
+              color: '#222'
+            }}>
+              Choose your weekly menu
+            </Typography>
+            {renderMenuItems()}
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+              <Button 
+                sx={{
+                  background: '#fff',
+                  color: '#C4362A',
+                  fontWeight: 700,
+                  fontSize: { xs: 16, sm: 18 },
+                  borderRadius: 6,
+                  px: { xs: 3, sm: 4 },
+                  py: 1,
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+                  border: '1.5px solid #e0e0e0',
+                  '&:hover': {
+                    background: '#f5f5f5',
+                    color: '#C4362A',
+                  },
+                }}
+                onClick={() => {
+                  const token = localStorage.getItem('token');
+                  if (!token) {
+                    if (window.openLoginModalFromHeader) {
+                      window.openLoginModalFromHeader();
+                    }
+                  } else {
+                    setSubscriptionModalOpen(true);
+                  }
+                }}
+              >
+                ADD +
+              </Button>
             </Box>
           </Box>
         </Box>
