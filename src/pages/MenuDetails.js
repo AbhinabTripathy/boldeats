@@ -331,7 +331,15 @@ const qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data
 // Add a veg icon and a placeholder food image
 const foodImg = 'https://img.freepik.com/free-photo/indian-food_23-2148001642.jpg?w=360';
 
-function PaymentModal({ open, onClose, price, vendorName }) {
+function PaymentModal({ 
+  open, 
+  onClose, 
+  price, 
+  vendorName,
+  cartItems,
+  setCartItems,
+  setCartQty 
+}) {
   const [selectedMethod, setSelectedMethod] = useState('upi');
   const [showReceiptUpload, setShowReceiptUpload] = useState(false);
   const [receiptImage, setReceiptImage] = useState(null);
@@ -386,42 +394,105 @@ function PaymentModal({ open, onClose, price, vendorName }) {
       statusCheck = setInterval(async () => {
         try {
           const token = localStorage.getItem('token');
-          const response = await axios.get(`https://api.bodeats.in/api/payment/status/${paymentId}`, {
+          const response = await axios.get(`https://api.boldeats.in/api/payment/status/${paymentId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
-          console.log('Payment status API response:', response.data); // <-- log response
-          if (response.data) {
-            setStatusData(response.data);
-            if (response.data.success === 'Completed') {
+          console.log('Payment status API response:', response.data);
+          
+          if (response.data?.success && response.data?.data && response.data.data.length > 0) {
+            const paymentData = response.data.data[0];
+            setStatusData(paymentData);
+            
+            if (paymentData.status === 'Completed') {
               setPaymentStatus('COMPLETED');
               setApprovedModal(true);
-              setShowTimer(false);
-              localStorage.removeItem('boldeats_payment_state');
-            } else if (response.data.status === 'Failed') {
+              clearInterval(statusCheck);
+            } else if (paymentData.status === 'Failed') {
               setPaymentStatus('FAILED');
               setRejectedModal(true);
               setShowTimer(false);
-              localStorage.removeItem('boldeats_payment_state');
-            } else if (response.data.status === 'Pending') {
+              clearInterval(statusCheck);
+            } else if (paymentData.status === 'Pending') {
+              // Keep showing the timer modal for pending status
               setPaymentStatus('PENDING');
+              // Do not set any other modal states or clear interval
             }
           }
         } catch (err) {
-          console.error('Payment status API error:', err); // <-- log error
+          console.error('Payment status API error:', err);
         }
-      }, 5000);
+      }, 2000);
     }
     return () => clearInterval(statusCheck);
   }, [paymentId, showTimer, paymentStatus]);
 
-  // Timer complete: show pending modal
-  useEffect(() => {
-    if (showTimer && timeLeft === 0 && paymentStatus === 'PENDING') {
-      setPendingModal(true);
-      setShowTimer(false);
-      localStorage.removeItem('boldeats_payment_state');
+  // Manual refresh handler
+  const handleManualRefresh = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('https://api.boldeats.in/api/payment/status', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      console.log('Manual refresh API response:', response.data);
+
+      if (response.data?.success && response.data?.data && response.data.data.length > 0) {
+        const paymentData = response.data.data[0];
+        
+        if (paymentData.status === 'Completed') {
+          setStatusData(paymentData);
+          setPaymentStatus('COMPLETED');
+          setApprovedModal(true);
+        } else if (paymentData.status === 'Failed') {
+          setStatusData(paymentData);
+          setPaymentStatus('FAILED');
+          setRejectedModal(true);
+          setShowTimer(false);
+        } else if (paymentData.status === 'Pending') {
+          // Keep showing the timer modal for pending status
+          setStatusData(paymentData);
+          setPaymentStatus('PENDING');
+          // Do not change any modal states
+        }
+      }
+    } catch (err) {
+      console.error('Manual refresh payment status API error:', err);
     }
-  }, [showTimer, timeLeft, paymentStatus]);
+  };
+
+  const handleCloseAll = () => {
+    if (paymentStatus === 'COMPLETED') {
+      // Only clear everything and close if user explicitly closes the approved modal
+      if (approvedModal) {
+        setShowTimer(false);
+        setShowReceiptUpload(false);
+        setReceiptImage(null);
+        setPaymentId(null);
+        setPaymentStatus(null);
+        setTimeLeft(600);
+        setStatusData(null);
+        setRejectedModal(false);
+        setPendingModal(false);
+        setApprovedModal(false);
+        localStorage.removeItem('boldeats_payment_state');
+        onClose();
+        window.location.reload();
+      }
+    } else {
+      // For other states, just reset and close
+      setShowTimer(false);
+      setShowReceiptUpload(false);
+      setReceiptImage(null);
+      setPaymentId(null);
+      setPaymentStatus(null);
+      setTimeLeft(600);
+      setStatusData(null);
+      setRejectedModal(false);
+      setPendingModal(false);
+      setApprovedModal(false);
+      localStorage.removeItem('boldeats_payment_state');
+      onClose();
+    }
+  };
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -430,10 +501,26 @@ function PaymentModal({ open, onClose, price, vendorName }) {
   };
 
   const handleContinue = () => setShowReceiptUpload(true);
+  
   const handleReceiptUpload = (event) => {
     const file = event.target.files[0];
     if (file) setReceiptImage(file);
   };
+
+  const handleRetry = () => {
+    setShowTimer(false);
+    setShowReceiptUpload(false);
+    setReceiptImage(null);
+    setPaymentId(null);
+    setPaymentStatus(null);
+    setTimeLeft(600);
+    setStatusData(null);
+    setRejectedModal(false);
+    setPendingModal(false);
+    setApprovedModal(false);
+    localStorage.removeItem('boldeats_payment_state');
+  };
+
   const handleOrder = async () => {
     setLoading(true);
     try {
@@ -454,7 +541,7 @@ function PaymentModal({ open, onClose, price, vendorName }) {
         setPaymentId(response.data.paymentId);
         setPaymentStatus('PENDING');
         setShowTimer(true);
-        setShowReceiptUpload(false);
+        setShowReceiptUpload(false); // Hide receipt upload modal
         setStatusData({
           vendorName,
           paymentId: response.data.paymentId,
@@ -470,32 +557,47 @@ function PaymentModal({ open, onClose, price, vendorName }) {
       setLoading(false);
     }
   };
-  const handleRetry = () => {
-    setShowTimer(false);
-    setShowReceiptUpload(false);
-    setReceiptImage(null);
-    setPaymentId(null);
-    setPaymentStatus(null);
-    setTimeLeft(600);
-    setStatusData(null);
-    setRejectedModal(false);
-    setPendingModal(false);
-    setApprovedModal(false);
-    localStorage.removeItem('boldeats_payment_state');
-  };
-  const handleCloseAll = () => {
-    setShowTimer(false);
-    setShowReceiptUpload(false);
-    setReceiptImage(null);
-    setPaymentId(null);
-    setPaymentStatus(null);
-    setTimeLeft(600);
-    setStatusData(null);
-    setRejectedModal(false);
-    setPendingModal(false);
-    setApprovedModal(false);
-    localStorage.removeItem('boldeats_payment_state');
-    onClose();
+
+  const handleApprovedOk = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No token found');
+        return;
+      }
+
+      // Delete all cart items
+      const deletePromises = cartItems.map(item => 
+        axios.delete(`https://api.boldeats.in/api/cart/${item.id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        })
+      );
+
+      await Promise.all(deletePromises);
+      
+      // Reset all states and close modal
+      setShowTimer(false);
+      setShowReceiptUpload(false);
+      setReceiptImage(null);
+      setPaymentId(null);
+      setPaymentStatus(null);
+      setTimeLeft(600);
+      setStatusData(null);
+      setRejectedModal(false);
+      setPendingModal(false);
+      setApprovedModal(false);
+      setCartItems([]); // Clear cart items from state
+      setCartQty(0); // Reset cart quantity
+      localStorage.removeItem('boldeats_payment_state');
+      onClose();
+      window.location.reload(); // Refresh page to update UI
+    } catch (err) {
+      console.error('Error deleting cart items:', err);
+    }
   };
 
   return (
@@ -517,13 +619,13 @@ function PaymentModal({ open, onClose, price, vendorName }) {
       }} 
       disableScrollLock
     >
-      {!showTimer && (
+      {!showTimer && !paymentStatus && (
         <IconButton onClick={handleCloseAll} sx={{ position: 'absolute', top: 12, right: 12, zIndex: 10, color: '#333' }}>
           <CloseIcon fontSize="medium" />
         </IconButton>
       )}
       <DialogContent sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'center', gap: 4, minWidth: { xs: 320, sm: 600 } }}>
-        {!showReceiptUpload && !showTimer ? (
+        {!showReceiptUpload && !showTimer && !paymentStatus ? (
           <>
             {/* Left: Payment Methods */}
             <Box sx={{ flex: 1, minWidth: 260, mt: -2 }}>
@@ -607,7 +709,7 @@ function PaymentModal({ open, onClose, price, vendorName }) {
               )}
             </Box>
           </>
-        ) : showReceiptUpload ? (
+        ) : showReceiptUpload && !showTimer ? (
           <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
             <Typography variant="h6" sx={{ fontWeight: 600 }}>Upload Payment Receipt</Typography>
             
@@ -710,65 +812,124 @@ function PaymentModal({ open, onClose, price, vendorName }) {
               )}
             </Button>
           </Box>
-        ) : (
+        ) : (showTimer && paymentStatus === 'PENDING') ? (
+          // Timer Modal - Show this when timer is active and status is pending
           <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-            {paymentStatus === 'PENDING' && (
-              <>
-                <Typography variant="h6" sx={{ fontWeight: 600, color: '#C4362A' }}>Wait for the Status</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <CircularProgress size={24} sx={{ color: '#C4362A' }} />
-                  <Typography sx={{ fontWeight: 600, color: '#C4362A' }}>PENDING</Typography>
-                </Box>
-                <Typography sx={{ 
-                  fontSize: 48, 
-                  fontWeight: 700, 
-                  color: '#C4362A',
-                  fontFamily: 'monospace',
-                  background: '#fff5f5',
-                  padding: '16px 32px',
-                  borderRadius: 2,
-                  boxShadow: '0 2px 8px rgba(196,54,42,0.1)'
-                }}>
-                  {formatTime(timeLeft)}
-                </Typography>
-                <Typography sx={{ color: '#666', textAlign: 'center', maxWidth: 400 }}>
-                  Please wait while we verify your payment. You will receive a confirmation once verified.
-                </Typography>
-              </>
-            )}
-            
-            {paymentStatus === 'COMPLETED' && (
-              <>
-                <CheckCircleIcon sx={{ fontSize: 60, color: '#4caf50' }} />
-                <Typography variant="h6" sx={{ fontWeight: 600, color: '#4caf50' }}>
-                  Order Accepted
-                </Typography>
-              </>
-            )}
-            
-            {paymentStatus === 'FAILED' && (
-              <>
-                <CancelIcon sx={{ fontSize: 60, color: '#f44336' }} />
-                <Typography variant="h6" sx={{ fontWeight: 600, color: '#f44336' }}>
-                  Payment Failed
-                </Typography>
-                <Button
-                  variant="contained"
-                  onClick={handleRetry}
-                  sx={{
-                    mt: 2,
-                    background: '#C4362A',
-                    '&:hover': {
-                      background: '#a82a1f'
-                    }
-                  }}
-                >
-                  Retry
-                </Button>
-              </>
-            )}
+            <Typography variant="h6" sx={{ fontWeight: 600, color: '#C4362A' }}>Wait for the Status</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <CircularProgress size={24} sx={{ color: '#C4362A' }} />
+              <Typography sx={{ fontWeight: 600, color: '#C4362A' }}>PENDING</Typography>
+            </Box>
+            <Typography sx={{ 
+              fontSize: 48, 
+              fontWeight: 700, 
+              color: '#C4362A',
+              fontFamily: 'monospace',
+              background: '#fff5f5',
+              padding: '16px 32px',
+              borderRadius: 2,
+              boxShadow: '0 2px 8px rgba(196,54,42,0.1)'
+            }}>
+              {formatTime(timeLeft)}
+            </Typography>
+            <Typography sx={{ color: '#666', textAlign: 'center', maxWidth: 400 }}>
+              Please wait while we verify your payment. You will receive a confirmation once verified.
+            </Typography>
+            <Button
+              variant="outlined"
+              onClick={handleManualRefresh}
+              sx={{
+                mt: 2,
+                borderColor: '#C4362A',
+                color: '#C4362A',
+                fontWeight: 600,
+                borderRadius: 2,
+                '&:hover': {
+                  background: '#fff3f0',
+                  borderColor: '#C4362A',
+                },
+              }}
+            >
+              Please refresh to Check your Payment Status
+            </Button>
           </Box>
-        )}
+        ) : paymentStatus === 'COMPLETED' ? (
+          <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+            {/* Approval Icon */}
+            <CheckCircleIcon sx={{ fontSize: 70, color: '#4caf50', mb: 1 }} />
+            {/* Order Approved Text */}
+            <Typography variant="h5" sx={{ fontWeight: 700, color: '#4caf50', textAlign: 'center', mb: 1 }}>
+              Order Approved Successfully
+            </Typography>
+            {/* Congratulation Icon and Text */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
+              <StarIcon sx={{ fontSize: 40, color: '#FFD600', mb: 1 }} />
+              <Typography sx={{ fontSize: 20, color: '#222', fontWeight: 600, textAlign: 'center' }}>
+                Congratulations! Your Order of <span style={{ color: '#C4362A', fontWeight: 700 }}>₹{statusData?.amount}</span>
+              </Typography>
+            </Box>
+            {/* Payment Details */}
+            <Box sx={{ 
+              width: '100%', 
+              maxWidth: 400, 
+              background: '#f5f5f5', 
+              borderRadius: 2, 
+              p: 3,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2
+            }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography sx={{ color: '#666' }}>Payment ID</Typography>
+                <Typography sx={{ fontWeight: 600 }}>{statusData?.paymentId}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography sx={{ color: '#666' }}>Vendor</Typography>
+                <Typography sx={{ fontWeight: 600 }}>{statusData?.vendorName}</Typography>
+              </Box>
+            </Box>
+            {/* Add OK Button */}
+            <Button
+              variant="contained"
+              onClick={handleApprovedOk}
+              sx={{
+                mt: 3,
+                minWidth: 120,
+                background: '#4caf50',
+                color: '#fff',
+                fontWeight: 600,
+                fontSize: 16,
+                borderRadius: 2,
+                py: 1,
+                '&:hover': {
+                  background: '#388e3c'
+                }
+              }}
+            >
+              OK
+            </Button>
+          </Box>
+        ) : paymentStatus === 'FAILED' ? (
+          <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+            <CancelIcon sx={{ fontSize: 60, color: '#f44336' }} />
+            <Typography variant="h6" sx={{ fontWeight: 600, color: '#f44336' }}>
+              Payment Failed
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={handleRetry}
+              sx={{
+                mt: 2,
+                background: '#C4362A',
+                '&:hover': {
+                  background: '#a82a1f'
+                }
+              }}
+            >
+              Retry
+            </Button>
+          </Box>
+        ) : null}
       </DialogContent>
     </Dialog>
   );
@@ -2395,6 +2556,9 @@ const MenuDetails = () => {
           onClose={() => setPaymentModalOpen(false)} 
           price={totalPrice}
           vendorName={caterer.name}
+          cartItems={cartItems}
+          setCartItems={setCartItems}
+          setCartQty={setCartQty}
         />
       )}
       <SubscriptionModal 
