@@ -358,12 +358,14 @@ const SubscriptionPage = () => {
       });
 
       if (response.data && response.data.success) {
-        setSubscriptions(response.data.data || []);
+        setSubscriptions(Array.isArray(response.data.data) ? response.data.data : []);
       } else {
+        setSubscriptions([]);
         setError('Failed to fetch subscriptions');
       }
     } catch (err) {
       console.error('Error fetching subscriptions:', err);
+      setSubscriptions([]);
       setError(err.response?.data?.message || 'Failed to fetch subscriptions');
     } finally {
       setLoading(false);
@@ -473,12 +475,12 @@ const SubscriptionPage = () => {
       <SubscriptionNotice>
         SUBSCRIPTION TAKEN
         <span style={{ float: 'right', color: '#C4362A', fontWeight: 400, fontSize: 15, marginRight: 50 }}>
-          ({subscriptions.length})
+          ({Array.isArray(subscriptions) ? subscriptions.length : 0})
         </span>
       </SubscriptionNotice>
       <HorizontalLine />
       
-      {subscriptions.length === 0 ? (
+      {Array.isArray(subscriptions) && subscriptions.length === 0 ? (
         <Box sx={{ 
           display: 'flex', 
           flexDirection: 'column', 
@@ -496,7 +498,7 @@ const SubscriptionPage = () => {
           </Typography>
         </Box>
       ) : (
-        subscriptions.map((subscription, index) => (
+        Array.isArray(subscriptions) && subscriptions.map((subscription, index) => (
           <CardContainer key={subscription.id || index}>
             <CatererImage 
               src={`https://api.boldeats.in/${subscription.vendor?.logo}`} 
