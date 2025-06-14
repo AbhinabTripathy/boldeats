@@ -331,7 +331,7 @@ const qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data
 // Add a veg icon and a placeholder food image
 const foodImg = 'https://img.freepik.com/free-photo/indian-food_23-2148001642.jpg?w=360';
 
-function PaymentModal({ open, onClose, price }) {
+function PaymentModal({ open, onClose, price, vendorName }) {
   const [selectedMethod, setSelectedMethod] = useState('upi');
   const [showReceiptUpload, setShowReceiptUpload] = useState(false);
   const [receiptImage, setReceiptImage] = useState(null);
@@ -341,10 +341,37 @@ function PaymentModal({ open, onClose, price }) {
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [statusData, setStatusData] = useState(null);
+  const [pendingModal, setPendingModal] = useState(false);
+  const [rejectedModal, setRejectedModal] = useState(false);
+  const [approvedModal, setApprovedModal] = useState(false);
+
+  // Persist state in localStorage for refresh
+  useEffect(() => {
+    if (open) {
+      const saved = localStorage.getItem('boldeats_payment_state');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setPaymentId(parsed.paymentId);
+        setShowTimer(parsed.showTimer);
+        setTimeLeft(parsed.timeLeft);
+        setPaymentStatus(parsed.paymentStatus);
+        setStatusData(parsed.statusData);
+      }
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (showTimer && paymentId) {
+      localStorage.setItem('boldeats_payment_state', JSON.stringify({
+        paymentId, showTimer, timeLeft, paymentStatus, statusData
+      }));
+    }
+  }, [showTimer, paymentId, timeLeft, paymentStatus, statusData]);
 
   useEffect(() => {
     let timer;
-    if (showTimer && timeLeft > 0 && paymentStatus !== 'ACCEPTED' && paymentStatus !== 'FAILED') {
+    if (showTimer && timeLeft > 0 && paymentStatus !== 'COMPLETED' && paymentStatus !== 'FAILED') {
       timer = setInterval(() => {
         setTimeLeft(prev => prev - 1);
       }, 1000);
@@ -352,34 +379,49 @@ function PaymentModal({ open, onClose, price }) {
     return () => clearInterval(timer);
   }, [showTimer, timeLeft, paymentStatus]);
 
-  // Add status check interval
+  // Poll status
   useEffect(() => {
     let statusCheck;
-    if (paymentId && showTimer && paymentStatus !== 'ACCEPTED' && paymentStatus !== 'FAILED') {
+    if (paymentId && showTimer && paymentStatus !== 'COMPLETED' && paymentStatus !== 'FAILED') {
       statusCheck = setInterval(async () => {
         try {
           const token = localStorage.getItem('token');
-          const response = await axios.get(`https://api.boldeats.in/api/payment/status/${paymentId}`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
+          const response = await axios.get(`https://api.bodeats.in/api/payment/status/${paymentId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
           });
-          
-          if (response.data && response.data.status) {
-            setPaymentStatus(response.data.status);
-            if (response.data.status === 'ACCEPTED') {
-              setTimeout(() => {
-                onClose();
-              }, 3000);
+          console.log('Payment status API response:', response.data); // <-- log response
+          if (response.data) {
+            setStatusData(response.data);
+            if (response.data.success === 'Completed') {
+              setPaymentStatus('COMPLETED');
+              setApprovedModal(true);
+              setShowTimer(false);
+              localStorage.removeItem('boldeats_payment_state');
+            } else if (response.data.status === 'Failed') {
+              setPaymentStatus('FAILED');
+              setRejectedModal(true);
+              setShowTimer(false);
+              localStorage.removeItem('boldeats_payment_state');
+            } else if (response.data.status === 'Pending') {
+              setPaymentStatus('PENDING');
             }
           }
         } catch (err) {
-          console.error('Error checking payment status:', err);
+          console.error('Payment status API error:', err); // <-- log error
         }
-      }, 5000); // Check every 5 seconds
+      }, 5000);
     }
     return () => clearInterval(statusCheck);
   }, [paymentId, showTimer, paymentStatus]);
+
+  // Timer complete: show pending modal
+  useEffect(() => {
+    if (showTimer && timeLeft === 0 && paymentStatus === 'PENDING') {
+      setPendingModal(true);
+      setShowTimer(false);
+      localStorage.removeItem('boldeats_payment_state');
+    }
+  }, [showTimer, timeLeft, paymentStatus]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -387,38 +429,20 @@ function PaymentModal({ open, onClose, price }) {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleContinue = () => {
-    setShowReceiptUpload(true);
-  };
-
+  const handleContinue = () => setShowReceiptUpload(true);
   const handleReceiptUpload = (event) => {
     const file = event.target.files[0];
-    if (file) {
-      // Store the actual file instead of URL
-      setReceiptImage(file);
-    }
+    if (file) setReceiptImage(file);
   };
-
   const handleOrder = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      // Create FormData object
+      if (!token) throw new Error('No authentication token found');
       const formData = new FormData();
-      formData.append('receipt', receiptImage); // This is now the actual file
-      formData.append('method', selectedMethod.toUpperCase()); // Convert to uppercase
-      formData.append('amount', price.toString()); // Convert to string
-
-      console.log('Uploading payment with data:', {
-        method: selectedMethod.toUpperCase(),
-        amount: price,
-        hasReceipt: !!receiptImage
-      });
-
+      formData.append('receipt', receiptImage);
+      formData.append('method', selectedMethod.toUpperCase());
+      formData.append('amount', price.toString());
       const response = await axios.post('https://api.boldeats.in/api/payment/upload', formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -426,25 +450,26 @@ function PaymentModal({ open, onClose, price }) {
           'Accept': 'application/json'
         }
       });
-
-      console.log('Payment upload response:', response.data);
-
       if (response.status === 201 && response.data.success) {
         setPaymentId(response.data.paymentId);
         setPaymentStatus('PENDING');
         setShowTimer(true);
         setShowReceiptUpload(false);
+        setStatusData({
+          vendorName,
+          paymentId: response.data.paymentId,
+          method: selectedMethod.toUpperCase(),
+          amount: price
+        });
       } else {
         throw new Error('Payment upload failed');
       }
     } catch (err) {
-      console.error('Error uploading payment receipt:', err);
       setError(err.response?.data?.message || 'Failed to upload payment receipt. Please try again.');
     } finally {
       setLoading(false);
     }
   };
-
   const handleRetry = () => {
     setShowTimer(false);
     setShowReceiptUpload(false);
@@ -452,12 +477,31 @@ function PaymentModal({ open, onClose, price }) {
     setPaymentId(null);
     setPaymentStatus(null);
     setTimeLeft(600);
+    setStatusData(null);
+    setRejectedModal(false);
+    setPendingModal(false);
+    setApprovedModal(false);
+    localStorage.removeItem('boldeats_payment_state');
+  };
+  const handleCloseAll = () => {
+    setShowTimer(false);
+    setShowReceiptUpload(false);
+    setReceiptImage(null);
+    setPaymentId(null);
+    setPaymentStatus(null);
+    setTimeLeft(600);
+    setStatusData(null);
+    setRejectedModal(false);
+    setPendingModal(false);
+    setApprovedModal(false);
+    localStorage.removeItem('boldeats_payment_state');
+    onClose();
   };
 
   return (
     <Dialog 
       open={open} 
-      onClose={showTimer ? undefined : onClose} 
+      onClose={handleCloseAll} 
       maxWidth="md" 
       PaperProps={{ 
         sx: { 
@@ -474,7 +518,7 @@ function PaymentModal({ open, onClose, price }) {
       disableScrollLock
     >
       {!showTimer && (
-        <IconButton onClick={onClose} sx={{ position: 'absolute', top: 12, right: 12, zIndex: 10, color: '#333' }}>
+        <IconButton onClick={handleCloseAll} sx={{ position: 'absolute', top: 12, right: 12, zIndex: 10, color: '#333' }}>
           <CloseIcon fontSize="medium" />
         </IconButton>
       )}
@@ -693,7 +737,7 @@ function PaymentModal({ open, onClose, price }) {
               </>
             )}
             
-            {paymentStatus === 'ACCEPTED' && (
+            {paymentStatus === 'COMPLETED' && (
               <>
                 <CheckCircleIcon sx={{ fontSize: 60, color: '#4caf50' }} />
                 <Typography variant="h6" sx={{ fontWeight: 600, color: '#4caf50' }}>
@@ -2350,6 +2394,7 @@ const MenuDetails = () => {
           open={paymentModalOpen} 
           onClose={() => setPaymentModalOpen(false)} 
           price={totalPrice}
+          vendorName={caterer.name}
         />
       )}
       <SubscriptionModal 
