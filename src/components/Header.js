@@ -599,8 +599,12 @@ const Header = () => {
             }
           });
           console.log('Wallet balance response:', response.data);
-          if (response.data && response.data.data) {
-            setWalletBalance(response.data.data.balance || 0);
+          if (response.data && response.data.success && response.data.data) {
+            setWalletBalance(response.data.data.amount || 0);
+            console.log('Wallet balance set:', response.data.data.amount);
+          } else {
+            console.error('Invalid wallet data format:', response.data);
+            setWalletBalance(0);
           }
         } catch (error) {
           console.error('Error fetching wallet balance:', error);

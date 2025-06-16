@@ -379,7 +379,7 @@ function PaymentModal({
 
   useEffect(() => {
     let timer;
-    if (showTimer && timeLeft > 0 && paymentStatus !== 'COMPLETED' && paymentStatus !== 'FAILED') {
+    if (showTimer && timeLeft > 0 && paymentStatus !== 'COMPLETED' && paymentStatus !== 'FAILED' && paymentStatus !== 'REJECTED') {
       timer = setInterval(() => {
         setTimeLeft(prev => prev - 1);
       }, 1000);
@@ -390,7 +390,7 @@ function PaymentModal({
   // Poll status
   useEffect(() => {
     let statusCheck;
-    if (paymentId && showTimer && paymentStatus !== 'COMPLETED' && paymentStatus !== 'FAILED') {
+    if (paymentId && showTimer && paymentStatus !== 'COMPLETED' && paymentStatus !== 'FAILED' && paymentStatus !== 'REJECTED') {
       statusCheck = setInterval(async () => {
         try {
           const token = localStorage.getItem('token');
@@ -409,6 +409,11 @@ function PaymentModal({
               clearInterval(statusCheck);
             } else if (paymentData.status === 'Failed') {
               setPaymentStatus('FAILED');
+              setRejectedModal(true);
+              setShowTimer(false);
+              clearInterval(statusCheck);
+            } else if (paymentData.status === 'Rejected') {
+              setPaymentStatus('REJECTED');
               setRejectedModal(true);
               setShowTimer(false);
               clearInterval(statusCheck);
@@ -442,16 +447,14 @@ function PaymentModal({
           setStatusData(paymentData);
           setPaymentStatus('COMPLETED');
           setApprovedModal(true);
-        } else if (paymentData.status === 'Failed') {
+        } else if (paymentData.status === 'Failed' || paymentData.status === 'Rejected') {
           setStatusData(paymentData);
-          setPaymentStatus('FAILED');
+          setPaymentStatus(paymentData.status.toUpperCase());
           setRejectedModal(true);
           setShowTimer(false);
         } else if (paymentData.status === 'Pending') {
-          // Keep showing the timer modal for pending status
           setStatusData(paymentData);
           setPaymentStatus('PENDING');
-          // Do not change any modal states
         }
       }
     } catch (err) {
@@ -508,6 +511,7 @@ function PaymentModal({
   };
 
   const handleRetry = () => {
+    // Reset all states to show payment modal again
     setShowTimer(false);
     setShowReceiptUpload(false);
     setReceiptImage(null);
@@ -909,25 +913,75 @@ function PaymentModal({
               OK
             </Button>
           </Box>
-        ) : paymentStatus === 'FAILED' ? (
+        ) : paymentStatus === 'FAILED' || paymentStatus === 'REJECTED' ? (
           <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-            <CancelIcon sx={{ fontSize: 60, color: '#f44336' }} />
-            <Typography variant="h6" sx={{ fontWeight: 600, color: '#f44336' }}>
-              Payment Failed
+            <CancelIcon sx={{ fontSize: 70, color: '#f44336' }} />
+            <Typography variant="h5" sx={{ fontWeight: 700, color: '#f44336', textAlign: 'center', mb: 1 }}>
+              Payment {paymentStatus === 'REJECTED' ? 'Rejected' : 'Failed'}
             </Typography>
-            <Button
-              variant="contained"
-              onClick={handleRetry}
-              sx={{
-                mt: 2,
-                background: '#C4362A',
-                '&:hover': {
-                  background: '#a82a1f'
-                }
-              }}
-            >
-              Retry
-            </Button>
+            <Typography sx={{ color: '#666', textAlign: 'center', maxWidth: 400 }}>
+              {paymentStatus === 'REJECTED' 
+                ? 'Your payment has been rejected. Please try again with a valid payment.'
+                : 'Your payment has failed. Please try again.'}
+            </Typography>
+            <Box sx={{ 
+              width: '100%', 
+              maxWidth: 400, 
+              background: '#f5f5f5', 
+              borderRadius: 2, 
+              p: 3,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2
+            }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography sx={{ color: '#666' }}>Payment ID</Typography>
+                <Typography sx={{ fontWeight: 600 }}>{statusData?.paymentId}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography sx={{ color: '#666' }}>Amount</Typography>
+                <Typography sx={{ fontWeight: 600 }}>₹{statusData?.amount}</Typography>
+              </Box>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+              <Button
+                variant="contained"
+                onClick={handleRetry}
+                sx={{
+                  minWidth: 120,
+                  background: '#f44336',
+                  color: '#fff',
+                  fontWeight: 600,
+                  fontSize: 16,
+                  borderRadius: 2,
+                  py: 1,
+                  '&:hover': {
+                    background: '#d32f2f'
+                  }
+                }}
+              >
+                Retry
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={handleCloseAll}
+                sx={{
+                  minWidth: 120,
+                  borderColor: '#f44336',
+                  color: '#f44336',
+                  fontWeight: 600,
+                  fontSize: 16,
+                  borderRadius: 2,
+                  py: 1,
+                  '&:hover': {
+                    borderColor: '#d32f2f',
+                    background: 'rgba(244, 67, 54, 0.04)'
+                  }
+                }}
+              >
+                Cancel
+              </Button>
+            </Box>
           </Box>
         ) : null}
       </DialogContent>

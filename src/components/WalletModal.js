@@ -9,8 +9,8 @@ const WalletModal = ({ open, onClose }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [balance, setBalance] = useState(0); // Placeholder for balance
-  const [transactions, setTransactions] = useState([]); // Placeholder for transaction history
+  const [walletData, setWalletData] = useState(null);
+  const [transactions, setTransactions] = useState([]);
 
   useEffect(() => {
     if (!open) return;
@@ -36,21 +36,25 @@ const WalletModal = ({ open, onClose }) => {
         setLoading(false);
       });
 
-    // Fetch wallet balance
+    // Fetch wallet data
     axios.get('https://api.boldeats.in/api/payment/wallet', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     })
       .then(res => {
-        console.log('Wallet balance response:', res.data);
-        if (res.data && res.data.data) {
-          setBalance(res.data.data.balance || 0);
+        console.log('Wallet response:', res.data);
+        if (res.data && res.data.success && res.data.data) {
+          setWalletData(res.data.data);
+          console.log('Wallet data set:', res.data.data);
+        } else {
+          console.error('Invalid wallet data format:', res.data);
+          setWalletData(null);
         }
       })
       .catch(error => {
-        console.error('Error fetching wallet balance:', error);
-        setBalance(0);
+        console.error('Error fetching wallet data:', error);
+        setWalletData(null);
       });
 
     // TODO: Fetch transaction history here if available
@@ -164,7 +168,7 @@ const WalletModal = ({ open, onClose }) => {
               letterSpacing: 1
             }}>
               <span style={{ fontSize: 28, marginRight: 8 }}>₹</span>
-              {balance}
+              {walletData ? walletData.amount : 0}
             </Box>
 
             {/* Transaction History */}

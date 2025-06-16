@@ -330,7 +330,7 @@ const PriceBox = styled(Box)({
 
 const SubscriptionPage = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [subscriptions, setSubscriptions] = useState([]);
+  const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -349,6 +349,7 @@ const SubscriptionPage = () => {
   const fetchSubscriptions = async (token) => {
     try {
       setLoading(true);
+      console.log('Fetching subscriptions...');
       const response = await axios.get('https://api.boldeats.in/api/users/subscription', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -357,16 +358,20 @@ const SubscriptionPage = () => {
         }
       });
 
+      console.log('API Response:', response.data);
+
       if (response.data && response.data.success) {
-        setSubscriptions(Array.isArray(response.data.data) ? response.data.data : []);
+        setSubscription(response.data.data);
+        console.log('Subscription data set:', response.data.data);
       } else {
-        setSubscriptions([]);
-        setError('Failed to fetch subscriptions');
+        setSubscription(null);
+        setError('Failed to fetch subscription');
+        console.error('Failed to fetch subscription:', response.data);
       }
     } catch (err) {
-      console.error('Error fetching subscriptions:', err);
-      setSubscriptions([]);
-      setError(err.response?.data?.message || 'Failed to fetch subscriptions');
+      console.error('Error fetching subscription:', err);
+      setSubscription(null);
+      setError(err.response?.data?.message || 'Failed to fetch subscription');
     } finally {
       setLoading(false);
     }
@@ -473,14 +478,51 @@ const SubscriptionPage = () => {
   return (
     <PageContainer>
       <SubscriptionNotice>
-        SUBSCRIPTION TAKEN
-        <span style={{ float: 'right', color: '#C4362A', fontWeight: 400, fontSize: 15, marginRight: 50 }}>
-          ({Array.isArray(subscriptions) ? subscriptions.length : 0})
-        </span>
+        SUBSCRIPTION DETAILS
       </SubscriptionNotice>
       <HorizontalLine />
       
-      {Array.isArray(subscriptions) && subscriptions.length === 0 ? (
+      {loading ? (
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '60vh' 
+        }}>
+          <CircularProgress sx={{ color: '#C4362A' }} />
+        </Box>
+      ) : error ? (
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          minHeight: '60vh',
+          textAlign: 'center',
+          padding: '20px'
+        }}>
+          <Typography variant="h5" sx={{ mb: 2, color: '#C4362A' }}>
+            {error}
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={() => fetchSubscriptions(localStorage.getItem('token'))}
+            sx={{
+              backgroundColor: '#C4362A',
+              color: 'white',
+              padding: '12px 32px',
+              fontSize: '16px',
+              borderRadius: '25px',
+              textTransform: 'none',
+              '&:hover': {
+                backgroundColor: '#b02d23',
+              }
+            }}
+          >
+            Retry
+          </Button>
+        </Box>
+      ) : !subscription ? (
         <Box sx={{ 
           display: 'flex', 
           flexDirection: 'column', 
@@ -491,65 +533,44 @@ const SubscriptionPage = () => {
           padding: '20px'
         }}>
           <Typography variant="h5" sx={{ mb: 2, color: '#666' }}>
-            No Active Subscriptions
+            No Active Subscription
           </Typography>
           <Typography variant="body1" sx={{ color: '#888' }}>
-            You don't have any active subscriptions at the moment.
+            You don't have an active subscription at the moment.
           </Typography>
         </Box>
       ) : (
-        Array.isArray(subscriptions) && subscriptions.map((subscription, index) => (
-          <CardContainer key={subscription.id || index}>
-            <CatererImage 
-              src={`https://api.boldeats.in/${subscription.vendor?.logo}`} 
-              alt={subscription.vendor?.name || 'Caterer'} 
-              onError={(e) => {
-                e.target.src = catererImg;
-              }}
-            />
-            <CardContent>
-              <TopRow>
-                <TitleStars>
-                  <Title>{subscription.vendor?.name || 'Glorious Caterers'}</Title>
-                  <StarRow>
-                    {[...Array(subscription.vendor?.rating || 5)].map((_, i) => (
-                      <StarIcon key={i} sx={{ color: '#FFD600', fontSize: 22, mr: 0.5 }} />
-                    ))}
-                  </StarRow>
-                </TitleStars>
-                <DetailsBlock>
-                  <span>{subscription.vendor?.yearsInBusiness || '10+'} years in business &middot;</span>
-                  <span>{subscription.vendor?.address || 'Main road Side'} &middot; {subscription.vendor?.phoneNumber || '098533 37333'}</span>
-                  <span>Open {subscription.vendor?.openingTime || '24 hours'}</span>
-                  <span>{subscription.vendor?.services || 'On-site services&middot;Online appointments'}</span>
-                </DetailsBlock>
-              </TopRow>
-              <TagRow>
-                <TagButton color="red">Non-veg</TagButton>
-                <TagButton color="green">Veg</TagButton>
-              </TagRow>
-            </CardContent>
-            <GreenCard>
-              <GreenLeft>
-                <GreenLabel>ITEM TYPE :</GreenLabel>
-                <ItemTypeBox>
-                  <SmallTag active={subscription.itemType === 'veg'}>Veg</SmallTag>
-                  <SmallTag active={subscription.itemType === 'non-veg'}>Non-Veg</SmallTag>
-                </ItemTypeBox>
-                <GreenLabel>MEAL TYPE :</GreenLabel>
-                <MealTypeBox>
-                  <SmallTag active={subscription.mealType === 'breakfast'}>Breakfast</SmallTag>
-                  <SmallTag active={subscription.mealType === 'lunch'}>Lunch</SmallTag>
-                  <SmallTag active={subscription.mealType === 'dinner'}>Dinner</SmallTag>
-                </MealTypeBox>
-              </GreenLeft>
-              <GreenRight>
-                <SubscriptionTitle>Subscription</SubscriptionTitle>
-                <PriceBox>₹{subscription.price}/-({subscription.days} days)</PriceBox>
-              </GreenRight>
-            </GreenCard>
-          </CardContainer>
-        ))
+        <CardContainer>
+          <CardContent>
+            <TopRow>
+              <TitleStars>
+                <Title>Subscription Details</Title>
+              </TitleStars>
+            </TopRow>
+            <Box sx={{ mt: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, color: '#333' }}>
+                Plan Details
+              </Typography>
+              <Box sx={{ 
+                background: '#f5f5f5', 
+                borderRadius: 2, 
+                p: 3,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2
+              }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography sx={{ color: '#666' }}>Plan Amount</Typography>
+                  <Typography sx={{ fontWeight: 600 }}>₹{subscription.planAmount}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography sx={{ color: '#666' }}>Payment Method</Typography>
+                  <Typography sx={{ fontWeight: 600 }}>{subscription.method}</Typography>
+                </Box>
+              </Box>
+            </Box>
+          </CardContent>
+        </CardContainer>
       )}
     </PageContainer>
   );
