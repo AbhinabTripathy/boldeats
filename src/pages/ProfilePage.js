@@ -5,6 +5,10 @@ import axios from 'axios';
 import { useTheme } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
 import logo from '../assets/BoldTribe Logo-7.svg';
+import PersonIcon from '@mui/icons-material/Person';
+import PhotoCamera from '@mui/icons-material/PhotoCamera';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 
 const ProfileCard = styled(Box)({
   backgroundColor: '#f5f5f5',
@@ -199,6 +203,10 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editData, setEditData] = useState({ name: '', email: '', phone: '', address: '' });
+  const [profileImage, setProfileImage] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [showCamera, setShowCamera] = useState(false);
+  const fileInputRef = React.useRef();
 
   // Fetch user data from API on component mount
   useEffect(() => {
@@ -309,9 +317,10 @@ const ProfilePage = () => {
             'Authorization': `Bearer ${token}`
           }
         });
-        
-        if (walletResponse?.data?.data?.balance !== undefined) {
-          setWalletBalance(walletResponse.data.data.balance);
+        if (walletResponse?.data?.data?.amount !== undefined) {
+          setWalletBalance(walletResponse.data.data.amount);
+        } else {
+          setWalletBalance(0);
         }
         setWalletLoading(false);
       } catch (err) {
@@ -366,6 +375,58 @@ const ProfilePage = () => {
       setError('Failed to update user data. Please try again later.');
     }
   };
+
+  const handleProfileImageClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+  const handleChooseFile = () => {
+    handleMenuClose();
+    if (fileInputRef.current) fileInputRef.current.click();
+  };
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setProfileImage(URL.createObjectURL(file));
+    }
+  };
+  const handleTakeSelfie = () => {
+    handleMenuClose();
+    setShowCamera(true);
+  };
+  const handleCapture = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setProfileImage(URL.createObjectURL(e.target.files[0]));
+      setShowCamera(false);
+    }
+  };
+
+  // Helper to get profile image or icon
+  const getProfileImageOrIcon = (img, size = 90) => (
+    img ? (
+      <img
+        src={img}
+        alt="Profile"
+        style={{ width: size, height: size, objectFit: 'cover', borderRadius: '50%' }}
+      />
+    ) : (
+      <Box
+        sx={{
+          width: size,
+          height: size,
+          borderRadius: '50%',
+          background: '#C4362A',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <PersonIcon sx={{ fontSize: size * 0.6, color: '#fff' }} />
+      </Box>
+    )
+  );
 
   return (
     <Box sx={{ 
@@ -423,10 +484,7 @@ const ProfilePage = () => {
             </Box>
 
             <Box sx={{ display: 'flex', justifyContent: 'center', width: '200px' }}>
-              <ProfileImage 
-                src="https://example.com/placeholder.jpg" 
-                alt="Profile" 
-              />
+              {getProfileImageOrIcon(profileImage, 120)}
             </Box>
           </Box>
 
@@ -649,6 +707,93 @@ const ProfilePage = () => {
                 <Close />
               </IconButton>
               <Typography variant="h1">Edit Profile</Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3, position: 'relative' }}>
+                <Box
+                  sx={{
+                    width: 90,
+                    height: 90,
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    border: '2px solid #eee',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    background: '#f5f5f5',
+                    cursor: 'pointer',
+                  }}
+                  onClick={handleProfileImageClick}
+                >
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt="Profile"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <Box
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: '#C4362A',
+                      }}
+                    >
+                      <PersonIcon sx={{ fontSize: 54, color: '#fff' }} />
+                    </Box>
+                  )}
+                </Box>
+                <Box
+                  sx={{
+                    mt: 1.5,
+                    mb: 0.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    bgcolor: 'rgba(255,255,255,0.85)',
+                    borderRadius: '50%',
+                    width: 40,
+                    height: 40,
+                    boxShadow: 1,
+                  }}
+                  onClick={handleProfileImageClick}
+                >
+                  <PhotoCamera sx={{ fontSize: 28, color: '#C4362A' }} />
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1, mt: 1 }}>
+                  Profile Image
+                </Typography>
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                />
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleMenuClose}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
+                  <MenuItem onClick={handleTakeSelfie}>Take Selfie</MenuItem>
+                  <MenuItem onClick={handleChooseFile}>Choose from File</MenuItem>
+                </Menu>
+                {showCamera && (
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="user"
+                    style={{ display: 'none' }}
+                    onChange={handleCapture}
+                    ref={el => el && el.click()}
+                  />
+                )}
+              </Box>
               <TextField
                 fullWidth
                 label="Name"

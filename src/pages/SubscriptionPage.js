@@ -15,16 +15,32 @@ const PageContainer = styled(Box)({
   }
 });
 
-const SubscriptionNotice = styled(Typography)({
+const SubscriptionNotice = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
   color: '#C4362A',
   fontWeight: 500,
   fontSize: 15,
   margin: '40px 0 0 52px',
   letterSpacing: 0.5,
   lineHeight: 1,
+  width: 'calc(100% - 104px)',
   '@media (max-width: 600px)': {
     margin: '20px 0 0 16px',
     fontSize: 14,
+    width: 'calc(100% - 32px)',
+  }
+});
+
+const SubscriptionCount = styled(Box)({
+  color: '#C4362A',
+  fontWeight: 400,
+  fontSize: 15,
+  marginLeft: 8,
+  display: 'inline-block',
+  '@media (max-width: 600px)': {
+    fontSize: 13,
   }
 });
 
@@ -41,30 +57,35 @@ const HorizontalLine = styled('hr')({
 
 const CardContainer = styled(Box)({
   display: 'flex',
-  alignItems: 'flex-start',
+  alignItems: 'center',
   background: '#fff',
   borderRadius: 16,
   boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
   border: 'none',
-  maxWidth: 1350,
-  margin: '0 0 0 52px',
+  width: '96%',
+  maxWidth: '96%',
+  margin: '0 auto 0 auto',
   minHeight: 170,
   position: 'relative',
   padding: 0,
   '@media (max-width: 1024px)': {
-    margin: '0 16px',
+    margin: '0 2%',
     flexDirection: 'column',
     minHeight: 'auto',
+    width: '96%',
+    maxWidth: '96%',
   },
   '@media (max-width: 600px)': {
-    margin: '0 16px',
+    margin: '0 2%',
     borderRadius: 12,
+    width: '96%',
+    maxWidth: '96%',
   }
 });
 
 const CatererImage = styled('img')({
-  width: 200,
-  height: 130,
+  width: 220,
+  height: 160,
   objectFit: 'cover',
   borderTopLeftRadius: 16,
   borderBottomLeftRadius: 16,
@@ -73,17 +94,20 @@ const CatererImage = styled('img')({
   margin: 0,
   boxShadow: 'none',
   display: 'block',
+  alignSelf: 'center',
   '@media (max-width: 1024px)': {
     width: '100%',
     height: 200,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     borderBottomLeftRadius: 0,
+    alignSelf: 'center',
   },
   '@media (max-width: 600px)': {
     height: 160,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
+    alignSelf: 'center',
   }
 });
 
@@ -126,12 +150,12 @@ const TitleStars = styled(Box)({
 
 const Title = styled(Typography)({
   fontWeight: 600,
-  fontSize: 28,
+  fontSize: 22,
   marginBottom: 0,
   lineHeight: 1.1,
   color: '#222',
   '@media (max-width: 600px)': {
-    fontSize: 24,
+    fontSize: 18,
   }
 });
 
@@ -175,7 +199,7 @@ const TagRow = styled(Box)({
   }
 });
 
-const TagButton = styled(Button)(({ color }) => ({
+const TagLabel = styled(Box)(({ color }) => ({
   background: color === 'red' ? '#C4362A' : '#6CB33F',
   color: '#fff',
   borderRadius: 8,
@@ -186,9 +210,11 @@ const TagButton = styled(Button)(({ color }) => ({
   marginRight: 0,
   boxShadow: 'none',
   textTransform: 'none',
-  '&:hover': {
-    background: color === 'red' ? '#a82a1f' : '#4e8c2a',
-  },
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  pointerEvents: 'none', // not clickable
+  userSelect: 'none',
   '@media (max-width: 600px)': {
     fontSize: 16,
     minWidth: 100,
@@ -196,8 +222,24 @@ const TagButton = styled(Button)(({ color }) => ({
   }
 }));
 
-const GreenCard = styled(Box)({
-  background: 'linear-gradient(90deg, #0d6b2b 60%, #1db954 100%)',
+const getMenuTypeLabel = (menuType) => {
+  if (menuType === 'veg') return 'Veg';
+  if (menuType === 'non-veg') return 'Non-Veg';
+  if (menuType === 'both') return 'Veg, Non-Veg';
+  return menuType;
+};
+
+const getMealTypeLabel = (mealType) => {
+  if (mealType === 'lunch') return 'Lunch';
+  if (mealType === 'dinner') return 'Dinner';
+  if (mealType === 'breakfast') return 'Breakfast';
+  return mealType;
+};
+
+const StatusBox = styled(Box)(({ status }) => ({
+  background: status === 'Active'
+    ? 'linear-gradient(90deg, #0d6b2b 60%, #1db954 100%)'
+    : 'linear-gradient(90deg, #C4362A 60%, #e57373 100%)',
   borderRadius: 14,
   color: '#fff',
   minWidth: 370,
@@ -221,7 +263,7 @@ const GreenCard = styled(Box)({
     borderRadius: 12,
     minHeight: 'auto',
   }
-});
+}));
 
 const GreenLeft = styled(Box)({
   flex: 1,
@@ -319,12 +361,16 @@ const PriceBox = styled(Box)({
   fontSize: 22,
   marginTop: 0,
   marginBottom: 0,
-  display: 'inline-block',
+  display: 'inline-flex',
+  alignItems: 'center',
   textAlign: 'center',
   fontFamily: 'inherit',
+  whiteSpace: 'nowrap',
+  gap: 6,
   '@media (max-width: 600px)': {
-    fontSize: 20,
-    padding: '6px 18px',
+    fontSize: 18,
+    padding: '6px 12px',
+    gap: 4,
   }
 });
 
@@ -478,10 +524,10 @@ const SubscriptionPage = () => {
   return (
     <PageContainer>
       <SubscriptionNotice>
-        SUBSCRIPTION DETAILS
+        <span>SUBSCRIPTION DETAILS</span>
+        <SubscriptionCount>(1)</SubscriptionCount>
       </SubscriptionNotice>
       <HorizontalLine />
-      
       {loading ? (
         <Box sx={{ 
           display: 'flex', 
@@ -541,35 +587,56 @@ const SubscriptionPage = () => {
         </Box>
       ) : (
         <CardContainer>
+          <CatererImage 
+            src={subscription.vendor?.logo ? `https://api.boldeats.in/${subscription.vendor.logo}` : catererImg}
+            alt={subscription.vendor?.name || 'Caterer'}
+            onError={e => { e.target.src = catererImg; }}
+          />
           <CardContent>
             <TopRow>
               <TitleStars>
-                <Title>Subscription Details</Title>
+                <Title>{subscription.vendor?.name || 'Glorious Caterers'}</Title>
+                <StarRow>
+                  {[...Array(subscription.vendor?.rating || 5)].map((_, i) => (
+                    <StarIcon key={i} sx={{ color: '#FFD600', fontSize: 22, mr: 0.5 }} />
+                  ))}
+                </StarRow>
               </TitleStars>
+              <DetailsBlock>
+                <span>{subscription.vendor?.yearsInBusiness || '10+'} years in business &middot;</span>
+                <span>{subscription.vendor?.address || 'Main road Side'} &middot; {subscription.vendor?.phoneNumber || '098533 37333'}</span>
+                <span>Open {subscription.vendor?.openingTime || '24 hours'}</span>
+                <span>On-site services 0Online appointments</span>
+              </DetailsBlock>
             </TopRow>
-            <Box sx={{ mt: 3 }}>
-              <Typography variant="h6" sx={{ mb: 2, color: '#333' }}>
-                Plan Details
-              </Typography>
-              <Box sx={{ 
-                background: '#f5f5f5', 
-                borderRadius: 2, 
-                p: 3,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2
-              }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography sx={{ color: '#666' }}>Plan Amount</Typography>
-                  <Typography sx={{ fontWeight: 600 }}>₹{subscription.planAmount}</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography sx={{ color: '#666' }}>Payment Method</Typography>
-                  <Typography sx={{ fontWeight: 600 }}>{subscription.method}</Typography>
-                </Box>
-              </Box>
-            </Box>
+            <TagRow>
+              <TagLabel color="red">Non-veg</TagLabel>
+              <TagLabel color="green">Veg</TagLabel>
+            </TagRow>
           </CardContent>
+          <StatusBox status={subscription.subscription?.status}>
+            <GreenLeft>
+              <GreenLabel>ITEM TYPE :</GreenLabel>
+              <ItemTypeBox>
+                <SmallTag active={subscription.subscription?.menuType === 'veg' || subscription.subscription?.menuType === 'both'}>Veg</SmallTag>
+                <SmallTag active={subscription.subscription?.menuType === 'non-veg' || subscription.subscription?.menuType === 'both'}>Non-Veg</SmallTag>
+              </ItemTypeBox>
+              <GreenLabel>MEAL TYPE :</GreenLabel>
+              <MealTypeBox>
+                {['breakfast', 'lunch', 'dinner'].map((type) =>
+                  subscription.subscription?.mealTypes?.includes(type) ? (
+                    <SmallTag key={type} active>{type.charAt(0).toUpperCase() + type.slice(1)}</SmallTag>
+                  ) : null
+                )}
+              </MealTypeBox>
+            </GreenLeft>
+            <GreenRight>
+              <SubscriptionTitle>Subscription</SubscriptionTitle>
+              <PriceBox sx={{ background: subscription.subscription?.status === 'Active' ? '#C4362A' : '#b71c1c' }}>
+                ₹{subscription.planAmount}/-<span style={{ fontWeight: 400, fontSize: '0.95em', marginLeft: 4 }}>({subscription.subscription?.duration || '15 days'})</span>
+              </PriceBox>
+            </GreenRight>
+          </StatusBox>
         </CardContainer>
       )}
     </PageContainer>
