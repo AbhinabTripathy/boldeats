@@ -46,6 +46,25 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
 }));
 
 const NewsletterSection = () => {
+  const [query, setQuery] = React.useState('');
+  const [error, setError] = React.useState('');
+
+  const handleQueryChange = (event) => {
+    setQuery(event.target.value);
+    setError('');
+  };
+
+  const handleSubmit = () => {
+    if (!query) {
+      setError('Please enter your query');
+      return;
+    }
+
+    // Open default email client with query as subject
+    const mailtoLink = `mailto:support@boldeats.in?subject=${encodeURIComponent(query)}&body=Hello,%0D%0A%0D%0AThank you!`;
+    window.location.href = mailtoLink;
+  };
+
   return (
     <StyledSection>
       <Container maxWidth={false} sx={{ 
@@ -77,10 +96,22 @@ const NewsletterSection = () => {
           <StyledTextField
             fullWidth
             variant="outlined"
-            placeholder="Enter your Email"
+            placeholder="Enter your Query"
             size="small"
+            value={query}
+            onChange={handleQueryChange}
+            error={!!error}
+            helperText={error}
+            sx={{
+              '& .MuiFormHelperText-root': {
+                color: 'white',
+                marginLeft: 0,
+                marginTop: '4px'
+              }
+            }}
           />
           <IconButton 
+            onClick={handleSubmit}
             sx={{ 
               backgroundColor: 'white', 
               '&:hover': { backgroundColor: '#f5f5f5' },

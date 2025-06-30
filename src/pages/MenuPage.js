@@ -626,13 +626,27 @@ const MenuPage = () => {
               Open 24 hours<br />
               On-site services·Online appointments
             </ContactText>
-            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-              <PriceButton
-                onClick={e => { e.stopPropagation(); navigate('/menu-details', { state: { vendor, menuType: 'lunch' } }); }}
-                sx={{ ml: 'auto', mr: 2, fontSize: '0.98rem', py: 0.5, px: 2, minWidth: 120 }}
+            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mb: 2 }}>
+              <Box
+                sx={{ 
+                  ml: 'auto', 
+                  mr: 2, 
+                  fontSize: '0.98rem',
+                  py: 0.5,
+                  px: 2,
+                  minWidth: 120,
+                  background: '#C4362A',
+                  color: '#fff',
+                  borderRadius: '7px',
+                  fontWeight: 500,
+                  textAlign: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
               >
                 {getSubscriptionPrice(vendor)}
-              </PriceButton>
+              </Box>
             </Box>
           </CardContentRight>
         </CardRow>

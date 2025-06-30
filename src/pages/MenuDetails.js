@@ -861,15 +861,15 @@ function PaymentModal({
           <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
             {/* Approval Icon */}
             <CheckCircleIcon sx={{ fontSize: 70, color: '#4caf50', mb: 1 }} />
-            {/* Order Approved Text */}
+            {/* Order Accepted Text */}
             <Typography variant="h5" sx={{ fontWeight: 700, color: '#4caf50', textAlign: 'center', mb: 1 }}>
-              Order Approved Successfully
+              Order Accepted by {statusData?.vendorName}
             </Typography>
             {/* Congratulation Icon and Text */}
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
               <StarIcon sx={{ fontSize: 40, color: '#FFD600', mb: 1 }} />
               <Typography sx={{ fontSize: 20, color: '#222', fontWeight: 600, textAlign: 'center' }}>
-                Congratulations! Your Order of <span style={{ color: '#C4362A', fontWeight: 700 }}>₹{statusData?.amount}</span>
+                Congratulations! Your Order of <span style={{ color: '#C4362A', fontWeight: 700 }}>₹{statusData?.amount}</span> has been accepted
               </Typography>
             </Box>
             {/* Payment Details */}
@@ -1248,7 +1248,7 @@ function SubscriptionModal({ open, onClose, onAdd, caterer, cartItems, setCartIt
   );
 }
 
-function AddressModal({ open, onClose, onAddAddress, editAddress, isEditing }) {
+function AddressModal({ open, onClose, onAddAddress, editAddress, isEditing, addresses }) {
   const [address1, setAddress1] = useState('');
   const [address2, setAddress2] = useState('');
   const [pincode, setPincode] = useState('');
@@ -1273,9 +1273,10 @@ function AddressModal({ open, onClose, onAddAddress, editAddress, isEditing }) {
       setPincode('');
       setCity('');
       setState('');
-      setIsDefault(false);
+      // Set isDefault to true if this is the first address being added
+      setIsDefault(addresses.length === 0);
     }
-  }, [open, editAddress, isEditing]);
+  }, [open, editAddress, isEditing, addresses.length]);
 
   const fetchLocationDetails = async (pincode) => {
     if (pincode.length !== 6) return;
@@ -1357,43 +1358,43 @@ function AddressModal({ open, onClose, onAddAddress, editAddress, isEditing }) {
             );
             console.log('Default status updated:', defaultResponse.data);
 
-            // Update local state immediately
-            onAddAddress(fullAddress, editAddress.id);
-          } catch (defaultErr) {
-            console.error('Error updating default status:', defaultErr);
+                      // Refresh addresses list
+          await onAddAddress(fullAddress, editAddress.id);
+        } catch (defaultErr) {
+          console.error('Error updating default status:', defaultErr);
+        }
+      } else {
+        // Add new address
+        const response = await axios.post('https://api.boldeats.in/api/addresses', addressData, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
           }
-        } else {
-          // Add new address
-          const response = await axios.post('https://api.boldeats.in/api/addresses', addressData, {
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          console.log('Address added successfully:', response.data);
+        });
+        console.log('Address added successfully:', response.data);
 
-          // Handle default address setting for new address
-          if (isDefault && response.data.data.id) {
-            try {
-              await axios.patch(
-                `https://api.boldeats.in/api/addresses/${response.data.data.id}/default`,
-                { isDefault: true },
-                {
-                  headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                  }
+        // Handle default address setting for new address
+        if (isDefault && response.data.data.id) {
+          try {
+            await axios.patch(
+              `https://api.boldeats.in/api/addresses/${response.data.data.id}/default`,
+              { isDefault: true },
+              {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
                 }
-              );
-              console.log('New address set as default successfully');
-            } catch (defaultErr) {
-              console.error('Error setting new address as default:', defaultErr);
-            }
+              }
+            );
+            console.log('New address set as default successfully');
+          } catch (defaultErr) {
+            console.error('Error setting new address as default:', defaultErr);
           }
+        }
 
-          // Update local state immediately
-          onAddAddress(fullAddress);
+        // Refresh addresses list
+        await onAddAddress(fullAddress);
         }
         
         // Reset form
@@ -1534,6 +1535,7 @@ function AddressModal({ open, onClose, onAddAddress, editAddress, isEditing }) {
               <Button
                 variant={!isDefault ? "contained" : "outlined"}
                 onClick={() => setIsDefault(false)}
+                disabled={addresses.length === 0}
                 sx={{
                   flex: 1,
                   borderColor: !isDefault ? '#C4362A' : 'grey.300',
@@ -1541,6 +1543,11 @@ function AddressModal({ open, onClose, onAddAddress, editAddress, isEditing }) {
                   '&:hover': {
                     borderColor: '#C4362A',
                     backgroundColor: !isDefault ? '#C4362A' : 'transparent'
+                  },
+                  '&.Mui-disabled': {
+                    backgroundColor: '#f5f5f5',
+                    color: '#bdbdbd',
+                    borderColor: '#e0e0e0'
                   }
                 }}
               >
@@ -1689,63 +1696,74 @@ const MenuDetails = () => {
     }
   };
 
-  // Add handleAddToCart function
-  const handleAddToCart = (newItem) => {
-    setCartItems(prev => {
-      // Check if this subscription type already exists
-      const existingItemIndex = prev.findIndex(item => item.days === newItem.days);
-      
-      if (existingItemIndex >= 0) {
-        // Update existing item
-        const updatedItems = [...prev];
-        updatedItems[existingItemIndex] = {
-          ...updatedItems[existingItemIndex],
-          quantity: updatedItems[existingItemIndex].quantity + newItem.quantity
-        };
-        return updatedItems;
-      } else {
-        // Add new item
-        return [...prev, newItem];
-      }
-    });
-    setCartQty(prev => prev + newItem.quantity);
-  };
+  // Add handleAddToCart function with auto-refresh
+  const handleAddToCart = async (newItem) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
 
-  // Add handleAddAddress function
-  const handleAddAddress = (newAddress, addressId = null) => {
-    if (addressId) {
-      // Update existing address
-      setAddresses(prev => prev.map(addr => 
-        addr.id === addressId ? { 
-          ...addr, 
-          fullAddress: newAddress,
-          isDefault: editAddress?.isDefault || false 
-        } : {
-          ...addr,
-          isDefault: false // Set all other addresses to non-default
-        }
-      ));
-    } else {
-      // Add new address
-      setAddresses(prev => {
-        // If new address is default, set all others to non-default
-        if (editAddress?.isDefault) {
-          return prev.map(addr => ({
-            ...addr,
-            isDefault: false
-          })).concat([{ 
-            id: Date.now(), 
-            fullAddress: newAddress,
-            isDefault: true 
-          }]);
-        } else {
-          return [...prev, { 
-            id: Date.now(), 
-            fullAddress: newAddress,
-            isDefault: false 
-          }];
+      // Refresh cart data after adding item
+      const response = await axios.get('https://api.boldeats.in/api/cart', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         }
       });
+
+      if (response.data && response.data.data) {
+        // Transform cart data
+        const transformedCartItems = response.data.data.map(item => ({
+          id: item.id,
+          days: item.planType === '30days' ? 30 : 15,
+          price: parseFloat(item.pricePerUnit),
+          quantity: parseInt(item.quantity),
+          planType: item.planType
+        }));
+
+        setCartItems(transformedCartItems);
+        
+        // Update total cart quantity
+        const totalQty = transformedCartItems.reduce((sum, item) => sum + item.quantity, 0);
+        setCartQty(totalQty);
+      }
+    } catch (err) {
+      console.error('Error refreshing cart:', err);
+    }
+  };
+
+  // Add handleAddAddress function with auto-refresh
+  const handleAddAddress = async (newAddress, addressId = null) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      // After successful API operation, fetch fresh address list
+      const response = await axios.get('https://api.boldeats.in/api/addresses', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+
+      if (response.data && response.data.data) {
+        // Format addresses
+        const formattedAddresses = response.data.data.map(address => ({
+          ...address,
+          fullAddress: `${address.addressLine1}${address.addressLine2 ? `, ${address.addressLine2}` : ''}, ${address.city}, ${address.state} - ${address.pincode}`,
+          isDefault: address.isDefault || false
+        }));
+        setAddresses(formattedAddresses);
+
+        // Select default address if available
+        const defaultAddress = formattedAddresses.find(addr => addr.isDefault) || formattedAddresses[0];
+        if (defaultAddress) {
+          setSelectedAddress(defaultAddress.fullAddress);
+        }
+      }
+    } catch (err) {
+      console.error('Error refreshing addresses:', err);
     }
   };
 
@@ -2633,6 +2651,7 @@ const MenuDetails = () => {
         onAddAddress={handleAddAddress}
         editAddress={editAddress}
         isEditing={isEditing}
+        addresses={addresses}
       />
     </>
   );
