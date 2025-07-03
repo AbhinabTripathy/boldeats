@@ -35,7 +35,6 @@ import {
   Phone,
   HowToReg,
   AccountBalanceWallet,
-  Settings,
   Logout,
   Menu as MenuIcon
 } from '@mui/icons-material';
@@ -972,13 +971,7 @@ const Header = () => {
                       </ListItemIcon>
                       <ListItemText primary="Profile" />
                     </AccountMenuItem>
-                    <AccountMenuItem>
-                      <ListItemIcon>
-                        <Settings fontSize="small" />
-                      </ListItemIcon>
-                      <ListItemText primary="Settings" />
-                    </AccountMenuItem>
-                    <AccountMenuItem
+                                              <AccountMenuItem
                       onClick={() => {
                         handleClose();
                         handleDrawerToggle();
@@ -1149,12 +1142,6 @@ const Header = () => {
                             </ListItemIcon>
                             <ListItemText primary="Profile" />
                           </AccountMenuItem>
-                          <AccountMenuItem>
-                            <ListItemIcon>
-                              <Settings fontSize="small" />
-                            </ListItemIcon>
-                            <ListItemText primary="Settings" />
-                          </AccountMenuItem>
                           <AccountMenuItem
                             onClick={handleLogout}
                             sx={{
@@ -1312,12 +1299,6 @@ const Header = () => {
                             <Person fontSize="small" />
                           </ListItemIcon>
                           <ListItemText primary="Profile" />
-                        </AccountMenuItem>
-                        <AccountMenuItem>
-                          <ListItemIcon>
-                            <Settings fontSize="small" />
-                          </ListItemIcon>
-                          <ListItemText primary="Settings" />
                         </AccountMenuItem>
                         <AccountMenuItem
                           onClick={handleLogout}

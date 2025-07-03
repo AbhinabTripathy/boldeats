@@ -616,18 +616,14 @@ const SubscriptionPage = () => {
           </CardContent>
           <StatusBox status={subscription.subscription?.status}>
             <GreenLeft>
-              <GreenLabel>ITEM TYPE :</GreenLabel>
+              <GreenLabel>ITEM TYPE : {subscription.subscription?.menuType === 'both' ? '(Regular)' : subscription.subscription?.menuType === 'veg' ? '(Veg)' : '(Non-Veg)'}</GreenLabel>
               <ItemTypeBox>
                 <SmallTag active={subscription.subscription?.menuType === 'veg' || subscription.subscription?.menuType === 'both'}>Veg</SmallTag>
                 <SmallTag active={subscription.subscription?.menuType === 'non-veg' || subscription.subscription?.menuType === 'both'}>Non-Veg</SmallTag>
               </ItemTypeBox>
               <GreenLabel>MEAL TYPE :</GreenLabel>
               <MealTypeBox>
-                {['breakfast', 'lunch', 'dinner'].map((type) =>
-                  subscription.subscription?.mealTypes?.includes(type) ? (
-                    <SmallTag key={type} active>{type.charAt(0).toUpperCase() + type.slice(1)}</SmallTag>
-                  ) : null
-                )}
+                <SmallTag active>Lunch</SmallTag>
               </MealTypeBox>
             </GreenLeft>
             <GreenRight>
