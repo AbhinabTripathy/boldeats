@@ -1360,38 +1360,38 @@ function AddressModal({ open, onClose, onAddAddress, editAddress, isEditing, add
 
                       // Refresh addresses list
           await onAddAddress(fullAddress, editAddress.id);
-        } catch (defaultErr) {
-          console.error('Error updating default status:', defaultErr);
-        }
-      } else {
-        // Add new address
-        const response = await axios.post('https://api.boldeats.in/api/addresses', addressData, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        console.log('Address added successfully:', response.data);
-
-        // Handle default address setting for new address
-        if (isDefault && response.data.data.id) {
-          try {
-            await axios.patch(
-              `https://api.boldeats.in/api/addresses/${response.data.data.id}/default`,
-              { isDefault: true },
-              {
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json'
-                }
-              }
-            );
-            console.log('New address set as default successfully');
           } catch (defaultErr) {
-            console.error('Error setting new address as default:', defaultErr);
+            console.error('Error updating default status:', defaultErr);
           }
-        }
+        } else {
+          // Add new address
+          const response = await axios.post('https://api.boldeats.in/api/addresses', addressData, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          console.log('Address added successfully:', response.data);
+
+          // Handle default address setting for new address
+          if (isDefault && response.data.data.id) {
+            try {
+              await axios.patch(
+                `https://api.boldeats.in/api/addresses/${response.data.data.id}/default`,
+                { isDefault: true },
+                {
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                  }
+                }
+              );
+              console.log('New address set as default successfully');
+            } catch (defaultErr) {
+              console.error('Error setting new address as default:', defaultErr);
+            }
+          }
 
         // Refresh addresses list
         await onAddAddress(fullAddress);
@@ -1710,7 +1710,7 @@ const MenuDetails = () => {
           'Accept': 'application/json'
         }
       });
-
+      
       if (response.data && response.data.data) {
         // Transform cart data
         const transformedCartItems = response.data.data.map(item => ({

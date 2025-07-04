@@ -16,51 +16,61 @@ const PageContainer = styled(Box)({
 
 const Banner = styled(Box)({
   width: '100%',
-  minHeight: '190px',
+  minHeight: '120px',
   background: 'linear-gradient(90deg, #C4362A 0%, #ff5e62 60%, #ff9966 100%)',
-  borderRadius: '16px',
-  marginBottom: '24px',
+  borderRadius: '12px',
+  marginBottom: '16px',
   boxShadow: '0 4px 16px rgba(196,54,42,0.10)',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: '24px 16px 20px 16px',
+  padding: '12px',
   position: 'relative',
   textAlign: 'center',
   overflow: 'hidden',
   marginTop: '8px',
+  '@media (max-width: 600px)': {
+    minHeight: '100px',
+    padding: '8px',
+    marginBottom: '12px',
+  }
 });
 
 const FoodEmojis = styled('div')({
-  fontSize: '2.7rem',
-  marginBottom: '14px',
-  letterSpacing: '0.18em',
+  fontSize: '1.8rem',
+  marginBottom: '8px',
+  letterSpacing: '0.12em',
   display: 'flex',
   flexWrap: 'wrap',
   justifyContent: 'center',
-  gap: '0.18em',
+  gap: '0.12em',
   filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.10))',
+  '@media (max-width: 600px)': {
+    fontSize: '1.5rem',
+    marginBottom: '6px',
+  }
 });
 
 const QuoteText = styled(Typography)({
   fontWeight: 700,
-  fontSize: '2rem',
+  fontSize: '1.5rem',
   color: '#7C3A00',
-  marginBottom: '6px',
+  marginBottom: '3px',
   '@media (max-width: 600px)': {
-    fontSize: '1.2rem',
-  },
+    fontSize: '1rem',
+    marginBottom: '2px',
+  }
 });
 
 const SubText = styled(Typography)({
   fontWeight: 400,
-  fontSize: '1.1rem',
+  fontSize: '0.9rem',
   color: '#7C3A00',
   opacity: 0.85,
   '@media (max-width: 600px)': {
-    fontSize: '0.95rem',
-  },
+    fontSize: '0.8rem',
+  }
 });
 
 const BannerWave = styled('div')({
@@ -70,6 +80,12 @@ const BannerWave = styled('div')({
   width: '100%',
   zIndex: 2,
   lineHeight: 0,
+  '& svg': {
+    height: '20px',
+    '@media (max-width: 600px)': {
+      height: '15px',
+    }
+  }
 });
 
 const CardRow = styled(Box)({
