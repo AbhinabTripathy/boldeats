@@ -456,7 +456,7 @@ const AnimatedCardsContainer = styled(Box)({
   gap: '24px',
   margin: '24px auto',
   width: '96%',
-  maxWidth: '96%',
+  maxWidth: '1200px',
   '@media (max-width: 900px)': {
     flexDirection: 'column',
     gap: '16px',
@@ -475,11 +475,13 @@ const AnimatedCard = styled(Box)(({ status }) => ({
   backgroundSize: '400% 400%',
   animation: 'gradient 15s ease infinite',
   borderRadius: '20px',
-  padding: '24px',
+  padding: '20px',
   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
   overflow: 'hidden',
   position: 'relative',
+  minHeight: '450px',
+  maxHeight: '500px',
   '&:hover': {
     transform: 'translateY(-5px)',
     boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
@@ -514,34 +516,31 @@ const AnimatedCard = styled(Box)(({ status }) => ({
     },
   },
   '@media (max-width: 600px)': {
-    padding: '20px',
+    padding: '16px',
+    minHeight: '400px',
+    maxHeight: '450px',
   }
 }));
 
 const CardHeader = styled(Box)({
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: '20px',
-  color: '#fff',
+  marginBottom: '12px',
 });
 
 const CardTitle = styled(Typography)({
-  fontSize: '20px',
-  fontWeight: 600,
+  fontSize: '18px',
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '6px',
   '& svg': {
-    fontSize: '24px',
+    fontSize: '20px',
   },
   '@media (max-width: 600px)': {
-    fontSize: '18px',
+    fontSize: '16px',
   }
 });
 
 const CardDate = styled(Typography)({
-  fontSize: '14px',
+  fontSize: '13px',
   opacity: 0.9,
   '@media (max-width: 600px)': {
     fontSize: '12px',
@@ -602,20 +601,19 @@ const SuccessMessage = styled(Box)({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  gap: '12px',
-  padding: '16px',
+  gap: '10px',
+  padding: '14px',
   background: 'rgba(255,255,255,0.1)',
   borderRadius: '12px',
   backdropFilter: 'blur(5px)',
-  marginTop: '16px',
+  marginTop: '12px',
   textAlign: 'center',
 });
 
 const NextDayInfo = styled(Typography)({
-  color: '#fff',
+  fontSize: '13px',
+  marginTop: '10px',
   opacity: 0.9,
-  fontSize: '14px',
-  marginTop: '8px',
   fontStyle: 'italic',
 });
 
@@ -750,60 +748,59 @@ const CommentItem = styled(Box)({
 });
 
 const MealTypeDropdown = styled(FormControl)({
-  marginTop: '16px',
+  marginTop: '12px',
   width: '100%',
   '& .MuiOutlinedInput-root': {
+    height: '45px',
     color: '#fff',
     '& fieldset': {
       borderColor: 'rgba(255,255,255,0.3)',
     },
-    '&:hover fieldset': {
-      borderColor: 'rgba(255,255,255,0.5)',
-    },
-    '&.Mui-focused fieldset': {
-      borderColor: '#fff',
-    },
   },
   '& .MuiInputLabel-root': {
-    color: 'rgba(255,255,255,0.7)',
+    fontSize: '14px',
+    transform: 'translate(14px, 12px) scale(1)',
+    '&.Mui-focused, &.MuiFormLabel-filled': {
+      transform: 'translate(14px, -9px) scale(0.75)',
+    },
   },
-  '& .MuiSelect-icon': {
-    color: 'rgba(255,255,255,0.7)',
+  '& .MuiSelect-select': {
+    fontSize: '14px',
   },
 });
 
 const NonVegDropdown = styled(FormControl)({
-  marginTop: '12px',
+  marginTop: '10px',
   width: '100%',
   '& .MuiOutlinedInput-root': {
+    height: '45px',
     color: '#fff',
     '& fieldset': {
       borderColor: 'rgba(255,255,255,0.3)',
     },
-    '&:hover fieldset': {
-      borderColor: 'rgba(255,255,255,0.5)',
-    },
-    '&.Mui-focused fieldset': {
-      borderColor: '#fff',
-    },
   },
   '& .MuiInputLabel-root': {
-    color: 'rgba(255,255,255,0.7)',
+    fontSize: '14px',
+    transform: 'translate(14px, 12px) scale(1)',
+    '&.Mui-focused, &.MuiFormLabel-filled': {
+      transform: 'translate(14px, -9px) scale(0.75)',
+    },
   },
-  '& .MuiSelect-icon': {
-    color: 'rgba(255,255,255,0.7)',
+  '& .MuiSelect-select': {
+    fontSize: '14px',
   },
 });
 
 const SubmitButton = styled(Button)({
-  marginTop: '16px',
+  marginTop: '12px',
   width: '100%',
   background: '#C4362A',
   color: '#fff',
-  padding: '12px',
+  padding: '8px',
   borderRadius: '8px',
-  fontSize: '16px',
+  fontSize: '14px',
   fontWeight: 600,
+  height: '36px',
   '&:hover': {
     background: '#b02d23',
   },
@@ -820,6 +817,31 @@ const ConfirmationMessage = styled(Box)({
   borderRadius: '8px',
   textAlign: 'center',
   color: '#fff',
+});
+
+const PreferenceCommentContainer = styled(Box)({
+  marginTop: '12px',
+  padding: '12px',
+  background: 'rgba(255,255,255,0.1)',
+  borderRadius: '8px',
+  backdropFilter: 'blur(5px)',
+  width: '100%',
+});
+
+const PreferenceCommentInput = styled(TextField)({
+  width: '100%',
+  '& .MuiOutlinedInput-root': {
+    color: '#fff',
+    '& textarea': {
+      fontSize: '14px',
+      padding: '8px',
+      minHeight: '60px',
+      maxHeight: '60px',
+    },
+  },
+  '& .MuiInputLabel-root': {
+    fontSize: '14px',
+  },
 });
 
 const SubscriptionPage = () => {
@@ -841,6 +863,7 @@ const SubscriptionPage = () => {
   const [selectedNonVegType, setSelectedNonVegType] = useState('');
   const [mealSubmitted, setMealSubmitted] = useState(false);
   const [submissionMessage, setSubmissionMessage] = useState('');
+  const [preferenceComment, setPreferenceComment] = useState('');
 
   useEffect(() => {
     // Check if user is logged in
@@ -1034,8 +1057,13 @@ const SubscriptionPage = () => {
 
     const mealType = selectedMealType === 'pureveg' ? 'Pure Veg' : 'Regular';
     const nonVegOption = selectedNonVegType ? ` with ${selectedNonVegType.charAt(0).toUpperCase() + selectedNonVegType.slice(1)} Curry` : '';
+    let confirmationText = `Your ${mealType}${nonVegOption} meal has been confirmed for ${getFormattedDate(deliveryDate)}`;
     
-    setSubmissionMessage(`Your ${mealType}${nonVegOption} meal has been confirmed for ${getFormattedDate(deliveryDate)}`);
+    if (selectedMealType === 'pureveg' && preferenceComment) {
+      confirmationText += `\nPreference Note: ${preferenceComment}`;
+    }
+    
+    setSubmissionMessage(confirmationText);
     setMealSubmitted(true);
     setAlertMessage('Meal preference submitted successfully!');
     setAlertSeverity('success');
@@ -1309,7 +1337,8 @@ const SubscriptionPage = () => {
                         value={selectedMealType}
                         onChange={(e) => {
                           setSelectedMealType(e.target.value);
-                          setSelectedNonVegType(''); // Reset non-veg selection when meal type changes
+                          setSelectedNonVegType('');
+                          setPreferenceComment(''); // Reset comment when meal type changes
                         }}
                         label="Select Meal Type"
                       >
@@ -1334,13 +1363,51 @@ const SubscriptionPage = () => {
                       </NonVegDropdown>
                     )}
 
-                    {/* Submit Button */}
-                    <SubmitButton
-                      onClick={handleMealSubmit}
-                      disabled={!selectedMealType || (selectedMealType === 'regular' && isNonVegAvailable() && !selectedNonVegType)}
-                    >
-                      Confirm Meal Selection
-                    </SubmitButton>
+                    {/* Pure Veg Preference Comment Section */}
+                    {selectedMealType === 'pureveg' && (
+                      <>
+                        <PreferenceCommentContainer>
+                          <Typography variant="h6" sx={{ 
+                            color: '#fff', 
+                            mb: 1,
+                            fontSize: '0.9rem'
+                          }}>
+                            Special Preferences
+                          </Typography>
+                          <PreferenceCommentInput
+                            multiline
+                            rows={2}
+                            value={preferenceComment}
+                            onChange={(e) => setPreferenceComment(e.target.value)}
+                            placeholder="Add any special preferences or requirements for your Pure Veg meal..."
+                            variant="outlined"
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                minHeight: '60px',
+                              }
+                            }}
+                          />
+                        </PreferenceCommentContainer>
+                        
+                        {/* Submit Button moved outside PreferenceCommentContainer */}
+                        <SubmitButton
+                          onClick={handleMealSubmit}
+                          disabled={!selectedMealType}
+                        >
+                          Confirm Meal Selection
+                        </SubmitButton>
+                      </>
+                    )}
+
+                    {/* Submit Button for non-veg selection */}
+                    {selectedMealType === 'regular' && (
+                      <SubmitButton
+                        onClick={handleMealSubmit}
+                        disabled={isNonVegAvailable() && !selectedNonVegType}
+                      >
+                        Confirm Meal Selection
+                      </SubmitButton>
+                    )}
 
                     <NextDayInfo>
                       {isWithinOrderWindow() 
@@ -1355,7 +1422,9 @@ const SubscriptionPage = () => {
                       Meal Selection Confirmed!
                     </Typography>
                     <ConfirmationMessage>
-                      {submissionMessage}
+                      <Typography sx={{ whiteSpace: 'pre-line' }}>
+                        {submissionMessage}
+                      </Typography>
                     </ConfirmationMessage>
                   </SuccessMessage>
                 )}
