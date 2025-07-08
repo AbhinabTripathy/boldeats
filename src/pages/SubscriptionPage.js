@@ -463,9 +463,11 @@ const AnimatedCardsContainer = styled(Box)({
   }
 });
 
-const AnimatedCard = styled(Box)(({ status }) => ({
+const AnimatedCard = styled(Box)(({ status, orderCard }) => ({
   flex: 1,
-  background: status === 'accepted' 
+  background: orderCard
+    ? 'linear-gradient(-45deg, #1976D2, #64B5F6, #2196F3, #1565C0)'
+    : status === 'accepted' 
     ? 'linear-gradient(-45deg, #1a472a, #2d5a3f, #0d6b2b, #1db954)'
     : status === 'processing'
     ? 'linear-gradient(-45deg, #FF9800, #FFB74D, #F57C00, #EF6C00)'
@@ -482,6 +484,10 @@ const AnimatedCard = styled(Box)(({ status }) => ({
   position: 'relative',
   minHeight: '450px',
   maxHeight: '500px',
+  color: '#fff', // Make all text white
+  '& *': {
+    color: '#fff !important',
+  },
   '&:hover': {
     transform: 'translateY(-5px)',
     boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
@@ -1284,7 +1290,7 @@ const SubscriptionPage = () => {
 
           <AnimatedCardsContainer>
             {/* Order Accepting Card */}
-            <AnimatedCard status={orderAccepted ? 'accepted' : 'pending'}>
+            <AnimatedCard status={orderAccepted ? 'accepted' : 'pending'} orderCard>
               <CardHeader>
                 <CardTitle>
                   <AccessTimeIcon />

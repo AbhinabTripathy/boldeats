@@ -47,6 +47,7 @@ import TextField from '@mui/material/TextField';
 import CircularProgress from '@mui/material/CircularProgress';
 import axios from 'axios';
 import Modal from '@mui/material/Modal';
+import FSSAILogo from '../assets/FSSAI_logo.png';
 
 const WaveHeader = styled(Box)({
   width: '100vw',
@@ -2238,14 +2239,29 @@ const MenuDetails = () => {
               }}
             />
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="h5" sx={{ 
-                fontWeight: 600,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis'
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 1, 
+                mb: 2, // add margin below logo/name row
               }}>
-                {caterer.name}
-              </Typography>
+                {/* FSSAI logo to the left of restaurant name */}
+                <img 
+                  src={FSSAILogo} 
+                  alt="FSSAI Logo" 
+                  style={{ width: 32, height: 32, objectFit: 'contain', marginRight: 8 }} 
+                />
+                <Typography variant="h5" sx={{ 
+                  fontWeight: 600,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: 'inline-block',
+                  verticalAlign: 'middle',
+                }}>
+                  {caterer.name}
+                </Typography>
+              </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
                 {[...Array(caterer.rating || 5)].map((_, i) => (
                   <span key={i} style={{ color: '#FFD600', fontSize: 18 }}>★</span>
@@ -2282,6 +2298,15 @@ const MenuDetails = () => {
               <Typography sx={{ fontSize: 14, color: '#666' }}>
                 Open {caterer.openingTime} - {caterer.closingTime}
               </Typography>
+              {/* FSSAI number below opening hours */}
+              {caterer.fssaiNumber && (
+                <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                  <img src={FSSAILogo} alt="FSSAI Logo" style={{ width: 24, height: 24, objectFit: 'contain', marginRight: 6 }} />
+                  <Typography sx={{ fontSize: '0.95rem', color: '#666', fontWeight: 500 }}>
+                    :{caterer.fssaiNumber}
+                  </Typography>
+                </Box>
+              )}
             </Box>
           </Box>
           
